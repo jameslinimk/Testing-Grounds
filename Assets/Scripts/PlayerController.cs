@@ -3,7 +3,23 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
 using System;
-using System.Collections;
+
+class Fader {
+	public float target = 1;
+	public float speed;
+
+	public Fader(float target, float speed) {
+		this.target = target;
+		this.speed = speed;
+	}
+
+	/// <summary>
+	/// Returns new value for given value
+	/// </summary>
+	public float Update(float value) {
+		return Mathf.MoveTowards(value, target, speed * Time.deltaTime);
+	}
+}
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour {
@@ -32,6 +48,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Dash UI")]
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
+	private readonly Fader dashCDfader = new(1, 2.5f);
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
@@ -47,6 +64,7 @@ public class PlayerController : MonoBehaviour {
 
 	void OnJump() {
 		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
+		dashCDfader.target = 1f;
 
 		dashStart = Time.time;
 		dashDirection = mv == Vector3.zero ? lastMV : mv;
@@ -59,7 +77,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		if (mv != Vector3.zero) {
-			if (Math.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
+			if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
 				rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 			}
 
@@ -100,31 +118,18 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	private IEnumerator FadeCDTextToZero() {
-		Color ogColor = dashCDText.color;
-		float duration = 0.5f;
-		float elapsedTime = 0f;
-
-		while (elapsedTime < duration) {
-			elapsedTime += Time.deltaTime;
-			float alpha = Mathf.Lerp(ogColor.a, 0f, elapsedTime / duration);
-			dashCDText.color = new Color(ogColor.r, ogColor.g, ogColor.b, alpha);
-			yield return null;
-		}
-
-		dashCDText.color = new Color(ogColor.r, ogColor.g, ogColor.b, 0f);
-	}
-
 	private void SetDashUI() {
-		float ratio = Math.Clamp(1 - (Time.time - dashStart) / dashCooldown, 0f, 1f);
-		float secondsLeft = Math.Clamp(dashCooldown - (Time.time - dashStart), 0f, dashCooldown);
+		float ratio = Mathf.Clamp01(1 - (Time.time - dashStart - dashDuration) / dashCooldown);
 		dashCDImage.fillAmount = ratio;
-		if (secondsLeft == 0f) {
-			dashCDText.text = "";
-			StartCoroutine(FadeCDTextToZero());
+
+		float secondsLeft = Mathf.Clamp(dashCooldown - (Time.time - dashStart - dashDuration), 0f, dashCooldown);
+		if (secondsLeft == 0f && dashCDText.alpha == 1f) {
+			dashCDfader.target = 0f;
 		} else {
-			dashCDText.text = $"{secondsLeft:0.#}s";
+			dashCDText.text = $"{secondsLeft:0.0}s";
 		}
+
+		dashCDText.alpha = dashCDfader.Update(dashCDText.alpha);
 	}
 
 	private void SetScoreText() {
