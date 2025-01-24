@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		if (mv != Vector3.zero) {
-			if (Math.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.2f) {
+			if (Math.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
 				rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 			}
 
