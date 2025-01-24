@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using System;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -36,13 +34,13 @@ public class PlayerController : MonoBehaviour {
 
 	void OnMove(InputValue inputValue) {
 		Vector2 inputVector = inputValue.Get<Vector2>();
-		mv = new Vector3(inputVector.x, 0.0f, inputVector.y);
+		mv = new Vector3(inputVector.x, 0.0f, inputVector.y).normalized;
 
 		if (mv != Vector3.zero) lastMV = mv;
 	}
 
 	void OnJump() {
-		if (Time.time - dashStart < dashCooldown) return;
+		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
 
 		dashStart = Time.time;
 		dashDirection = mv == Vector3.zero ? lastMV : mv;
