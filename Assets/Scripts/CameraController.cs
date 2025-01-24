@@ -1,18 +1,15 @@
 using UnityEngine;
 
-public class CameraController : MonoBehaviour
-{
+public class CameraController : MonoBehaviour {
 	public GameObject player;
 	public float deceleration;
 	private Vector3 offset;
 
-	void Start()
-	{
+	void Start() {
 		offset = transform.position - player.transform.position;
 	}
 
-	void FixedUpdate()
-	{
+	void FixedUpdate() {
 		Vector3 moveTo = player.transform.position + offset;
 		transform.position = Vector3.Lerp(transform.position, moveTo, deceleration * Time.fixedDeltaTime);
 	}

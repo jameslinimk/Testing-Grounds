@@ -1,15 +1,13 @@
 using UnityEngine;
 
-public class PickupManager : MonoBehaviour
-{
+public class PickupManager : MonoBehaviour {
 	public GameObject pickupPrefab;
 	public GameObject spawnArea;
 
 	private float lastSpawn = -Mathf.Infinity;
 	public float spawnCooldown;
 
-	void Update()
-	{
+	void Update() {
 		if (Time.time - lastSpawn < spawnCooldown) return;
 		lastSpawn = Time.time;
 

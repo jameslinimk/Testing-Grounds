@@ -3,8 +3,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : MonoBehaviour
-{
+public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 mv;
 	private Vector3 lastMV;
@@ -27,60 +26,49 @@ public class PlayerController : MonoBehaviour
 	public TextMeshProUGUI scoreText;
 	private int score = 0;
 
-	void Start()
-	{
+	void Start() {
 		rb = GetComponent<Rigidbody>();
 		SetScoreText();
 	}
 
-	void OnMove(InputValue inputValue)
-	{
+	void OnMove(InputValue inputValue) {
 		Vector2 inputVector = inputValue.Get<Vector2>();
 		mv = new Vector3(inputVector.x, 0.0f, inputVector.y);
 
 		if (mv != Vector3.zero) lastMV = mv;
 	}
 
-	void OnJump()
-	{
+	void OnJump() {
 		if (Time.time - dashStart < dashCooldown) return;
 
 		dashStart = Time.time;
 		dashDirection = mv == Vector3.zero ? lastMV : mv;
 	}
 
-	void FixedUpdate()
-	{
-		if (IsDashing)
-		{
+	void FixedUpdate() {
+		if (IsDashing) {
 			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
 			// rb.AddForce(mv * speed / 3, ForceMode.Force);
 			return;
 		}
 
-		if (mv != Vector3.zero)
-		{
+		if (mv != Vector3.zero) {
 			rb.AddForce(mv * speed, ForceMode.Force);
-		}
-		else
-		{
+		} else {
 			rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
 		}
 		rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, maxSpeed);
 	}
 
-	void OnTriggerEnter(Collider other)
-	{
-		if (other.gameObject.CompareTag("Pickup"))
-		{
+	void OnTriggerEnter(Collider other) {
+		if (other.gameObject.CompareTag("Pickup")) {
 			score += 1;
 			SetScoreText();
 			Destroy(other.gameObject);
 		}
 	}
 
-	void SetScoreText()
-	{
+	void SetScoreText() {
 		scoreText.text = $"Score: {score}";
 	}
 }

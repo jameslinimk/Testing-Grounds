@@ -1,0 +1,12 @@
+[*.cs]
+
+# Indentation style
+indent_style = space
+indent_size = 4
+
+# Bracket placement for all types
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+# csharp_new_line_before_open_brace = accessors, types, methods, properties, indexers, events, control_blocks, object_collection_array_initializers, anonymous_methods, anonymous_types, lambdas, local_functions
