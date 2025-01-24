@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
 using System;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour {
@@ -23,9 +25,12 @@ public class PlayerController : MonoBehaviour {
 	private float dashStart = -Mathf.Infinity;
 	private bool IsDashing => Time.time - dashStart < dashDuration;
 
-	[Header("Other")]
+	[Header("UI")]
 	public TextMeshProUGUI scoreText;
 	private int score = 0;
+
+	public TextMeshProUGUI dashCDText;
+	public Image dashCDImage;
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
@@ -65,12 +70,11 @@ public class PlayerController : MonoBehaviour {
 			Vector3 v1 = rb.linearVelocity;
 			Vector3 v2 = mv * speed;
 
-			// No component parallel to current velocity; can't go faster
-			Vector3 vPerp = v2 - (Vector3.Dot(v2, v1) / v1.sqrMagnitude * v1);
+			// No component parallel to current velocity; can't go faster (ProjectOnPlane is equal to subtracting projection)
+			Vector3 vPerp = Vector3.ProjectOnPlane(v2, v1);
 
 			if (rb.linearVelocity.magnitude == maxSpeed) {
 				rb.AddForce(vPerp, ForceMode.Force);
-				Debug.Log("Exact");
 			} else {
 				rb.AddForce(vPerp, ForceMode.Force);
 				rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
@@ -79,7 +83,12 @@ public class PlayerController : MonoBehaviour {
 			rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
 		}
 
-		if (rb.linearVelocity.magnitude > maxSpeed) Debug.Log(rb.linearVelocity.magnitude);
+		// if (rb.linearVelocity.magnitude > maxSpeed) Debug.Log(rb.linearVelocity.magnitude - maxSpeed);
+		// TODO: Fix player going faster than maxSpeed (by like 0.1)
+	}
+
+	void Update() {
+		SetDashUI();
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -87,6 +96,33 @@ public class PlayerController : MonoBehaviour {
 			score += 1;
 			SetScoreText();
 			Destroy(other.gameObject);
+		}
+	}
+
+	private IEnumerator FadeTextToZero() {
+		Color originalColor = dashCDText.color;
+		float duration = 1f;
+		float elapsedTime = 0f;
+
+		while (elapsedTime < duration) {
+			elapsedTime += Time.deltaTime;
+			float alpha = Mathf.Lerp(originalColor.a, 0f, elapsedTime / duration);
+			dashCDText.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+			yield return null;
+		}
+
+		dashCDText.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+	}
+
+	void SetDashUI() {
+		float ratio = Math.Clamp(1 - (Time.time - dashStart) / dashCooldown, 0.0f, 1.0f);
+		float secondsLeft = Math.Clamp(dashCooldown - (Time.time - dashStart), 0.0f, dashCooldown);
+		dashCDImage.fillAmount = ratio;
+		if (secondsLeft == 0) {
+			dashCDText.text = "Ready!";
+			StartCoroutine(FadeTextToZero());
+		} else {
+			dashCDText.text = $"{secondsLeft:0.#}s";
 		}
 	}
 
