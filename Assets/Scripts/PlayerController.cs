@@ -25,10 +25,11 @@ public class PlayerController : MonoBehaviour {
 	private float dashStart = -Mathf.Infinity;
 	private bool IsDashing => Time.time - dashStart < dashDuration;
 
-	[Header("UI")]
+	[Header("Score UI")]
 	public TextMeshProUGUI scoreText;
 	private int score = 0;
 
+	[Header("Dash UI")]
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
 
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour {
 
 	void OnMove(InputValue inputValue) {
 		Vector2 inputVector = inputValue.Get<Vector2>();
-		mv = new Vector3(inputVector.x, 0.0f, inputVector.y).normalized;
+		mv = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
 		if (mv != Vector3.zero) lastMV = mv;
 	}
@@ -99,28 +100,28 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	private IEnumerator FadeTextToZero() {
-		Color originalColor = dashCDText.color;
-		float duration = 1f;
+	private IEnumerator FadeCDTextToZero() {
+		Color ogColor = dashCDText.color;
+		float duration = 0.5f;
 		float elapsedTime = 0f;
 
 		while (elapsedTime < duration) {
 			elapsedTime += Time.deltaTime;
-			float alpha = Mathf.Lerp(originalColor.a, 0f, elapsedTime / duration);
-			dashCDText.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+			float alpha = Mathf.Lerp(ogColor.a, 0f, elapsedTime / duration);
+			dashCDText.color = new Color(ogColor.r, ogColor.g, ogColor.b, alpha);
 			yield return null;
 		}
 
-		dashCDText.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+		dashCDText.color = new Color(ogColor.r, ogColor.g, ogColor.b, 0f);
 	}
 
-	void SetDashUI() {
-		float ratio = Math.Clamp(1 - (Time.time - dashStart) / dashCooldown, 0.0f, 1.0f);
-		float secondsLeft = Math.Clamp(dashCooldown - (Time.time - dashStart), 0.0f, dashCooldown);
+	private void SetDashUI() {
+		float ratio = Math.Clamp(1 - (Time.time - dashStart) / dashCooldown, 0f, 1f);
+		float secondsLeft = Math.Clamp(dashCooldown - (Time.time - dashStart), 0f, dashCooldown);
 		dashCDImage.fillAmount = ratio;
-		if (secondsLeft == 0) {
-			dashCDText.text = "Ready!";
-			StartCoroutine(FadeTextToZero());
+		if (secondsLeft == 0f) {
+			dashCDText.text = "";
+			StartCoroutine(FadeCDTextToZero());
 		} else {
 			dashCDText.text = $"{secondsLeft:0.#}s";
 		}
