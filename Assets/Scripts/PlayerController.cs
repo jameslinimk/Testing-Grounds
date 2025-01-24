@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
+using System;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour {
@@ -48,16 +51,37 @@ public class PlayerController : MonoBehaviour {
 	void FixedUpdate() {
 		if (IsDashing) {
 			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
-			// rb.AddForce(mv * speed / 3, ForceMode.Force);
 			return;
 		}
 
 		if (mv != Vector3.zero) {
-			rb.AddForce(mv * speed, ForceMode.Force);
+			if (Math.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.2f) {
+				rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+			}
+
+			if (rb.linearVelocity.magnitude < maxSpeed) {
+				rb.AddForce(mv * speed, ForceMode.Force);
+				return;
+			}
+
+			Vector3 v1 = rb.linearVelocity;
+			Vector3 v2 = mv * speed;
+
+			// No component parallel to current velocity; can't go faster
+			Vector3 vPerp = v2 - (Vector3.Dot(v2, v1) / v1.sqrMagnitude * v1);
+
+			if (rb.linearVelocity.magnitude == maxSpeed) {
+				rb.AddForce(vPerp, ForceMode.Force);
+				Debug.Log("Exact");
+			} else {
+				rb.AddForce(vPerp, ForceMode.Force);
+				rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
+			}
 		} else {
 			rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
 		}
-		rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, maxSpeed);
+
+		if (rb.linearVelocity.magnitude > maxSpeed) Debug.Log(rb.linearVelocity.magnitude);
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -68,7 +92,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void SetScoreText() {
+	private void SetScoreText() {
 		scoreText.text = $"Score: {score}";
 	}
 }
