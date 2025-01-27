@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
-using System;
 
-class Fader {
+[System.Serializable]
+public class Fader {
+	[HideInInspector]
 	public float target = 1;
 	public float speed;
 
@@ -49,7 +50,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Dash UI")]
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
-	private readonly Fader dashCDfader = new(1, 2.5f);
+	public Fader dashCDfader = new(1, 3.5f);
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
