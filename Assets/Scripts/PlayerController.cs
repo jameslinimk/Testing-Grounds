@@ -32,7 +32,6 @@ public class PlayerController : MonoBehaviour {
 	public float speed;
 	public float maxSpeed;
 	public float deceleration;
-	public float drag;
 
 	[Header("Dash Settings")]
 	public float dashCooldown;
@@ -98,8 +97,6 @@ public class PlayerController : MonoBehaviour {
 		Vector3 vParallel = Vector3.Project(v2, v1);
 		Vector3 vPerp = v2 - vParallel;
 
-		// vPerp = vPerp.normalized * speed;
-
 		// If parallel component is in opposite direction, add it
 		if (Vector3.Dot(vParallel, v1) < 0) {
 			rb.AddForce(vParallel, ForceMode.Force);
@@ -107,14 +104,12 @@ public class PlayerController : MonoBehaviour {
 
 		rb.AddForce(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
+
+		Debug.Log(rb.linearVelocity.magnitude);
 	}
 
 	private void ApplyFriction() {
-		if (rb.linearVelocity.magnitude <= 0) return;
-
-		Vector3 frictionForce = -rb.linearVelocity.normalized * drag;
-		rb.AddForce(frictionForce, ForceMode.Acceleration);
-		if (Vector3.Dot(rb.linearVelocity, frictionForce) >= 0) rb.linearVelocity = Vector3.zero;
+		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
 	}
 
 	void Update() {
