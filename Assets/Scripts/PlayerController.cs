@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour {
 	public float speed;
 	public float maxSpeed;
 	public float deceleration;
+	public float drag;
 
 	[Header("Dash Settings")]
 	public float dashCooldown;
@@ -76,34 +77,43 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 
-		if (mv != Vector3.zero) {
-			if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
-				rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
-			}
-
-			if (rb.linearVelocity.magnitude < maxSpeed) {
-				rb.AddForce(mv * speed, ForceMode.Force);
-				return;
-			}
-
-			Vector3 v1 = rb.linearVelocity;
-			Vector3 v2 = mv * speed;
-
-			// No component parallel to current velocity; can't go faster (ProjectOnPlane is equal to subtracting projection)
-			Vector3 vPerp = Vector3.ProjectOnPlane(v2, v1);
-
-			if (rb.linearVelocity.magnitude == maxSpeed) {
-				rb.AddForce(vPerp, ForceMode.Force);
-			} else {
-				rb.AddForce(vPerp, ForceMode.Force);
-				rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
-			}
-		} else {
-			rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
+		if (mv == Vector3.zero) {
+			ApplyFriction();
+			return;
 		}
 
-		// if (rb.linearVelocity.magnitude > maxSpeed) Debug.Log(rb.linearVelocity.magnitude - maxSpeed);
-		// TODO: Fix player going faster than maxSpeed (by like 0.1)
+		if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
+			rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+		}
+
+		if (rb.linearVelocity.magnitude < maxSpeed) {
+			rb.AddForce(mv * speed, ForceMode.Force);
+			return;
+		}
+
+		Vector3 v1 = rb.linearVelocity;
+		Vector3 v2 = mv * speed;
+
+		Vector3 vParallel = Vector3.Project(v2, v1);
+		Vector3 vPerp = v2 - vParallel;
+
+		// vPerp = vPerp.normalized * speed;
+
+		// If parallel component is in opposite direction, add it
+		if (Vector3.Dot(vParallel, v1) < 0) {
+			rb.AddForce(vParallel, ForceMode.Force);
+		}
+
+		rb.AddForce(vPerp, ForceMode.Force);
+		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
+	}
+
+	private void ApplyFriction() {
+		if (rb.linearVelocity.magnitude <= 0) return;
+
+		Vector3 frictionForce = -rb.linearVelocity.normalized * drag;
+		rb.AddForce(frictionForce, ForceMode.Acceleration);
+		if (Vector3.Dot(rb.linearVelocity, frictionForce) >= 0) rb.linearVelocity = Vector3.zero;
 	}
 
 	void Update() {
