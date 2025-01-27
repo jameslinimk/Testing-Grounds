@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 mv;
 	private Vector3 lastMV;
+	private SphereCollider sphereCollider;
+	private bool isGrounded;
 
 	[Header("Movement Settings")]
 	public float speed;
@@ -53,7 +55,9 @@ public class PlayerController : MonoBehaviour {
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
-		SetScoreText();
+		sphereCollider = GetComponent<SphereCollider>();
+		UpdateScoreText();
+		UpdateDashUI();
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -113,18 +117,26 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void Update() {
-		SetDashUI();
+		UpdateDashUI();
+		UpdateGrounded();
+	}
+
+	private void UpdateGrounded() {
+		float sphereRadius = sphereCollider.radius * transform.localScale.y;
+		isGrounded = Physics.Raycast(transform.position, Vector3.down, sphereRadius + 0.1f);
+
+		Debug.Log(isGrounded);
 	}
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
 			score += 1;
-			SetScoreText();
+			UpdateScoreText();
 			Destroy(other.gameObject);
 		}
 	}
 
-	private void SetDashUI() {
+	private void UpdateDashUI() {
 		float ratio = Mathf.Clamp01(1 - (Time.time - dashStart - dashDuration) / dashCooldown);
 		dashCDImage.fillAmount = ratio;
 
@@ -138,7 +150,7 @@ public class PlayerController : MonoBehaviour {
 		dashCDText.alpha = dashCDfader.Update(dashCDText.alpha);
 	}
 
-	private void SetScoreText() {
+	private void UpdateScoreText() {
 		scoreText.text = $"Score: {score}";
 	}
 }

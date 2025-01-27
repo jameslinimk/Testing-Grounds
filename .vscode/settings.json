@@ -57,5 +57,5 @@
         "Temp/": true
     },
     "dotnet.defaultSolution": "Testing Grounds.sln",
-    "cSpell.words": ["Behaviour","cooldown","Lerp","Mathf","Rigidbody","Roguelike","UGUI"]
+    "cSpell.words": ["Behaviour", "cooldown", "Lerp", "Mathf", "Rigidbody", "Roguelike", "UGUI"]
 }
