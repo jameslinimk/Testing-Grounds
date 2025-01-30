@@ -109,7 +109,10 @@ public class PlayerController : MonoBehaviour {
 		rb.AddForce(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
 
-		Debug.Log(rb.linearVelocity.magnitude);
+		// Debug.Log(rb.linearVelocity.magnitude);
+
+		// FIXME: when player collides with wall, player "jumps"
+		// FIXME: speed slightly above maxSpeed
 	}
 
 	private void ApplyFriction() {
@@ -124,8 +127,6 @@ public class PlayerController : MonoBehaviour {
 	private void UpdateGrounded() {
 		float sphereRadius = sphereCollider.radius * transform.localScale.y;
 		isGrounded = Physics.Raycast(transform.position, Vector3.down, sphereRadius + 0.1f);
-
-		Debug.Log(isGrounded);
 	}
 
 	void OnTriggerEnter(Collider other) {
