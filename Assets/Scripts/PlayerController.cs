@@ -30,6 +30,12 @@ public class PlayerController : MonoBehaviour {
 	private SphereCollider sphereCollider;
 	private bool isGrounded;
 
+	[Header("Health Settings")]
+	public int maxHealth;
+	public int health;
+	public TextMeshProUGUI healthText;
+	public TextMeshProUGUI endText;
+
 	[Header("Movement Settings")]
 	public float speed;
 	public float maxSpeed;
@@ -56,8 +62,11 @@ public class PlayerController : MonoBehaviour {
 	void Start() {
 		rb = GetComponent<Rigidbody>();
 		sphereCollider = GetComponent<SphereCollider>();
+		health = maxHealth;
+
 		UpdateScoreText();
 		UpdateDashUI();
+		UpdateHealthText();
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -68,6 +77,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnJump() {
+		if (PauseManager.Instance.IsPaused) return;
 		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
 		dashCDfader.target = 1f;
 
@@ -153,5 +163,24 @@ public class PlayerController : MonoBehaviour {
 
 	private void UpdateScoreText() {
 		scoreText.text = $"Score: {score}";
+	}
+
+	private void UpdateHealthText() {
+		healthText.text = $"Health: {health}";
+
+	}
+
+	public void TakeDamage(int damage, Vector3 hitOrigin) {
+		health -= damage;
+		rb.AddForce((transform.position - hitOrigin).normalized * 10, ForceMode.Impulse);
+		UpdateHealthText();
+
+		if (health <= 0) Die();
+	}
+
+	private void Die() {
+		endText.text = $"You died with a score of {score}!";
+		endText.gameObject.SetActive(true);
+		PauseManager.Instance.SetPause(true);
 	}
 }
