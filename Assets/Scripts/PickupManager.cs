@@ -3,7 +3,6 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider))]
 public class PickupManager : MonoBehaviour {
 	public GameObject pickupPrefab;
-	public GameObject pickupParent;
 	private BoxCollider spawnArea;
 
 	private float lastSpawn = -Mathf.Infinity;
@@ -17,7 +16,7 @@ public class PickupManager : MonoBehaviour {
 		if (Time.time - lastSpawn < spawnCooldown) return;
 		lastSpawn = Time.time;
 
-		Instantiate(pickupPrefab, GetRandomPosition(), Quaternion.identity, pickupParent.transform);
+		Instantiate(pickupPrefab, GetRandomPosition(), Quaternion.identity, transform);
 	}
 
 	private Vector3 GetRandomPosition() {

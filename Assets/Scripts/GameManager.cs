@@ -1,10 +1,11 @@
 using UnityEngine;
 
-public class PauseManager : MonoBehaviour {
-	public static PauseManager Instance { get; private set; }
+public class GameManager : MonoBehaviour {
+	public static GameManager Instance { get; private set; }
 	public bool IsPaused { get; private set; } = false;
+	public PlayerController Player { get; private set; }
 
-	private void Awake() {
+	void Awake() {
 		if (Instance != null && Instance != this) {
 			Destroy(gameObject);
 			return;
@@ -17,5 +18,9 @@ public class PauseManager : MonoBehaviour {
 	public void SetPause(bool pause) {
 		IsPaused = pause;
 		Time.timeScale = pause ? 0 : 1;
+	}
+
+	public void SetPlayer(PlayerController player) {
+		Player = player;
 	}
 }

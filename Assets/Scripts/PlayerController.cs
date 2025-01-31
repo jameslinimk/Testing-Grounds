@@ -67,6 +67,8 @@ public class PlayerController : MonoBehaviour {
 		UpdateScoreText();
 		UpdateDashUI();
 		UpdateHealthText();
+
+		GameManager.Instance.SetPlayer(this);
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -77,7 +79,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnJump() {
-		if (PauseManager.Instance.IsPaused) return;
+		if (GameManager.Instance.IsPaused) return;
 		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
 		dashCDfader.target = 1f;
 
@@ -178,9 +180,9 @@ public class PlayerController : MonoBehaviour {
 		if (health <= 0) Die();
 	}
 
-	private void Die() {
+	public void Die() {
 		endText.text = $"You died with a score of {score}!";
 		endText.gameObject.SetActive(true);
-		PauseManager.Instance.SetPause(true);
+		GameManager.Instance.SetPause(true);
 	}
 }

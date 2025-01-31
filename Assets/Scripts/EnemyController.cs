@@ -7,6 +7,7 @@ public class EnemyMovement : MonoBehaviour {
 	public Transform player;
 	private NavMeshAgent navMeshAgent;
 
+	private float lastHit = -Mathf.Infinity;
 	public float hitCooldown;
 
 	private bool touchingPlayer = false;
@@ -22,7 +23,11 @@ public class EnemyMovement : MonoBehaviour {
 
 	private IEnumerator DamageOverTime(PlayerController player) {
 		while (touchingPlayer) {
+			if (Time.time - lastHit < hitCooldown)
+				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
+
 			Debug.Log("ouch");
+			lastHit = Time.time;
 			player.TakeDamage(1, transform.position);
 			yield return new WaitForSeconds(hitCooldown);
 		}
