@@ -7,10 +7,8 @@ public class CameraController : MonoBehaviour {
 
 	public float sensitivity = 0.05f;
 
-	[HideInInspector]
-	public float yaw = 0f;
-	[HideInInspector]
-	public float pitch = 0f;
+	private float yaw = 0f;
+	private float pitch = 0f;
 	private Vector2 lookInput;
 
 	public float minPitch = -30f;

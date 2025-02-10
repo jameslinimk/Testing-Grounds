@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
-[System.Serializable]
+[Serializable]
 public class Fader {
 	[HideInInspector]
 	public float target = 1;
@@ -44,15 +44,13 @@ public class PlayerController : MonoBehaviour {
 	public float deceleration = 4f;
 	public CameraController cameraController;
 
-	[Header("Sprint Settings")]
-	public float sprintSpeed = 12f;
-	public float sprintCooldown = 1f;
+	[Header("Stamina Settings")]
 	public float staminaRegenCooldown = 1f;
 	public float maxStamina = 5f;
 	public float staminaRegen = 1f;
-	public float sprintStaminaCost = 1f;
 
-	private bool sprinting = false;
+	private float lastStaminaDrain = -Mathf.Infinity;
+
 	private float _stamina = 5f;
 	private float Stamina {
 		get => _stamina;
@@ -61,22 +59,30 @@ public class PlayerController : MonoBehaviour {
 			_stamina = Math.Clamp(value, 0, maxStamina);
 		}
 	}
-	private float sprintEnd = -Mathf.Infinity;
-	private float lastStaminaDrain = -Mathf.Infinity;
 
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
+
+	[Header("Sprint Settings")]
+	public float sprintSpeed = 12f;
+	public float sprintCooldown = 0.25f;
+	public float sprintStaminaCost = 1f;
+
+	private bool sprinting = false;
+	private float sprintEnd = -Mathf.Infinity;
+
 	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0;
 
 	[Header("Dash Settings")]
 	public float dashCooldown = 1f;
 	public float dashDuration = 0.2f;
 	public float dashSpeed = 150f;
+	public float dashStaminaCost = 0.5f;
 
 	private Vector3 dashDirection;
 	private float dashStart = -Mathf.Infinity;
 
 	private bool IsDashing => Time.time - dashStart < dashDuration;
-	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown;
+	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost;
 
 	[Header("Score UI")]
 	public TextMeshProUGUI scoreText;
@@ -86,6 +92,11 @@ public class PlayerController : MonoBehaviour {
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
 	public Fader dashFader = new(1, 3.5f);
+
+	[Header("Stamina UI")]
+	private float staminaBarWidth = 0f;
+	public Image staminaBarOverlay;
+	public Fader staminaBarFader = new(1, 2f);
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
@@ -108,10 +119,10 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnDash() {
-		if (GameManager.Instance.IsPaused) return;
-		if (!CanDash) return;
+		if (GameManager.Instance.IsPaused || !CanDash) return;
 		dashFader.target = 1f;
 
+		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
 		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
 	}
@@ -124,19 +135,13 @@ public class PlayerController : MonoBehaviour {
 
 		float maxSpeed = walkSpeed;
 		if (sprintAction.IsPressed() && CanSprint) {
-			Debug.Log("sprinting");
-
 			maxSpeed = sprintSpeed;
 			Stamina -= Time.deltaTime * sprintStaminaCost;
 			sprinting = true;
 		} else if (sprinting) {
-			Debug.Log("end_sprint");
-
 			sprinting = false;
 			sprintEnd = Time.time;
 		} else if (CanRegen) {
-			Debug.Log("regen");
-
 			Stamina += Time.deltaTime * staminaRegen;
 		}
 
@@ -168,22 +173,21 @@ public class PlayerController : MonoBehaviour {
 		rb.AddForce(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
 
-		// Debug.Log(rb.linearVelocity.magnitude);
-
 		// FIXME: when player collides with wall, player "jumps"
 		// FIXME: speed slightly above maxSpeed
 	}
 
-	private void ApplyFriction() {
+	void ApplyFriction() {
 		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
 	}
 
 	void Update() {
 		UpdateDashUI();
 		UpdateGrounded();
+		UpdateStaminaUI();
 	}
 
-	private void UpdateGrounded() {
+	void UpdateGrounded() {
 		float sphereRadius = sphereCollider.radius * transform.localScale.y;
 		isGrounded = Physics.Raycast(transform.position, Vector3.down, sphereRadius + 0.1f);
 	}
@@ -196,7 +200,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	private void UpdateDashUI() {
+	void UpdateDashUI() {
 		float ratio = Mathf.Clamp01(1 - (Time.time - dashStart - dashDuration) / dashCooldown);
 		dashCDImage.fillAmount = ratio;
 
@@ -210,13 +214,22 @@ public class PlayerController : MonoBehaviour {
 		dashCDText.alpha = dashFader.Update(dashCDText.alpha);
 	}
 
-	private void UpdateScoreText() {
+	void UpdateStaminaUI() {
+		if (staminaBarWidth == 0f) staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
+
+		float currentRatio = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
+		staminaBarFader.target = Stamina / maxStamina;
+		float ratio = staminaBarFader.Update(currentRatio);
+
+		staminaBarOverlay.rectTransform.sizeDelta = new Vector2(staminaBarWidth * ratio, staminaBarOverlay.rectTransform.rect.height);
+	}
+
+	void UpdateScoreText() {
 		scoreText.text = $"Score: {score}";
 	}
 
-	private void UpdateHealthText() {
+	void UpdateHealthText() {
 		healthText.text = $"Health: {health}";
-
 	}
 
 	public void TakeDamage(int damage, Vector3 hitOrigin) {
