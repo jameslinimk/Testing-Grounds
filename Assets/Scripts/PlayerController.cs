@@ -31,20 +31,21 @@ public class PlayerController : MonoBehaviour {
 	private bool isGrounded;
 
 	[Header("Health Settings")]
-	public int maxHealth;
-	public int health;
+	public int maxHealth = 10;
+	public int health = 10;
 	public TextMeshProUGUI healthText;
 	public TextMeshProUGUI endText;
 
 	[Header("Movement Settings")]
-	public float speed;
-	public float maxSpeed;
-	public float deceleration;
+	public float speed = 50f;
+	public float maxSpeed = 7f;
+	public float deceleration = 4f;
+	public CameraController cameraController;
 
 	[Header("Dash Settings")]
-	public float dashCooldown;
-	public float dashDuration;
-	public float dashSpeed;
+	public float dashCooldown = 1f;
+	public float dashDuration = 0.2f;
+	public float dashSpeed = 150f;
 
 	private Vector3 dashDirection;
 	private float dashStart = -Mathf.Infinity;
@@ -57,7 +58,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Dash UI")]
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
-	public Fader dashCDfader = new(1, 3.5f);
+	public Fader dashFader = new(1, 3.5f);
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
@@ -67,8 +68,6 @@ public class PlayerController : MonoBehaviour {
 		UpdateScoreText();
 		UpdateDashUI();
 		UpdateHealthText();
-
-		GameManager.Instance.SetPlayer(this);
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -78,13 +77,12 @@ public class PlayerController : MonoBehaviour {
 		if (mv != Vector3.zero) lastMV = mv;
 	}
 
-	void OnJump() {
-		if (GameManager.Instance.IsPaused) return;
+	void OnDash() {
 		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
-		dashCDfader.target = 1f;
+		dashFader.target = 1f;
 
 		dashStart = Time.time;
-		dashDirection = mv == Vector3.zero ? lastMV : mv;
+		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
 	}
 
 	void FixedUpdate() {
@@ -102,13 +100,13 @@ public class PlayerController : MonoBehaviour {
 			rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 		}
 
+		Vector3 v1 = rb.linearVelocity;
+		Vector3 v2 = cameraController.TransformMovement(mv * speed);
+
 		if (rb.linearVelocity.magnitude < maxSpeed) {
-			rb.AddForce(mv * speed, ForceMode.Force);
+			rb.AddForce(v2, ForceMode.Force);
 			return;
 		}
-
-		Vector3 v1 = rb.linearVelocity;
-		Vector3 v2 = mv * speed;
 
 		Vector3 vParallel = Vector3.Project(v2, v1);
 		Vector3 vPerp = v2 - vParallel;
@@ -155,12 +153,12 @@ public class PlayerController : MonoBehaviour {
 
 		float secondsLeft = Mathf.Clamp(dashCooldown - (Time.time - dashStart - dashDuration), 0f, dashCooldown);
 		if (secondsLeft == 0f && dashCDText.alpha == 1f) {
-			dashCDfader.target = 0f;
+			dashFader.target = 0f;
 		} else {
 			dashCDText.text = $"{secondsLeft:0.0}s";
 		}
 
-		dashCDText.alpha = dashCDfader.Update(dashCDText.alpha);
+		dashCDText.alpha = dashFader.Update(dashCDText.alpha);
 	}
 
 	private void UpdateScoreText() {

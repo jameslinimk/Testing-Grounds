@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour {
-	public static GameManager Instance { get; private set; }
 	public bool IsPaused { get; private set; } = false;
-	public PlayerController Player { get; private set; }
+	public PlayerInput playerInput;
+	private InputAction pauseAction;
 
+	public static GameManager Instance { get; private set; }
 	void Awake() {
 		if (Instance != null && Instance != this) {
 			Destroy(gameObject);
@@ -15,12 +17,19 @@ public class GameManager : MonoBehaviour {
 		DontDestroyOnLoad(gameObject);
 	}
 
+	void Start() {
+		pauseAction = playerInput.actions.FindAction("Pause");
+		pauseAction.performed += _ => SetPause(!IsPaused);
+	}
+
 	public void SetPause(bool pause) {
 		IsPaused = pause;
 		Time.timeScale = pause ? 0 : 1;
-	}
 
-	public void SetPlayer(PlayerController player) {
-		Player = player;
+		if (pause) {
+			playerInput.SwitchCurrentActionMap("UI");
+		} else {
+			playerInput.SwitchCurrentActionMap("Player");
+		}
 	}
 }
