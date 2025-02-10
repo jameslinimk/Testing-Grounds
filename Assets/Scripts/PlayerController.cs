@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
+using System;
 
 [System.Serializable]
 public class Fader {
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 mv;
 	private Vector3 lastMV;
 	private SphereCollider sphereCollider;
+	private InputAction sprintAction;
 	private bool isGrounded;
 
 	[Header("Health Settings")]
@@ -38,9 +40,32 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Movement Settings")]
 	public float speed = 50f;
-	public float maxSpeed = 7f;
+	public float walkSpeed = 7f;
 	public float deceleration = 4f;
 	public CameraController cameraController;
+
+	[Header("Sprint Settings")]
+	public float sprintSpeed = 12f;
+	public float sprintCooldown = 1f;
+	public float staminaRegenCooldown = 1f;
+	public float maxStamina = 5f;
+	public float staminaRegen = 1f;
+	public float sprintStaminaCost = 1f;
+
+	private bool sprinting = false;
+	private float _stamina = 5f;
+	private float Stamina {
+		get => _stamina;
+		set {
+			if (value < _stamina) lastStaminaDrain = Time.time;
+			_stamina = Math.Clamp(value, 0, maxStamina);
+		}
+	}
+	private float sprintEnd = -Mathf.Infinity;
+	private float lastStaminaDrain = -Mathf.Infinity;
+
+	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0;
 
 	[Header("Dash Settings")]
 	public float dashCooldown = 1f;
@@ -49,7 +74,9 @@ public class PlayerController : MonoBehaviour {
 
 	private Vector3 dashDirection;
 	private float dashStart = -Mathf.Infinity;
+
 	private bool IsDashing => Time.time - dashStart < dashDuration;
+	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown;
 
 	[Header("Score UI")]
 	public TextMeshProUGUI scoreText;
@@ -68,9 +95,12 @@ public class PlayerController : MonoBehaviour {
 		UpdateScoreText();
 		UpdateDashUI();
 		UpdateHealthText();
+
+		sprintAction = InputSystem.actions.FindAction("Sprint");
 	}
 
 	void OnMove(InputValue inputValue) {
+		if (GameManager.Instance.IsPaused) return;
 		Vector2 inputVector = inputValue.Get<Vector2>();
 		mv = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
@@ -78,7 +108,8 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnDash() {
-		if (Time.time - (dashStart + dashDuration) < dashCooldown) return;
+		if (GameManager.Instance.IsPaused) return;
+		if (!CanDash) return;
 		dashFader.target = 1f;
 
 		dashStart = Time.time;
@@ -89,6 +120,24 @@ public class PlayerController : MonoBehaviour {
 		if (IsDashing) {
 			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
 			return;
+		}
+
+		float maxSpeed = walkSpeed;
+		if (sprintAction.IsPressed() && CanSprint) {
+			Debug.Log("sprinting");
+
+			maxSpeed = sprintSpeed;
+			Stamina -= Time.deltaTime * sprintStaminaCost;
+			sprinting = true;
+		} else if (sprinting) {
+			Debug.Log("end_sprint");
+
+			sprinting = false;
+			sprintEnd = Time.time;
+		} else if (CanRegen) {
+			Debug.Log("regen");
+
+			Stamina += Time.deltaTime * staminaRegen;
 		}
 
 		if (mv == Vector3.zero) {

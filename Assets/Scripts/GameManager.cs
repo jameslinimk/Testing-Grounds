@@ -23,13 +23,16 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void SetPause(bool pause) {
+		Debug.Log($"Game {(pause ? "paused" : "unpaused")}");
 		IsPaused = pause;
 		Time.timeScale = pause ? 0 : 1;
 
 		if (pause) {
-			playerInput.SwitchCurrentActionMap("UI");
+			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
 		} else {
-			playerInput.SwitchCurrentActionMap("Player");
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
 		}
 	}
 }

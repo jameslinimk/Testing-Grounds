@@ -5,8 +5,7 @@ public class CameraController : MonoBehaviour {
 	public Transform player;
 	private Vector3 offset;
 
-	public float sensitivity = 0.1f;
-	public float deceleration = 6f;
+	public float sensitivity = 0.05f;
 
 	[HideInInspector]
 	public float yaw = 0f;
@@ -18,21 +17,23 @@ public class CameraController : MonoBehaviour {
 	public float maxPitch = 60f;
 
 	private InputAction lookAction;
+	private InputAction freelookAction;
 
 	void Start() {
 		offset = transform.position - player.position;
 
-		// yaw = Mathf.Atan2(offset.x, offset.z) * Mathf.Rad2Deg;
-		// pitch = Mathf.Asin(offset.y / offset.magnitude) * Mathf.Rad2Deg;
+		yaw = transform.rotation.eulerAngles.y;
+		pitch = transform.rotation.eulerAngles.x;
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 
 		lookAction = InputSystem.actions.FindAction("Look");
+		freelookAction = InputSystem.actions.FindAction("Freelook");
 	}
 
 	void LateUpdate() {
-		lookInput = !GameManager.Instance.IsPaused ? lookAction.ReadValue<Vector2>() : Vector2.zero;
+		lookInput = (!GameManager.Instance.IsPaused && !freelookAction.IsPressed()) ? lookAction.ReadValue<Vector2>() : Vector2.zero;
 
 		yaw += lookInput.x * sensitivity;
 		pitch -= lookInput.y * sensitivity;
