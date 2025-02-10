@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		float maxSpeed = walkSpeed;
-		if (sprintAction.IsPressed() && CanSprint) {
+		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			maxSpeed = sprintSpeed;
 			Stamina -= Time.deltaTime * sprintStaminaCost;
 			sprinting = true;
