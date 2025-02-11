@@ -26,7 +26,6 @@ public class EnemyMovement : MonoBehaviour {
 			if (Time.time - lastHit < hitCooldown)
 				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
 
-			Debug.Log("ouch");
 			lastHit = Time.time;
 			player.TakeDamage(1, transform.position);
 			yield return new WaitForSeconds(hitCooldown);

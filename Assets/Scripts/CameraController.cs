@@ -5,20 +5,27 @@ public class CameraController : MonoBehaviour {
 	public Transform player;
 	private Vector3 offset;
 
-	public float sensitivity = 0.05f;
+	public float sensitivity;
 
 	private float yaw = 0f;
 	private float pitch = 0f;
 	private Vector2 lookInput;
 
-	public float minPitch = -30f;
-	public float maxPitch = 60f;
+	public float minPitch;
+	public float maxPitch;
 
 	private InputAction lookAction;
 	private InputAction freelookAction;
 
 	private float lastYaw = 0f;
 	private float lastPitch = 0f;
+
+	[ContextMenu("Default Values")]
+	void DefaultValues() {
+		sensitivity = 0.1f;
+		minPitch = -30f;
+		maxPitch = 60f;
+	}
 
 	void Start() {
 		offset = transform.position - player.position;

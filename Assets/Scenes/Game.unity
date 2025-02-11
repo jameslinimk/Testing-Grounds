@@ -263,13 +263,7 @@ MonoBehaviour:
   scoreText: {fileID: 1383407305}
   dashCDText: {fileID: 245196183}
   dashCDImage: {fileID: 234113049}
-  dashFader:
-    target: 1
-    speed: 3.5
   staminaBarOverlay: {fileID: 1844984371}
-  staminaBarFader:
-    target: 1
-    speed: 2
 --- !u!114 &6446661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1520,7 +1514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 6446659}
-  sensitivity: 5
+  sensitivity: 0.1
   minPitch: -30
   maxPitch: 60
 --- !u!4 &1011901305 stripped

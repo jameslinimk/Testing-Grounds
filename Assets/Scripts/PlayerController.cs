@@ -4,25 +4,6 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
-[Serializable]
-public class Fader {
-	[HideInInspector]
-	public float target = 1;
-	public float speed;
-
-	public Fader(float target, float speed) {
-		this.target = target;
-		this.speed = speed;
-	}
-
-	/// <summary>
-	/// Returns new value for given value
-	/// </summary>
-	public float Update(float value) {
-		return Mathf.MoveTowards(value, target, speed * Time.deltaTime);
-	}
-}
-
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
@@ -33,21 +14,22 @@ public class PlayerController : MonoBehaviour {
 	private bool isGrounded;
 
 	[Header("Health Settings")]
-	public int maxHealth = 10;
-	public int health = 10;
+	public int maxHealth;
+	public int health;
 	public TextMeshProUGUI healthText;
 	public TextMeshProUGUI endText;
 
 	[Header("Movement Settings")]
-	public float speed = 50f;
-	public float walkSpeed = 7f;
-	public float deceleration = 4f;
+	public float speed;
+	public float walkSpeed;
+	public float deceleration;
+	public float jumpForce;
 	public CameraController cameraController;
 
 	[Header("Stamina Settings")]
-	public float staminaRegenCooldown = 1f;
-	public float maxStamina = 5f;
-	public float staminaRegen = 1f;
+	public float staminaRegenCooldown;
+	public float maxStamina;
+	public float staminaRegen;
 
 	private float lastStaminaDrain = -Mathf.Infinity;
 
@@ -56,16 +38,16 @@ public class PlayerController : MonoBehaviour {
 		get => _stamina;
 		set {
 			if (value < _stamina) lastStaminaDrain = Time.time;
-			_stamina = Math.Clamp(value, 0, maxStamina);
+			_stamina = Math.Clamp(value, 0f, maxStamina);
 		}
 	}
 
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
 	[Header("Sprint Settings")]
-	public float sprintSpeed = 12f;
-	public float sprintCooldown = 0.25f;
-	public float sprintStaminaCost = 1f;
+	public float sprintSpeed;
+	public float sprintCooldown;
+	public float sprintStaminaCost;
 
 	private bool sprinting = false;
 	private float sprintEnd = -Mathf.Infinity;
@@ -73,10 +55,10 @@ public class PlayerController : MonoBehaviour {
 	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0;
 
 	[Header("Dash Settings")]
-	public float dashCooldown = 1f;
-	public float dashDuration = 0.2f;
-	public float dashSpeed = 150f;
-	public float dashStaminaCost = 0.5f;
+	public float dashCooldown;
+	public float dashDuration;
+	public float dashSpeed;
+	public float dashStaminaCost;
 
 	private Vector3 dashDirection;
 	private float dashStart = -Mathf.Infinity;
@@ -91,12 +73,31 @@ public class PlayerController : MonoBehaviour {
 	[Header("Dash UI")]
 	public TextMeshProUGUI dashCDText;
 	public Image dashCDImage;
-	public Fader dashFader = new(1, 3.5f);
+	private float dashCDImageAlphaTarget = 1f;
 
 	[Header("Stamina UI")]
 	private float staminaBarWidth = 0f;
 	public Image staminaBarOverlay;
-	public Fader staminaBarFader = new(1, 2f);
+
+	[ContextMenu("Default Values")]
+	void DefaultValues() {
+		maxHealth = 10;
+		health = 10;
+		speed = 50f;
+		walkSpeed = 7f;
+		deceleration = 4f;
+		jumpForce = 15f;
+		staminaRegenCooldown = 1f;
+		maxStamina = 5f;
+		staminaRegen = 1f;
+		sprintSpeed = 12f;
+		sprintCooldown = 0.25f;
+		sprintStaminaCost = 1f;
+		dashCooldown = 1f;
+		dashDuration = 0.2f;
+		dashSpeed = 150f;
+		dashStaminaCost = 0.5f;
+	}
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
@@ -120,11 +121,18 @@ public class PlayerController : MonoBehaviour {
 
 	void OnDash() {
 		if (GameManager.Instance.IsPaused || !CanDash) return;
-		dashFader.target = 1f;
+		dashCDImageAlphaTarget = 1f;
 
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
 		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
+	}
+
+	void OnJump() {
+		Debug.Log("Jumping");
+
+		if (GameManager.Instance.IsPaused || !isGrounded) return;
+		rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 	}
 
 	void FixedUpdate() {
@@ -205,22 +213,22 @@ public class PlayerController : MonoBehaviour {
 		dashCDImage.fillAmount = ratio;
 
 		float secondsLeft = Mathf.Clamp(dashCooldown - (Time.time - dashStart - dashDuration), 0f, dashCooldown);
-		if (secondsLeft == 0f && dashCDText.alpha == 1f) {
-			dashFader.target = 0f;
+		if (secondsLeft == 0f) {
+			dashCDImageAlphaTarget = 0f;
 		} else {
 			dashCDText.text = $"{secondsLeft:0.0}s";
 		}
 
-		dashCDText.alpha = dashFader.Update(dashCDText.alpha);
+		dashCDText.alpha = Utils.EaseTowards(dashCDText.alpha, dashCDImageAlphaTarget, 5f, 2f);
 	}
 
 	void UpdateStaminaUI() {
 		if (staminaBarWidth == 0f) staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
 
-		float currentRatio = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
-		staminaBarFader.target = Stamina / maxStamina;
-		float ratio = staminaBarFader.Update(currentRatio);
+		float current = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
+		float target = Stamina / maxStamina;
 
+		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
 		staminaBarOverlay.rectTransform.sizeDelta = new Vector2(staminaBarWidth * ratio, staminaBarOverlay.rectTransform.rect.height);
 	}
 

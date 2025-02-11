@@ -23,7 +23,6 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void SetPause(bool pause) {
-		Debug.Log($"Game {(pause ? "paused" : "unpaused")}");
 		IsPaused = pause;
 		Time.timeScale = pause ? 0 : 1;
 
