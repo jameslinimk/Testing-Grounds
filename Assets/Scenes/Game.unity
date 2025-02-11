@@ -242,6 +242,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b8e54a922da0894c839afa8176e2933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraController: {fileID: 961739754}
   maxHealth: 10
   health: 10
   healthText: {fileID: 1881437341}
@@ -249,10 +250,13 @@ MonoBehaviour:
   speed: 50
   walkSpeed: 7
   deceleration: 4
-  cameraController: {fileID: 961739754}
   staminaRegenCooldown: 1
   maxStamina: 5
   staminaRegen: 1
+  jumpForce: 12.5
+  jumpStaminaCost: 0.25
+  fallMultiplier: 10
+  lowJumpMultiplier: 8
   sprintSpeed: 12
   sprintCooldown: 0.25
   sprintStaminaCost: 1
@@ -1628,6 +1632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 254d1bddbc87c4945ac093d9484dcf23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CanUnpause: 1
   playerInput: {fileID: 6446661}
 --- !u!4 &1336348083 stripped
 Transform:
@@ -1649,7 +1654,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1364666732
 Transform:
   m_ObjectHideFlags: 0

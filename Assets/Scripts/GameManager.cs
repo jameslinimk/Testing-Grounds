@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour {
 	public bool IsPaused { get; private set; } = false;
+	[HideInInspector]
+	public bool CanUnpause = true;
 	public PlayerInput playerInput;
 	private InputAction pauseAction;
 
@@ -19,10 +21,11 @@ public class GameManager : MonoBehaviour {
 
 	void Start() {
 		pauseAction = playerInput.actions.FindAction("Pause");
-		pauseAction.performed += _ => SetPause(!IsPaused);
+		pauseAction.performed += _ => { if (CanUnpause) SetPause(!IsPaused); };
 	}
 
-	public void SetPause(bool pause) {
+	public void SetPause(bool pause, bool canUnpause = true) {
+		CanUnpause = canUnpause;
 		IsPaused = pause;
 		Time.timeScale = pause ? 0 : 1;
 

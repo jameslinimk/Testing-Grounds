@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
 public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 mv;
@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour {
 	private SphereCollider sphereCollider;
 	private InputAction sprintAction;
 	private bool isGrounded;
+
+	public CameraController cameraController;
 
 	[Header("Health Settings")]
 	public int maxHealth;
@@ -23,8 +25,6 @@ public class PlayerController : MonoBehaviour {
 	public float speed;
 	public float walkSpeed;
 	public float deceleration;
-	public float jumpForce;
-	public CameraController cameraController;
 
 	[Header("Stamina Settings")]
 	public float staminaRegenCooldown;
@@ -43,6 +43,15 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
+
+	[Header("Jump Settings")]
+	public float jumpForce;
+	public float jumpStaminaCost;
+	public float fallMultiplier;
+	public float lowJumpMultiplier;
+	private InputAction jumpAction;
+
+	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
 
 	[Header("Sprint Settings")]
 	public float sprintSpeed;
@@ -83,16 +92,24 @@ public class PlayerController : MonoBehaviour {
 	void DefaultValues() {
 		maxHealth = 10;
 		health = 10;
+
 		speed = 50f;
 		walkSpeed = 7f;
 		deceleration = 4f;
-		jumpForce = 15f;
+
 		staminaRegenCooldown = 1f;
 		maxStamina = 5f;
 		staminaRegen = 1f;
+
+		jumpForce = 12.5f;
+		jumpStaminaCost = 0.25f;
+		fallMultiplier = 2.5f;
+		lowJumpMultiplier = 2f;
+
 		sprintSpeed = 12f;
 		sprintCooldown = 0.25f;
 		sprintStaminaCost = 1f;
+
 		dashCooldown = 1f;
 		dashDuration = 0.2f;
 		dashSpeed = 150f;
@@ -108,6 +125,7 @@ public class PlayerController : MonoBehaviour {
 		UpdateDashUI();
 		UpdateHealthText();
 
+		jumpAction = InputSystem.actions.FindAction("Jump");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
 	}
 
@@ -129,13 +147,21 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnJump() {
-		Debug.Log("Jumping");
+		if (GameManager.Instance.IsPaused || !CanJump) return;
 
-		if (GameManager.Instance.IsPaused || !isGrounded) return;
+		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 	}
 
 	void FixedUpdate() {
+		if (rb.linearVelocity.y < 0) {
+			rb.AddForce((fallMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
+		}
+
+		if (rb.linearVelocity.y > 0 && !jumpAction.IsPressed()) {
+			rb.AddForce((lowJumpMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
+		}
+
 		if (IsDashing) {
 			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
 			return;
@@ -251,6 +277,6 @@ public class PlayerController : MonoBehaviour {
 	public void Die() {
 		endText.text = $"You died with a score of {score}!";
 		endText.gameObject.SetActive(true);
-		GameManager.Instance.SetPause(true);
+		GameManager.Instance.SetPause(true, false);
 	}
 }
