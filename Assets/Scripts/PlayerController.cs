@@ -16,14 +16,13 @@ public class PlayerController : MonoBehaviour {
 	public CameraController cameraController;
 
 	[Header("Health Settings")]
-	public int maxHealth;
-	public int health;
-	public TextMeshProUGUI healthText;
+	public float maxHealth;
+	public float health;
 	public TextMeshProUGUI endText;
 
 	[Header("Movement Settings")]
 	public float speed;
-	public float walkSpeed;
+	public float maxWalkSpeed;
 	public float deceleration;
 
 	[Header("Stamina Settings")]
@@ -55,7 +54,7 @@ public class PlayerController : MonoBehaviour {
 	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
 
 	[Header("Sprint Settings")]
-	public float sprintSpeed;
+	public float maxSprintSpeed;
 	public float sprintCooldown;
 	public float sprintStaminaCost;
 
@@ -91,7 +90,7 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Health UI")]
 	private float healthBarWidth = 0f;
-	private Color barHealthyColor;
+	private Color? barHealthyColor = null;
 	public Image healthBarOverlay;
 	public Color barDamagedColor;
 
@@ -101,7 +100,7 @@ public class PlayerController : MonoBehaviour {
 		health = 10;
 
 		speed = 50f;
-		walkSpeed = 7f;
+		maxWalkSpeed = 7f;
 		deceleration = 4f;
 
 		staminaRegenCooldown = 1f;
@@ -114,7 +113,7 @@ public class PlayerController : MonoBehaviour {
 		fallMultiplier = 2.5f;
 		lowJumpMultiplier = 2f;
 
-		sprintSpeed = 12f;
+		maxSprintSpeed = 12f;
 		sprintCooldown = 0.25f;
 		sprintStaminaCost = 1f;
 
@@ -122,6 +121,8 @@ public class PlayerController : MonoBehaviour {
 		dashDuration = 0.2f;
 		dashSpeed = 150f;
 		dashStaminaCost = 0.5f;
+
+		barDamagedColor = Color.red;
 	}
 
 	void Start() {
@@ -175,9 +176,9 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		// Sprinting and Stamina
-		float maxSpeed = walkSpeed;
+		float maxSpeed = maxWalkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
-			maxSpeed = sprintSpeed;
+			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
 			sprinting = true;
 		} else if (sprinting) {
@@ -275,13 +276,9 @@ public class PlayerController : MonoBehaviour {
 		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
 		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
 
-		// TODO fix color
+		// Bar color
 		if (barHealthyColor == null) barHealthyColor = healthBarOverlay.color;
-
-		Debug.Log(ratio);
-		Color colorTarget = Color.Lerp(barDamagedColor, barHealthyColor, ratio);
-		// healthBarOverlay.color = Utils.ColorEaseTowards(healthBarOverlay.color, colorTarget, 20f, 100f);
-		healthBarOverlay.color = colorTarget;
+		healthBarOverlay.color = Color.Lerp(barDamagedColor, (Color)barHealthyColor, ratio); ;
 	}
 
 	void UpdateScoreText() {

@@ -16,22 +16,4 @@ public static class Utils {
 
 		return Mathf.MoveTowards(current, target, step);
 	}
-
-	public static Color ColorEaseTowards(Color current, Color target, float speed, float maxDistance) {
-		return new Color(
-			EaseTowards(current.r, target.r, speed, maxDistance),
-			EaseTowards(current.g, target.g, speed, maxDistance),
-			EaseTowards(current.b, target.b, speed, maxDistance),
-			EaseTowards(current.a, target.a, speed, maxDistance)
-		);
-	}
-
-	public static Color ColorEaseTowards(Color current, Color target, float speed, float maxDistance, Func<float, float> easingFunction) {
-		return new Color(
-			EaseTowards(current.r, target.r, speed, maxDistance, easingFunction),
-			EaseTowards(current.g, target.g, speed, maxDistance, easingFunction),
-			EaseTowards(current.b, target.b, speed, maxDistance, easingFunction),
-			EaseTowards(current.a, target.a, speed, maxDistance, easingFunction)
-		);
-	}
 }

@@ -1388,9 +1388,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1573727679}
-  sensitivity: 0.1
+  lookAtHeight: 1.5
+  sensitivity: 0.15
   minPitch: -30
   maxPitch: 60
+  maxFOV: 75
+  minFOV: 60
+  fovDeceleration: 5
 --- !u!4 &1011901305 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6634684426664001621, guid: bb2deeee7155a18419f4a92b8bec04a1, type: 3}
@@ -2059,20 +2063,19 @@ MonoBehaviour:
   cameraController: {fileID: 961739754}
   maxHealth: 10
   health: 10
-  healthText: {fileID: 0}
   endText: {fileID: 60392604}
   speed: 50
-  walkSpeed: 7
+  maxWalkSpeed: 7
   deceleration: 4
   staminaRegenCooldown: 1
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 20
+  jumpForce: 15
   jumpStaminaCost: 0.25
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
-  sprintSpeed: 12
+  maxSprintSpeed: 12
   sprintCooldown: 0.25
   sprintStaminaCost: 1
   dashCooldown: 1
@@ -2084,7 +2087,7 @@ MonoBehaviour:
   dashCDImage: {fileID: 234113049}
   staminaBarOverlay: {fileID: 1844984371}
   healthBarOverlay: {fileID: 1885632151}
-  barDamagedColor: {r: 0, g: 0, b: 0, a: 0}
+  barDamagedColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!54 &1573727681
 Rigidbody:
   m_ObjectHideFlags: 0
