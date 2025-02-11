@@ -4,12 +4,12 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
-[RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
+[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 mv;
 	private Vector3 lastMV;
-	private SphereCollider sphereCollider;
+	private CapsuleCollider capsuleCollider;
 	private InputAction sprintAction;
 	private bool isGrounded;
 
@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour {
 	public float staminaRegenCooldown;
 	public float maxStamina;
 	public float staminaRegen;
+	public float standingStaminaRegen;
 
 	private float lastStaminaDrain = -Mathf.Infinity;
 
@@ -88,6 +89,12 @@ public class PlayerController : MonoBehaviour {
 	private float staminaBarWidth = 0f;
 	public Image staminaBarOverlay;
 
+	[Header("Health UI")]
+	private float healthBarWidth = 0f;
+	private Color barHealthyColor;
+	public Image healthBarOverlay;
+	public Color barDamagedColor;
+
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
 		maxHealth = 10;
@@ -100,8 +107,9 @@ public class PlayerController : MonoBehaviour {
 		staminaRegenCooldown = 1f;
 		maxStamina = 5f;
 		staminaRegen = 1f;
+		standingStaminaRegen = 2f;
 
-		jumpForce = 12.5f;
+		jumpForce = 15f;
 		jumpStaminaCost = 0.25f;
 		fallMultiplier = 2.5f;
 		lowJumpMultiplier = 2f;
@@ -118,12 +126,11 @@ public class PlayerController : MonoBehaviour {
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
-		sphereCollider = GetComponent<SphereCollider>();
+		capsuleCollider = GetComponent<CapsuleCollider>();
 		health = maxHealth;
 
 		UpdateScoreText();
 		UpdateDashUI();
-		UpdateHealthText();
 
 		jumpAction = InputSystem.actions.FindAction("Jump");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
@@ -143,7 +150,7 @@ public class PlayerController : MonoBehaviour {
 
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
-		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
+		dashDirection = cameraController.TransformMovement(rb.linearVelocity == Vector3.zero ? lastMV : mv);
 	}
 
 	void OnJump() {
@@ -167,16 +174,17 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 
+		// Sprinting and Stamina
 		float maxSpeed = walkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			maxSpeed = sprintSpeed;
-			Stamina -= Time.deltaTime * sprintStaminaCost;
+			Stamina -= sprintStaminaCost * Time.deltaTime;
 			sprinting = true;
 		} else if (sprinting) {
 			sprinting = false;
 			sprintEnd = Time.time;
 		} else if (CanRegen) {
-			Stamina += Time.deltaTime * staminaRegen;
+			Stamina += (mv == Vector3.zero ? standingStaminaRegen : staminaRegen) * Time.deltaTime;
 		}
 
 		if (mv == Vector3.zero) {
@@ -219,11 +227,11 @@ public class PlayerController : MonoBehaviour {
 		UpdateDashUI();
 		UpdateGrounded();
 		UpdateStaminaUI();
+		UpdateHealthUI();
 	}
 
 	void UpdateGrounded() {
-		float sphereRadius = sphereCollider.radius * transform.localScale.y;
-		isGrounded = Physics.Raycast(transform.position, Vector3.down, sphereRadius + 0.1f);
+		isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f);
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -258,18 +266,31 @@ public class PlayerController : MonoBehaviour {
 		staminaBarOverlay.rectTransform.sizeDelta = new Vector2(staminaBarWidth * ratio, staminaBarOverlay.rectTransform.rect.height);
 	}
 
-	void UpdateScoreText() {
-		scoreText.text = $"Score: {score}";
+	void UpdateHealthUI() {
+		if (healthBarWidth == 0f) healthBarWidth = healthBarOverlay.rectTransform.rect.width;
+
+		float current = healthBarOverlay.rectTransform.rect.width / healthBarWidth;
+		float target = health / maxHealth;
+
+		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
+		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
+
+		// TODO fix color
+		if (barHealthyColor == null) barHealthyColor = healthBarOverlay.color;
+
+		Debug.Log(ratio);
+		Color colorTarget = Color.Lerp(barDamagedColor, barHealthyColor, ratio);
+		// healthBarOverlay.color = Utils.ColorEaseTowards(healthBarOverlay.color, colorTarget, 20f, 100f);
+		healthBarOverlay.color = colorTarget;
 	}
 
-	void UpdateHealthText() {
-		healthText.text = $"Health: {health}";
+	void UpdateScoreText() {
+		scoreText.text = $"Score: {score}";
 	}
 
 	public void TakeDamage(int damage, Vector3 hitOrigin) {
 		health -= damage;
 		rb.AddForce((transform.position - hitOrigin).normalized * 10, ForceMode.Impulse);
-		UpdateHealthText();
 
 		if (health <= 0) Die();
 	}
