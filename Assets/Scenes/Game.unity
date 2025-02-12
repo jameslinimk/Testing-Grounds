@@ -2225,6 +2225,8 @@ MonoBehaviour:
   jumpStaminaCost: 0.25
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
+  crouchHeightMultiplier: 2
+  maxCrouchSpeed: 5
   maxSprintSpeed: 12
   sprintCooldown: 0.25
   sprintStaminaCost: 1

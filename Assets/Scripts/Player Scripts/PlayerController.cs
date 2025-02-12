@@ -4,8 +4,16 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
+public enum PlayerState {
+	Idle,
+	Moving,
+	Sprinting,
+	Dashing,
+	Crouching
+}
+
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
-public class PlayerController : MonoBehaviour {
+public partial class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 mv;
 	private Vector3 lastMV;
@@ -16,6 +24,7 @@ public class PlayerController : MonoBehaviour {
 	private bool isGrounded;
 
 	public CameraController cameraController;
+	private PlayerState state = PlayerState.Idle;
 
 	[Header("Health Settings")]
 	public float maxHealth;
@@ -55,7 +64,9 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Crouch Settings")]
 	public float crouchHeightMultiplier;
+	public float maxCrouchSpeed;
 	private Vector3 originalScale;
+	float heightDifference;
 	private bool isCrouching = false;
 
 	[Header("Sprint Settings")]
@@ -66,7 +77,7 @@ public class PlayerController : MonoBehaviour {
 	private bool sprinting = false;
 	private float sprintEnd = -Mathf.Infinity;
 
-	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0;
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing;
 
 	[Header("Dash Settings")]
 	public float dashCooldown;
@@ -119,6 +130,7 @@ public class PlayerController : MonoBehaviour {
 		lowJumpMultiplier = 2f;
 
 		crouchHeightMultiplier = 2f;
+		maxCrouchSpeed = 4f;
 
 		maxSprintSpeed = 12f;
 		sprintCooldown = 0.25f;
@@ -137,6 +149,8 @@ public class PlayerController : MonoBehaviour {
 		capsuleCollider = GetComponent<CapsuleCollider>();
 		health = maxHealth;
 		originalScale = transform.localScale;
+		var h = 2 * originalScale.y;
+		heightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
 
 		UpdateScoreText();
 		UpdateDashUI();
@@ -167,28 +181,30 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnJump() {
+		// TODO Fix
+		Debug.Log($"Jump {CanJump}");
 		if (GameManager.Instance.IsPaused || !CanJump) return;
 
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 	}
 
-	//TODO fix
 	void OnCrouchPress(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused) return;
-		float heightDifference = (originalScale.y - (originalScale.y / crouchHeightMultiplier)) / 2f;
+		if (GameManager.Instance.IsPaused || isCrouching) return;
 		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
 		transform.position -= new Vector3(0, heightDifference, 0);
+		isCrouching = true;
 	}
 
 	void OnCrouchRelease(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused) return;
-		float heightDifference = (originalScale.y - (originalScale.y / crouchHeightMultiplier)) / 2f;
+		if (GameManager.Instance.IsPaused || !isCrouching) return;
 		transform.localScale = originalScale;
 		transform.position += new Vector3(0, heightDifference, 0);
+		isCrouching = false;
 	}
 
 	void FixedUpdate() {
+		/* --------------------------------- Falling -------------------------------- */
 		if (rb.linearVelocity.y < 0) {
 			rb.AddForce((fallMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
 		}
@@ -197,13 +213,14 @@ public class PlayerController : MonoBehaviour {
 			rb.AddForce((lowJumpMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
 		}
 
+		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) {
 			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
 			return;
 		}
 
-		// Sprinting and Stamina
-		float maxSpeed = maxWalkSpeed;
+		/* --------------------------- Sprinting + Stamina -------------------------- */
+		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
@@ -212,14 +229,16 @@ public class PlayerController : MonoBehaviour {
 			sprinting = false;
 			sprintEnd = Time.time;
 		} else if (CanRegen) {
-			Stamina += (mv == Vector3.zero ? standingStaminaRegen : staminaRegen) * Time.deltaTime;
+			Stamina += (rb.linearVelocity == Vector3.zero ? standingStaminaRegen : staminaRegen) * Time.deltaTime;
 		}
 
+		/* ---------------------------- General movement ---------------------------- */
 		if (mv == Vector3.zero) {
 			ApplyFriction();
 			return;
 		}
 
+		// If close to max speed set to max speed
 		if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
 			rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 		}
@@ -227,11 +246,13 @@ public class PlayerController : MonoBehaviour {
 		Vector3 v1 = rb.linearVelocity;
 		Vector3 v2 = cameraController.TransformMovement(mv * speed);
 
+		// Normal movement
 		if (rb.linearVelocity.magnitude < maxSpeed) {
 			rb.AddForce(v2, ForceMode.Force);
 			return;
 		}
 
+		// >Max speed movement
 		Vector3 vParallel = Vector3.Project(v2, v1);
 		Vector3 vPerp = v2 - vParallel;
 
@@ -242,9 +263,10 @@ public class PlayerController : MonoBehaviour {
 
 		rb.AddForce(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
-
-		// FIXME: when player collides with wall, player "jumps"
-		// FIXME: speed slightly above maxSpeed
+		/**
+		 FIXME: when player collides with wall, player "jumps"
+		 FIXME: speed slightly above maxSpeed
+		*/
 	}
 
 	void ApplyFriction() {
@@ -252,10 +274,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void Update() {
-		UpdateDashUI();
-		UpdateGrounded();
-		UpdateStaminaUI();
-		UpdateHealthUI();
+		UpdateUI();
 	}
 
 	void UpdateGrounded() {
@@ -268,48 +287,6 @@ public class PlayerController : MonoBehaviour {
 			UpdateScoreText();
 			Destroy(other.gameObject);
 		}
-	}
-
-	void UpdateDashUI() {
-		float ratio = Mathf.Clamp01(1 - (Time.time - dashStart - dashDuration) / dashCooldown);
-		dashCDImage.fillAmount = ratio;
-
-		float secondsLeft = Mathf.Clamp(dashCooldown - (Time.time - dashStart - dashDuration), 0f, dashCooldown);
-		if (secondsLeft == 0f) {
-			dashCDImageAlphaTarget = 0f;
-		} else {
-			dashCDText.text = $"{secondsLeft:0.0}s";
-		}
-
-		dashCDText.alpha = Utils.EaseTowards(dashCDText.alpha, dashCDImageAlphaTarget, 5f, 2f);
-	}
-
-	void UpdateStaminaUI() {
-		if (staminaBarWidth == 0f) staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
-
-		float current = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
-		float target = Stamina / maxStamina;
-
-		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
-		staminaBarOverlay.rectTransform.sizeDelta = new Vector2(staminaBarWidth * ratio, staminaBarOverlay.rectTransform.rect.height);
-	}
-
-	void UpdateHealthUI() {
-		if (healthBarWidth == 0f) healthBarWidth = healthBarOverlay.rectTransform.rect.width;
-
-		float current = healthBarOverlay.rectTransform.rect.width / healthBarWidth;
-		float target = health / maxHealth;
-
-		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
-		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
-
-		// Bar color
-		if (barHealthyColor == null) barHealthyColor = healthBarOverlay.color;
-		healthBarOverlay.color = Color.Lerp(barDamagedColor, (Color)barHealthyColor, ratio); ;
-	}
-
-	void UpdateScoreText() {
-		scoreText.text = $"Score: {score}";
 	}
 
 	public void TakeDamage(int damage, Vector3 hitOrigin) {
