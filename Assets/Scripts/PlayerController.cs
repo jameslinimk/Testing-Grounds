@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 lastMV;
 	private CapsuleCollider capsuleCollider;
 	private InputAction sprintAction;
+	private InputAction jumpAction;
+	private InputAction crouchAction;
 	private bool isGrounded;
 
 	public CameraController cameraController;
@@ -49,9 +51,12 @@ public class PlayerController : MonoBehaviour {
 	public float jumpStaminaCost;
 	public float fallMultiplier;
 	public float lowJumpMultiplier;
-	private InputAction jumpAction;
-
 	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
+
+	[Header("Crouch Settings")]
+	public float crouchHeightMultiplier;
+	private Vector3 originalScale;
+	private bool isCrouching = false;
 
 	[Header("Sprint Settings")]
 	public float maxSprintSpeed;
@@ -113,6 +118,8 @@ public class PlayerController : MonoBehaviour {
 		fallMultiplier = 2.5f;
 		lowJumpMultiplier = 2f;
 
+		crouchHeightMultiplier = 2f;
+
 		maxSprintSpeed = 12f;
 		sprintCooldown = 0.25f;
 		sprintStaminaCost = 1f;
@@ -129,12 +136,17 @@ public class PlayerController : MonoBehaviour {
 		rb = GetComponent<Rigidbody>();
 		capsuleCollider = GetComponent<CapsuleCollider>();
 		health = maxHealth;
+		originalScale = transform.localScale;
 
 		UpdateScoreText();
 		UpdateDashUI();
 
 		jumpAction = InputSystem.actions.FindAction("Jump");
+		crouchAction = InputSystem.actions.FindAction("Crouch");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
+
+		crouchAction.started += OnCrouchPress;
+		crouchAction.canceled += OnCrouchRelease;
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -159,6 +171,21 @@ public class PlayerController : MonoBehaviour {
 
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+	}
+
+	//TODO fix
+	void OnCrouchPress(InputAction.CallbackContext context) {
+		if (GameManager.Instance.IsPaused) return;
+		float heightDifference = (originalScale.y - (originalScale.y / crouchHeightMultiplier)) / 2f;
+		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
+		transform.position -= new Vector3(0, heightDifference, 0);
+	}
+
+	void OnCrouchRelease(InputAction.CallbackContext context) {
+		if (GameManager.Instance.IsPaused) return;
+		float heightDifference = (originalScale.y - (originalScale.y / crouchHeightMultiplier)) / 2f;
+		transform.localScale = originalScale;
+		transform.position += new Vector3(0, heightDifference, 0);
 	}
 
 	void FixedUpdate() {
