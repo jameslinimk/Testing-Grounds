@@ -108,7 +108,7 @@ public class PlayerController : MonoBehaviour {
 		staminaRegen = 1f;
 		standingStaminaRegen = 2f;
 
-		jumpForce = 15f;
+		jumpForce = 20f;
 		jumpStaminaCost = 0.25f;
 		fallMultiplier = 2.5f;
 		lowJumpMultiplier = 2f;
@@ -151,7 +151,7 @@ public class PlayerController : MonoBehaviour {
 
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
-		dashDirection = cameraController.TransformMovement(rb.linearVelocity == Vector3.zero ? lastMV : mv);
+		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
 	}
 
 	void OnJump() {
