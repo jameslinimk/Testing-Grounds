@@ -152,15 +152,15 @@ public partial class PlayerController : MonoBehaviour {
 		var h = 2 * originalScale.y;
 		heightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
 
-		UpdateScoreText();
-		UpdateDashUI();
-
 		jumpAction = InputSystem.actions.FindAction("Jump");
 		crouchAction = InputSystem.actions.FindAction("Crouch");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
 
 		crouchAction.started += OnCrouchPress;
 		crouchAction.canceled += OnCrouchRelease;
+
+		StartUI();
+		UpdateUI();
 	}
 
 	void OnMove(InputValue inputValue) {
@@ -181,8 +181,6 @@ public partial class PlayerController : MonoBehaviour {
 	}
 
 	void OnJump() {
-		// TODO Fix
-		Debug.Log($"Jump {CanJump}");
 		if (GameManager.Instance.IsPaused || !CanJump) return;
 
 		Stamina -= jumpStaminaCost;
@@ -275,6 +273,7 @@ public partial class PlayerController : MonoBehaviour {
 
 	void Update() {
 		UpdateUI();
+		UpdateGrounded();
 	}
 
 	void UpdateGrounded() {

@@ -7,6 +7,12 @@ public partial class PlayerController {
 		UpdateHealthUI();
 	}
 
+	void StartUI() {
+		barHealthyColor = healthBarOverlay.color;
+		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
+		healthBarWidth = healthBarOverlay.rectTransform.rect.width;
+	}
+
 	void UpdateDashUI() {
 		float ratio = Mathf.Clamp01(1 - (Time.time - dashStart - dashDuration) / dashCooldown);
 		dashCDImage.fillAmount = ratio;
@@ -22,8 +28,6 @@ public partial class PlayerController {
 	}
 
 	void UpdateStaminaUI() {
-		if (staminaBarWidth == 0f) staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
-
 		float current = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
 		float target = Stamina / maxStamina;
 
@@ -32,16 +36,11 @@ public partial class PlayerController {
 	}
 
 	void UpdateHealthUI() {
-		if (healthBarWidth == 0f) healthBarWidth = healthBarOverlay.rectTransform.rect.width;
-
 		float current = healthBarOverlay.rectTransform.rect.width / healthBarWidth;
 		float target = health / maxHealth;
 
 		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
 		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
-
-		// Bar color
-		if (barHealthyColor == null) barHealthyColor = healthBarOverlay.color;
 		healthBarOverlay.color = Color.Lerp(barDamagedColor, (Color)barHealthyColor, ratio); ;
 	}
 
