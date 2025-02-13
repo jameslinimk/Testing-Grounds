@@ -4,27 +4,20 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System;
 
-public enum PlayerState {
-	Idle,
-	Moving,
-	Sprinting,
-	Dashing,
-	Crouching
-}
-
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public partial class PlayerController : MonoBehaviour {
+	private CapsuleCollider capsuleCollider;
 	private Rigidbody rb;
+	private bool isGrounded;
+
 	private Vector3 mv;
 	private Vector3 lastMV;
-	private CapsuleCollider capsuleCollider;
+
 	private InputAction sprintAction;
 	private InputAction jumpAction;
 	private InputAction crouchAction;
-	private bool isGrounded;
 
 	public CameraController cameraController;
-	private PlayerState state = PlayerState.Idle;
 
 	[Header("Health Settings")]
 	public float maxHealth;
@@ -43,7 +36,6 @@ public partial class PlayerController : MonoBehaviour {
 	public float standingStaminaRegen;
 
 	private float lastStaminaDrain = -Mathf.Infinity;
-
 	private float _stamina = 5f;
 	private float Stamina {
 		get => _stamina;
@@ -106,7 +98,7 @@ public partial class PlayerController : MonoBehaviour {
 
 	[Header("Health UI")]
 	private float healthBarWidth = 0f;
-	private Color? barHealthyColor = null;
+	private Color barHealthyColor;
 	public Image healthBarOverlay;
 	public Color barDamagedColor;
 
