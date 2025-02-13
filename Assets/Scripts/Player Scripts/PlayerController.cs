@@ -1,14 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using TMPro;
 using System;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public partial class PlayerController : MonoBehaviour {
 	private CapsuleCollider capsuleCollider;
 	private Rigidbody rb;
-	private bool isGrounded;
 
 	private Vector3 mv;
 	private Vector3 lastMV;
@@ -19,15 +16,11 @@ public partial class PlayerController : MonoBehaviour {
 
 	public CameraController cameraController;
 
-	[Header("Health Settings")]
-	public float maxHealth;
-	public float health;
-	public TextMeshProUGUI endText;
-
 	[Header("Movement Settings")]
 	public float speed;
 	public float maxWalkSpeed;
 	public float deceleration;
+	private bool isGrounded = true;
 
 	[Header("Stamina Settings")]
 	public float staminaRegenCooldown;
@@ -83,29 +76,15 @@ public partial class PlayerController : MonoBehaviour {
 	private bool IsDashing => Time.time - dashStart < dashDuration;
 	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost;
 
-	[Header("Score UI")]
-	public TextMeshProUGUI scoreText;
-	private int score = 0;
-
-	[Header("Dash UI")]
-	public TextMeshProUGUI dashCDText;
-	public Image dashCDImage;
-	private float dashCDImageAlphaTarget = 1f;
-
-	[Header("Stamina UI")]
-	private float staminaBarWidth = 0f;
-	public Image staminaBarOverlay;
-
-	[Header("Health UI")]
-	private float healthBarWidth = 0f;
-	private Color barHealthyColor;
-	public Image healthBarOverlay;
-	public Color barDamagedColor;
+	[Header("Slope Settings")]
+	public float maxSlopeAngle;
+	private RaycastHit slopeHit;
+	private bool onSlope;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		maxHealth = 10;
-		health = 10;
+		DefaultHealthValues();
+		DefaultUIValues();
 
 		speed = 50f;
 		maxWalkSpeed = 7f;
@@ -133,28 +112,12 @@ public partial class PlayerController : MonoBehaviour {
 		dashSpeed = 150f;
 		dashStaminaCost = 0.5f;
 
-		barDamagedColor = Color.red;
+		maxSlopeAngle = 45f;
 	}
 
-	void Start() {
-		rb = GetComponent<Rigidbody>();
-		capsuleCollider = GetComponent<CapsuleCollider>();
-		health = maxHealth;
-		originalScale = transform.localScale;
-		var h = 2 * originalScale.y;
-		heightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
-
-		jumpAction = InputSystem.actions.FindAction("Jump");
-		crouchAction = InputSystem.actions.FindAction("Crouch");
-		sprintAction = InputSystem.actions.FindAction("Sprint");
-
-		crouchAction.started += OnCrouchPress;
-		crouchAction.canceled += OnCrouchRelease;
-
-		StartUI();
-		UpdateUI();
-	}
-
+	/* -------------------------------------------------------------------------- */
+	/*                                Input events                                */
+	/* -------------------------------------------------------------------------- */
 	void OnMove(InputValue inputValue) {
 		if (GameManager.Instance.IsPaused) return;
 		Vector2 inputVector = inputValue.Get<Vector2>();
@@ -193,6 +156,33 @@ public partial class PlayerController : MonoBehaviour {
 		isCrouching = false;
 	}
 
+	/* -------------------------------------------------------------------------- */
+	/*                                Unity events                                */
+	/* -------------------------------------------------------------------------- */
+	void Start() {
+		rb = GetComponent<Rigidbody>();
+		capsuleCollider = GetComponent<CapsuleCollider>();
+		health = maxHealth;
+		originalScale = transform.localScale;
+		var h = 2 * originalScale.y;
+		heightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
+
+		jumpAction = InputSystem.actions.FindAction("Jump");
+		crouchAction = InputSystem.actions.FindAction("Crouch");
+		sprintAction = InputSystem.actions.FindAction("Sprint");
+
+		crouchAction.started += OnCrouchPress;
+		crouchAction.canceled += OnCrouchRelease;
+
+		StartUI();
+	}
+
+	void Update() {
+		UpdateUI();
+		UpdateGrounded();
+		UpdateOnSlope();
+	}
+
 	void FixedUpdate() {
 		/* --------------------------------- Falling -------------------------------- */
 		if (rb.linearVelocity.y < 0) {
@@ -205,7 +195,7 @@ public partial class PlayerController : MonoBehaviour {
 
 		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) {
-			rb.AddForce(dashDirection * dashSpeed, ForceMode.Force);
+			AddForceSlope(dashDirection * dashSpeed, ForceMode.Force);
 			return;
 		}
 
@@ -228,7 +218,6 @@ public partial class PlayerController : MonoBehaviour {
 			return;
 		}
 
-		// If close to max speed set to max speed
 		if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
 			rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 		}
@@ -238,38 +227,24 @@ public partial class PlayerController : MonoBehaviour {
 
 		// Normal movement
 		if (rb.linearVelocity.magnitude < maxSpeed) {
-			rb.AddForce(v2, ForceMode.Force);
+			AddForceSlope(v2, ForceMode.Force);
 			return;
 		}
 
-		// >Max speed movement
+		// Speed control
 		Vector3 vParallel = Vector3.Project(v2, v1);
 		Vector3 vPerp = v2 - vParallel;
 
-		// If parallel component is in opposite direction, add it
 		if (Vector3.Dot(vParallel, v1) < 0) {
-			rb.AddForce(vParallel, ForceMode.Force);
+			AddForceSlope(vParallel, ForceMode.Force);
 		}
 
-		rb.AddForce(vPerp, ForceMode.Force);
+		AddForceSlope(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
 		/**
 		 FIXME: when player collides with wall, player "jumps"
 		 FIXME: speed slightly above maxSpeed
 		*/
-	}
-
-	void ApplyFriction() {
-		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
-	}
-
-	void Update() {
-		UpdateUI();
-		UpdateGrounded();
-	}
-
-	void UpdateGrounded() {
-		isGrounded = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.height / 2 + 0.1f);
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -280,16 +255,33 @@ public partial class PlayerController : MonoBehaviour {
 		}
 	}
 
-	public void TakeDamage(int damage, Vector3 hitOrigin) {
-		health -= damage;
-		rb.AddForce((transform.position - hitOrigin).normalized * 10, ForceMode.Impulse);
-
-		if (health <= 0) Die();
+	/* -------------------------------------------------------------------------- */
+	/*                                    Other                                   */
+	/* -------------------------------------------------------------------------- */
+	void ApplyFriction() {
+		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
 	}
 
-	public void Die() {
-		endText.text = $"You died with a score of {score}!";
-		endText.gameObject.SetActive(true);
-		GameManager.Instance.SetPause(true, false);
+	void UpdateGrounded() {
+		isGrounded = Physics.Raycast(transform.position, Vector3.down, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f);
+	}
+
+	void UpdateOnSlope() {
+		if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f)) {
+			float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+			onSlope = angle < maxSlopeAngle && angle != 0;
+		} else {
+			onSlope = false;
+		}
+	}
+
+	void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
+		if (!onSlope) {
+			rb.AddForce(force, forceMode);
+			return;
+		}
+
+		Vector3 forceOnSlope = Vector3.ProjectOnPlane(force, slopeHit.normal).normalized * force.magnitude;
+		rb.AddForce(forceOnSlope, forceMode);
 	}
 }

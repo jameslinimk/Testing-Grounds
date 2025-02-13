@@ -1,6 +1,31 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public partial class PlayerController {
+	[Header("Score UI")]
+	public TextMeshProUGUI scoreText;
+	private int score = 0;
+
+	[Header("Dash UI")]
+	public TextMeshProUGUI dashCDText;
+	public Image dashCDImage;
+	private float dashCDImageAlphaTarget = 1f;
+
+	[Header("Stamina UI")]
+	private float staminaBarWidth = 0f;
+	public Image staminaBarOverlay;
+
+	[Header("Health UI")]
+	private float healthBarWidth = 0f;
+	private Color barHealthyColor;
+	public Image healthBarOverlay;
+	public Color barDamagedColor;
+
+	void DefaultUIValues() {
+		barDamagedColor = Color.red;
+	}
+
 	void UpdateUI() {
 		UpdateDashUI();
 		UpdateStaminaUI();
@@ -11,6 +36,7 @@ public partial class PlayerController {
 		barHealthyColor = healthBarOverlay.color;
 		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
 		healthBarWidth = healthBarOverlay.rectTransform.rect.width;
+		UpdateUI();
 	}
 
 	void UpdateDashUI() {
