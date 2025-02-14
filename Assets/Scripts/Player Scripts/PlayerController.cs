@@ -180,16 +180,15 @@ public partial class PlayerController : MonoBehaviour {
 	void Update() {
 		UpdateUI();
 		UpdateGrounded();
-		UpdateOnSlope();
 	}
 
 	void FixedUpdate() {
 		/* --------------------------------- Falling -------------------------------- */
-		if (rb.linearVelocity.y < 0) {
+		if (!onSlope && rb.linearVelocity.y < 0) {
 			rb.AddForce((fallMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
 		}
 
-		if (rb.linearVelocity.y > 0 && !jumpAction.IsPressed()) {
+		if (!onSlope && rb.linearVelocity.y > 0 && !jumpAction.IsPressed()) {
 			rb.AddForce((lowJumpMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
 		}
 
@@ -241,9 +240,10 @@ public partial class PlayerController : MonoBehaviour {
 
 		AddForceSlope(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
+
 		/**
 		 FIXME: when player collides with wall, player "jumps"
-		 FIXME: speed slightly above maxSpeed
+		 FIXME: speed slightly above maxSpeed. adding perp still increases mag b/c pythag. work on this l8r it seems to work
 		*/
 	}
 
@@ -263,16 +263,16 @@ public partial class PlayerController : MonoBehaviour {
 	}
 
 	void UpdateGrounded() {
-		isGrounded = Physics.Raycast(transform.position, Vector3.down, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f);
-	}
-
-	void UpdateOnSlope() {
-		if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f)) {
+		isGrounded = Physics.Raycast(transform.position, Vector3.down, out slopeHit, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f);
+		if (isGrounded) {
 			float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
 			onSlope = angle < maxSlopeAngle && angle != 0;
 		} else {
 			onSlope = false;
 		}
+
+		if (onSlope) rb.useGravity = false;
+		else rb.useGravity = true;
 	}
 
 	void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
@@ -283,5 +283,8 @@ public partial class PlayerController : MonoBehaviour {
 
 		Vector3 forceOnSlope = Vector3.ProjectOnPlane(force, slopeHit.normal).normalized * force.magnitude;
 		rb.AddForce(forceOnSlope, forceMode);
+
+		// Show force
+		Debug.DrawRay(transform.position, forceOnSlope, Color.red, 0.5f);
 	}
 }
