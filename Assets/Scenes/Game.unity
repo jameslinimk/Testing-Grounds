@@ -290,7 +290,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 9, y: 9}
+  m_SizeDelta: {x: 4, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &150524745
 MonoBehaviour:
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -358,7 +358,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 127, y: 127}
+  m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &165032508
 MonoBehaviour:
@@ -373,7 +373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -382,7 +382,7 @@ MonoBehaviour:
       m_Calls: []
   detail: 256
   mode: 2
-  edgeThickness: 5
+  edgeThickness: 1.5
 --- !u!222 &165032509
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -622,7 +622,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 7.5, y: 7.5}
+  m_SizeDelta: {x: 4.6, y: 4.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &243304775
 MonoBehaviour:
@@ -637,7 +637,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1025,10 +1025,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 150524744}
   - {fileID: 243304774}
-  - {fileID: 165032507}
+  - {fileID: 150524744}
   - {fileID: 2113696637}
+  - {fileID: 165032507}
   m_Father: {fileID: 645355876}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1048,15 +1048,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a35457f6d9afaa5408d65165890ab209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  centerDotBorder: {fileID: 150524745}
-  centerDot: {fileID: 243304775}
-  outerCircleBorder: {fileID: 165032508}
-  outerCircle: {fileID: 2113696638}
-  centerDotSize: 7.5
-  centerDotBorderThickness: 0.75
-  outerCircleSize: 125
-  outerCircleThickness: 3
-  outerCircleBorderThickness: 1
+  outerCircleDeceleration: 5
+  centerDot:
+    graphic: {fileID: 150524745}
+    size: 4
+    thickness: 0
+    rectTransform: {fileID: 150524744}
+  centerDotBorder:
+    graphic: {fileID: 243304775}
+    size: 0
+    thickness: 0.3
+    rectTransform: {fileID: 243304774}
+  outerCircle:
+    graphic: {fileID: 165032508}
+    size: 40
+    thickness: 1.5
+    rectTransform: {fileID: 165032507}
+  outerCircleBorder:
+    graphic: {fileID: 2113696638}
+    size: 0
+    thickness: 0.1
+    rectTransform: {fileID: 2113696637}
   primaryColor: {r: 1, g: 1, b: 1, a: 1}
   borderColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1 &419773535
@@ -2493,7 +2505,7 @@ MonoBehaviour:
   lowJumpMultiplier: 2
   crouchHeightMultiplier: 2
   maxCrouchSpeed: 4
-  crouchJumpForce: 0
+  crouchJumpForce: 10
   maxSprintSpeed: 12
   sprintCooldown: 0.25
   sprintStaminaCost: 1
@@ -3235,7 +3247,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 125, y: 125}
+  m_SizeDelta: {x: 40.2, y: 40.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2113696638
 MonoBehaviour:
@@ -3250,7 +3262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3259,7 +3271,7 @@ MonoBehaviour:
       m_Calls: []
   detail: 256
   mode: 2
-  edgeThickness: 3
+  edgeThickness: 1.7
 --- !u!222 &2113696639
 CanvasRenderer:
   m_ObjectHideFlags: 0

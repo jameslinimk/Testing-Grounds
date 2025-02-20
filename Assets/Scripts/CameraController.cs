@@ -7,7 +7,6 @@ public class CameraController : MonoBehaviour {
 
 	public Transform player;
 	private Rigidbody playerRb;
-	private PlayerController playerController;
 
 	[Header("Camera Settings")]
 	public float lookAtHeight;
@@ -62,7 +61,6 @@ public class CameraController : MonoBehaviour {
 
 		cam = GetComponent<Camera>();
 		playerRb = player.GetComponent<Rigidbody>();
-		playerController = player.GetComponent<PlayerController>();
 	}
 
 	void LateUpdate() {

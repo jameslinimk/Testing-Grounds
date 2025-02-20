@@ -3,8 +3,7 @@ using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour {
 	public bool IsPaused { get; private set; } = false;
-	[HideInInspector]
-	public bool CanUnpause = true;
+	[HideInInspector] public bool CanUnpause = true;
 	public PlayerInput playerInput;
 	private InputAction pauseAction;
 
