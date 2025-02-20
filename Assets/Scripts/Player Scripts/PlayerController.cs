@@ -50,6 +50,7 @@ public partial class PlayerController : MonoBehaviour {
 	[Header("Crouch Settings")]
 	public float crouchHeightMultiplier;
 	public float maxCrouchSpeed;
+	public float crouchJumpForce;
 	private Vector3 originalScale;
 	float heightDifference;
 	private bool isCrouching = false;
@@ -102,6 +103,7 @@ public partial class PlayerController : MonoBehaviour {
 
 		crouchHeightMultiplier = 2f;
 		maxCrouchSpeed = 4f;
+		crouchJumpForce = 10f;
 
 		maxSprintSpeed = 12f;
 		sprintCooldown = 0.25f;
@@ -139,7 +141,7 @@ public partial class PlayerController : MonoBehaviour {
 		if (GameManager.Instance.IsPaused || !CanJump) return;
 
 		Stamina -= jumpStaminaCost;
-		rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
@@ -183,6 +185,8 @@ public partial class PlayerController : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
+		ApplyGravity();
+
 		/* --------------------------------- Falling -------------------------------- */
 		if (!onSlope && rb.linearVelocity.y < 0) {
 			rb.AddForce((fallMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
@@ -222,11 +226,13 @@ public partial class PlayerController : MonoBehaviour {
 		}
 
 		Vector3 v1 = rb.linearVelocity;
+		v1.y = 0;
 		Vector3 v2 = cameraController.TransformMovement(mv * speed);
 
 		// Normal movement
-		if (rb.linearVelocity.magnitude < maxSpeed) {
+		if (v1.magnitude < maxSpeed) {
 			AddForceSlope(v2, ForceMode.Force);
+			rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, maxSpeed);
 			return;
 		}
 
@@ -240,6 +246,8 @@ public partial class PlayerController : MonoBehaviour {
 
 		AddForceSlope(vPerp, ForceMode.Force);
 		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
+
+		Debug.Log(rb.linearVelocity.magnitude);
 
 		/**
 		 FIXME: when player collides with wall, player "jumps"
@@ -262,17 +270,24 @@ public partial class PlayerController : MonoBehaviour {
 		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
 	}
 
+	void ApplyGravity() {
+		Vector3 currentGravity = onSlope ? -slopeHit.normal * Physics.gravity.magnitude : Physics.gravity;
+		rb.AddForce(currentGravity, ForceMode.Acceleration);
+		Debug.DrawRay(transform.position, currentGravity, Color.yellow);
+	}
+
 	void UpdateGrounded() {
-		isGrounded = Physics.Raycast(transform.position, Vector3.down, out slopeHit, (capsuleCollider.height * transform.localScale.y) / 2 + 0.1f);
+		float checkDistance = capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius + 0.1f;
+		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, checkDistance);
+
 		if (isGrounded) {
 			float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
-			onSlope = angle < maxSlopeAngle && angle != 0;
+			onSlope = angle > 0 && angle < maxSlopeAngle;
 		} else {
 			onSlope = false;
 		}
 
-		if (onSlope) rb.useGravity = false;
-		else rb.useGravity = true;
+		// rb.useGravity = !onSlope;
 	}
 
 	void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
@@ -281,10 +296,9 @@ public partial class PlayerController : MonoBehaviour {
 			return;
 		}
 
-		Vector3 forceOnSlope = Vector3.ProjectOnPlane(force, slopeHit.normal).normalized * force.magnitude;
+		Vector3 forceOnSlope = Vector3.ProjectOnPlane(force, slopeHit.normal);//.normalized * force.magnitude;
 		rb.AddForce(forceOnSlope, forceMode);
 
-		// Show force
-		Debug.DrawRay(transform.position, forceOnSlope, Color.red, 0.5f);
+		// Debug.DrawRay(transform.position, forceOnSlope, Color.red, 0.5f);
 	}
 }

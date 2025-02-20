@@ -23,6 +23,7 @@ public class CameraController : MonoBehaviour {
 	[Header("FOV Settings")]
 	public float maxFOV;
 	public float minFOV;
+	public float maxPlayerSpeed;
 	public float fovDeceleration;
 
 	private InputAction lookAction;
@@ -33,11 +34,12 @@ public class CameraController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		lookAtHeight = 1.5f;
-		sensitivity = 0.15f;
+		lookAtHeight = 2.25f;
+		sensitivity = 0.1f;
 
-		maxFOV = 75f;
+		maxFOV = 90f;
 		minFOV = 60f;
+		maxPlayerSpeed = 35f;
 		fovDeceleration = 5f;
 
 		minPitch = -30f;
@@ -83,7 +85,7 @@ public class CameraController : MonoBehaviour {
 
 		var r = playerRb.linearVelocity;
 		float playerSpeed = Mathf.Sqrt(r.x * r.x + r.z * r.z);
-		float targetFOV = Mathf.Lerp(minFOV, maxFOV, playerSpeed / playerController.maxSprintSpeed);
+		float targetFOV = Mathf.LerpUnclamped(minFOV, maxFOV, playerSpeed / maxPlayerSpeed);
 		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovDeceleration * Time.deltaTime);
 	}
 

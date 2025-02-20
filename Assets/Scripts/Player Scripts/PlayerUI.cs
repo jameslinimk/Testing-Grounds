@@ -67,7 +67,7 @@ public partial class PlayerController {
 
 		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
 		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
-		healthBarOverlay.color = Color.Lerp(barDamagedColor, (Color)barHealthyColor, ratio); ;
+		healthBarOverlay.color = Color.Lerp(barDamagedColor, barHealthyColor, ratio); ;
 	}
 
 	void UpdateScoreText() {
