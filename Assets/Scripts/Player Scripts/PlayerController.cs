@@ -3,7 +3,10 @@ using UnityEngine.InputSystem;
 using System;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
-public partial class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour {
+	private PlayerHealthController healthController;
+	private PlayerUIController uiController;
+
 	private CapsuleCollider capsuleCollider;
 	private Rigidbody rb;
 
@@ -15,6 +18,8 @@ public partial class PlayerController : MonoBehaviour {
 	private InputAction crouchAction;
 
 	public CameraController cameraController;
+
+	public int score { get; private set; } = 0;
 
 	[Header("Movement Settings")]
 	public float speed;
@@ -30,9 +35,9 @@ public partial class PlayerController : MonoBehaviour {
 
 	private float lastStaminaDrain = -Mathf.Infinity;
 	private float _stamina = 5f;
-	private float Stamina {
+	public float Stamina {
 		get => _stamina;
-		set {
+		private set {
 			if (value < _stamina) lastStaminaDrain = Time.time;
 			_stamina = Math.Clamp(value, 0f, maxStamina);
 		}
@@ -52,7 +57,7 @@ public partial class PlayerController : MonoBehaviour {
 	public float maxCrouchSpeed;
 	public float crouchJumpForce;
 	private Vector3 originalScale;
-	float heightDifference;
+	private float crouchHeightDifference;
 	private bool isCrouching = false;
 
 	[Header("Sprint Settings")]
@@ -72,7 +77,7 @@ public partial class PlayerController : MonoBehaviour {
 	public float dashStaminaCost;
 
 	private Vector3 dashDirection;
-	private float dashStart = -Mathf.Infinity;
+	public float dashStart { get; private set; } = -Mathf.Infinity;
 
 	private bool IsDashing => Time.time - dashStart < dashDuration;
 	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost;
@@ -84,9 +89,6 @@ public partial class PlayerController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		DefaultHealthValues();
-		DefaultUIValues();
-
 		speed = 50f;
 		maxWalkSpeed = 7f;
 		deceleration = 4f;
@@ -130,7 +132,7 @@ public partial class PlayerController : MonoBehaviour {
 
 	void OnDash() {
 		if (GameManager.Instance.IsPaused || !CanDash) return;
-		dashCDImageAlphaTarget = 1f;
+		uiController.SetAlphaTarget(1f);
 
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
@@ -147,14 +149,14 @@ public partial class PlayerController : MonoBehaviour {
 	void OnCrouchPress(InputAction.CallbackContext context) {
 		if (GameManager.Instance.IsPaused || isCrouching) return;
 		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
-		transform.position -= new Vector3(0, heightDifference, 0);
+		transform.position -= new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = true;
 	}
 
 	void OnCrouchRelease(InputAction.CallbackContext context) {
 		if (GameManager.Instance.IsPaused || !isCrouching) return;
 		transform.localScale = originalScale;
-		transform.position += new Vector3(0, heightDifference, 0);
+		transform.position += new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = false;
 	}
 
@@ -162,12 +164,15 @@ public partial class PlayerController : MonoBehaviour {
 	/*                                Unity events                                */
 	/* -------------------------------------------------------------------------- */
 	void Start() {
+		healthController = GetComponent<PlayerHealthController>();
+		uiController = GetComponent<PlayerUIController>();
+
 		rb = GetComponent<Rigidbody>();
 		capsuleCollider = GetComponent<CapsuleCollider>();
-		health = maxHealth;
+
 		originalScale = transform.localScale;
 		var h = 2 * originalScale.y;
-		heightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
+		crouchHeightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
 
 		jumpAction = InputSystem.actions.FindAction("Jump");
 		crouchAction = InputSystem.actions.FindAction("Crouch");
@@ -175,12 +180,9 @@ public partial class PlayerController : MonoBehaviour {
 
 		crouchAction.started += OnCrouchPress;
 		crouchAction.canceled += OnCrouchRelease;
-
-		StartUI();
 	}
 
 	void Update() {
-		UpdateUI();
 		UpdateGrounded();
 	}
 
@@ -257,8 +259,9 @@ public partial class PlayerController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
+			Debug.Log("Picked up");
 			score += 1;
-			UpdateScoreText();
+			uiController.UpdateScoreText();
 			Destroy(other.gameObject);
 		}
 	}

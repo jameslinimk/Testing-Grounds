@@ -77,7 +77,7 @@ public class CrosshairController : MonoBehaviour {
 		outerCircleBorder.graphic.edgeThickness = outerCircle.thickness + (outerCircleBorder.thickness * 2);
 	}
 
-	void UpdateOuterCircleSize(float size) {
+	public void UpdateOuterCircleSize(float size) {
 		outerCircle.size = size;
 		SetElementSize(ref outerCircle, outerCircle.size);
 		SetElementSize(ref outerCircleBorder, outerCircle.size, outerCircleBorder.thickness);

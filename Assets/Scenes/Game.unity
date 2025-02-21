@@ -290,7 +290,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 4, y: 4}
+  m_SizeDelta: {x: 4.6, y: 4.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &150524745
 MonoBehaviour:
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -358,7 +358,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 40}
+  m_SizeDelta: {x: 40.2, y: 40.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &165032508
 MonoBehaviour:
@@ -373,7 +373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -382,7 +382,7 @@ MonoBehaviour:
       m_Calls: []
   detail: 256
   mode: 2
-  edgeThickness: 1.5
+  edgeThickness: 1.7
 --- !u!222 &165032509
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -622,7 +622,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 4.6, y: 4.6}
+  m_SizeDelta: {x: 4, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &243304775
 MonoBehaviour:
@@ -637,7 +637,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1025,10 +1025,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 243304774}
   - {fileID: 150524744}
-  - {fileID: 2113696637}
+  - {fileID: 243304774}
   - {fileID: 165032507}
+  - {fileID: 2113696637}
   m_Father: {fileID: 645355876}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1050,25 +1050,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outerCircleDeceleration: 5
   centerDot:
-    graphic: {fileID: 150524745}
+    graphic: {fileID: 243304775}
     size: 4
     thickness: 0
-    rectTransform: {fileID: 150524744}
+    rectTransform: {fileID: 243304774}
   centerDotBorder:
-    graphic: {fileID: 243304775}
+    graphic: {fileID: 150524745}
     size: 0
     thickness: 0.3
-    rectTransform: {fileID: 243304774}
+    rectTransform: {fileID: 150524744}
   outerCircle:
-    graphic: {fileID: 165032508}
+    graphic: {fileID: 2113696638}
     size: 40
     thickness: 1.5
-    rectTransform: {fileID: 165032507}
+    rectTransform: {fileID: 2113696637}
   outerCircleBorder:
-    graphic: {fileID: 2113696638}
+    graphic: {fileID: 165032508}
     size: 0
     thickness: 0.1
-    rectTransform: {fileID: 2113696637}
+    rectTransform: {fileID: 165032507}
   primaryColor: {r: 1, g: 1, b: 1, a: 1}
   borderColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1 &419773535
@@ -1412,7 +1412,7 @@ PrefabInstance:
     - target: {fileID: 291799471458509597, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: player
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1573727679}
     - target: {fileID: 1867063762365032014, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: m_Name
       value: Enemy
@@ -1938,7 +1938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1364666732
 Transform:
   m_ObjectHideFlags: 0
@@ -2013,7 +2013,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Score: 15'
+  m_text: 'Score: 0'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2457,6 +2457,8 @@ GameObject:
   - component: {fileID: 1573727681}
   - component: {fileID: 1573727682}
   - component: {fileID: 1573727680}
+  - component: {fileID: 1573727686}
+  - component: {fileID: 1573727687}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2514,15 +2516,6 @@ MonoBehaviour:
   dashSpeed: 150
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
-  maxHealth: 100
-  health: 100
-  endText: {fileID: 60392604}
-  scoreText: {fileID: 1383407305}
-  dashCDText: {fileID: 245196183}
-  dashCDImage: {fileID: 234113049}
-  staminaBarOverlay: {fileID: 1844984371}
-  healthBarOverlay: {fileID: 1885632151}
-  barDamagedColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!54 &1573727681
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2656,6 +2649,39 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1573727678}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1573727686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573727678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7136daadab9b72458c2155f65a1ed83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  health: 100
+  endText: {fileID: 60392604}
+--- !u!114 &1573727687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573727678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c957c8ab1920f004e86fbc8169cac24f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreText: {fileID: 1383407305}
+  dashIconText: {fileID: 245196183}
+  dashIconOverlay: {fileID: 234113049}
+  staminaBarOverlay: {fileID: 1844984371}
+  healthBarOverlay: {fileID: 1885632151}
+  barDamagedColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1001 &1614229688
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2667,7 +2693,7 @@ PrefabInstance:
     - target: {fileID: 291799471458509597, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: player
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1573727679}
     - target: {fileID: 1867063762365032014, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: m_Name
       value: Enemy (1)
@@ -3247,7 +3273,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40.2, y: 40.2}
+  m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2113696638
 MonoBehaviour:
@@ -3262,7 +3288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3271,7 +3297,7 @@ MonoBehaviour:
       m_Calls: []
   detail: 256
   mode: 2
-  edgeThickness: 1.7
+  edgeThickness: 1.5
 --- !u!222 &2113696639
 CanvasRenderer:
   m_ObjectHideFlags: 0

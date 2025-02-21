@@ -21,7 +21,7 @@ public class EnemyMovement : MonoBehaviour {
 		navMeshAgent.SetDestination(player.position);
 	}
 
-	IEnumerator DamageOverTime(PlayerController player) {
+	IEnumerator DamageOverTime(PlayerHealthController player) {
 		while (touchingPlayer) {
 			if (Time.time - lastHit < hitCooldown)
 				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
@@ -35,7 +35,7 @@ public class EnemyMovement : MonoBehaviour {
 	void OnCollisionEnter(Collision collision) {
 		if (collision.gameObject.CompareTag("Player")) {
 			touchingPlayer = true;
-			damageCoroutine = StartCoroutine(DamageOverTime(collision.gameObject.GetComponent<PlayerController>()));
+			damageCoroutine = StartCoroutine(DamageOverTime(collision.gameObject.GetComponent<PlayerHealthController>()));
 		}
 	}
 
