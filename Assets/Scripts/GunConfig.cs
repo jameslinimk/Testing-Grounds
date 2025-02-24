@@ -14,6 +14,9 @@ public class GunConfig : ScriptableObject {
 	public Sprite icon;
 	public GameObject weaponPrefab;
 
+	[Header("Other Info")]
+	public float drawSpeed;
+
 	[Header("Fire Behavior")]
 	public FireType fireType;
 	public int burstCount = 0;
@@ -29,9 +32,9 @@ public class GunConfig : ScriptableObject {
 	public float reloadTime;
 
 	[Header("Accuracy")]
-	[Tooltip("Starting spread before bloom")] public float spread;
+	public float spread;
 	public float maxBloom;
-	[Tooltip("How much the spread increases per shot")] public float bloomRate;
-	[Tooltip("How long the gun has to be idle before the bloom starts decreasing")] public float bloomCooldownDelay;
-	[Tooltip("How fast bloom decreases after cooldown")] public float bloomCooldownRate;
+	public float bloomRate;
+	public float bloomCooldownDelay;
+	public float bloomCooldownRate;
 }

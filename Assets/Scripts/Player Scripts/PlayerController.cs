@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using System.ComponentModel;
 
 [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour {
@@ -22,16 +23,17 @@ public class PlayerController : MonoBehaviour {
 	public int score { get; private set; } = 0;
 
 	[Header("Movement Settings")]
-	public float speed;
-	public float maxWalkSpeed;
-	public float deceleration;
+	[DefaultValue(50f)] public float speed;
+	[DefaultValue(7f)] public float maxWalkSpeed;
+	[DefaultValue(4f)] public float deceleration;
+	[DefaultValue(0.5f)] public float airControl;
 	private bool isGrounded = true;
 
 	[Header("Stamina Settings")]
-	public float staminaRegenCooldown;
-	public float maxStamina;
-	public float staminaRegen;
-	public float standingStaminaRegen;
+	[DefaultValue(1f)] public float staminaRegenCooldown;
+	[DefaultValue(5f)] public float maxStamina;
+	[DefaultValue(1f)] public float staminaRegen;
+	[DefaultValue(2f)] public float standingStaminaRegen;
 
 	private float lastStaminaDrain = -Mathf.Infinity;
 	private float _stamina = 5f;
@@ -46,24 +48,24 @@ public class PlayerController : MonoBehaviour {
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
 	[Header("Jump Settings")]
-	public float jumpForce;
-	public float jumpStaminaCost;
-	public float fallMultiplier;
-	public float lowJumpMultiplier;
+	[DefaultValue(20f)] public float jumpForce;
+	[DefaultValue(0.25f)] public float jumpStaminaCost;
+	[DefaultValue(2.5f)] public float fallMultiplier;
+	[DefaultValue(2f)] public float lowJumpMultiplier;
 	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
 
 	[Header("Crouch Settings")]
-	public float crouchHeightMultiplier;
-	public float maxCrouchSpeed;
-	public float crouchJumpForce;
+	[DefaultValue(2f)] public float crouchHeightMultiplier;
+	[DefaultValue(4f)] public float maxCrouchSpeed;
+	[DefaultValue(10f)] public float crouchJumpForce;
 	private Vector3 originalScale;
 	private float crouchHeightDifference;
 	private bool isCrouching = false;
 
 	[Header("Sprint Settings")]
-	public float maxSprintSpeed;
-	public float sprintCooldown;
-	public float sprintStaminaCost;
+	[DefaultValue(12f)] public float maxSprintSpeed;
+	[DefaultValue(0.25f)] public float sprintCooldown;
+	[DefaultValue(1f)] public float sprintStaminaCost;
 
 	private bool sprinting = false;
 	private float sprintEnd = -Mathf.Infinity;
@@ -71,10 +73,10 @@ public class PlayerController : MonoBehaviour {
 	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing;
 
 	[Header("Dash Settings")]
-	public float dashCooldown;
-	public float dashDuration;
-	public float dashSpeed;
-	public float dashStaminaCost;
+	[DefaultValue(1f)] public float dashCooldown;
+	[DefaultValue(0.2f)] public float dashDuration;
+	[DefaultValue(150f)] public float dashSpeed;
+	[DefaultValue(0.5f)] public float dashStaminaCost;
 
 	private Vector3 dashDirection;
 	public float dashStart { get; private set; } = -Mathf.Infinity;
@@ -83,40 +85,20 @@ public class PlayerController : MonoBehaviour {
 	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost;
 
 	[Header("Slope Settings")]
-	public float maxSlopeAngle;
+	[DefaultValue(45f)] public float maxSlopeAngle;
 	private RaycastHit slopeHit;
 	private bool onSlope;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		speed = 50f;
-		maxWalkSpeed = 7f;
-		deceleration = 4f;
-
-		staminaRegenCooldown = 1f;
-		maxStamina = 5f;
-		staminaRegen = 1f;
-		standingStaminaRegen = 2f;
-
-		jumpForce = 20f;
-		jumpStaminaCost = 0.25f;
-		fallMultiplier = 2.5f;
-		lowJumpMultiplier = 2f;
-
-		crouchHeightMultiplier = 2f;
-		maxCrouchSpeed = 4f;
-		crouchJumpForce = 10f;
-
-		maxSprintSpeed = 12f;
-		sprintCooldown = 0.25f;
-		sprintStaminaCost = 1f;
-
-		dashCooldown = 1f;
-		dashDuration = 0.2f;
-		dashSpeed = 150f;
-		dashStaminaCost = 0.5f;
-
-		maxSlopeAngle = 45f;
+		// FIXME
+		foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(this)) {
+			DefaultValueAttribute a = prop.Attributes[typeof(DefaultValueAttribute)] as DefaultValueAttribute;
+			Debug.Log(prop.Attributes.Count);
+			if (a == null)
+				continue;
+			prop.SetValue(this, a.Value);
+		}
 	}
 
 	/* -------------------------------------------------------------------------- */
@@ -218,23 +200,26 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* ---------------------------- General movement ---------------------------- */
+		if (!isGrounded) maxSpeed *= airControl;
 		if (mv == Vector3.zero) {
 			ApplyFriction();
 			return;
-		}
-
-		if (Mathf.Abs(rb.linearVelocity.magnitude - maxSpeed) < 0.1f) {
-			rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
 		}
 
 		Vector3 v1 = rb.linearVelocity;
 		v1.y = 0;
 		Vector3 v2 = cameraController.TransformMovement(mv * speed);
 
+		if (Mathf.Abs(v1.magnitude - maxSpeed) < 0.1f) {
+			Vector3 maxV1 = v1.normalized * maxSpeed;
+			rb.linearVelocity = new Vector3(maxV1.x, rb.linearVelocity.y, maxV1.z);
+		}
+
 		// Normal movement
 		if (v1.magnitude < maxSpeed) {
 			AddForceSlope(v2, ForceMode.Force);
-			rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, maxSpeed);
+			Vector3 clampedV1 = Vector3.ClampMagnitude(v1, maxSpeed);
+			rb.linearVelocity = new Vector3(clampedV1.x, rb.linearVelocity.y, clampedV1.z);
 			return;
 		}
 
@@ -247,9 +232,9 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		AddForceSlope(vPerp, ForceMode.Force);
-		if (rb.linearVelocity.magnitude != maxSpeed) ApplyFriction();
+		if (v1.magnitude != maxSpeed) ApplyFriction();
 
-		Debug.Log(rb.linearVelocity.magnitude);
+		// Debug.Log(v1.magnitude);
 
 		/**
 		 FIXME: when player collides with wall, player "jumps"
@@ -259,7 +244,6 @@ public class PlayerController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
-			Debug.Log("Picked up");
 			score += 1;
 			uiController.UpdateScoreText();
 			Destroy(other.gameObject);
