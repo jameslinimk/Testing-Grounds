@@ -1833,13 +1833,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1573727679}
-  lookAtHeight: 2.25
-  sensitivity: 0.1
+  lookAtHeight: 1.5
+  sensitivity: 0.15
   minPitch: -30
   maxPitch: 60
-  maxFOV: 90
+  maxFOV: 75
   minFOV: 60
-  maxPlayerSpeed: 35
   fovDeceleration: 5
 --- !u!4 &1011901305 stripped
 Transform:
@@ -1953,7 +1952,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanUnpause: 1
-  playerInput: {fileID: 1573727682}
 --- !u!1001 &1330799826
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2555,6 +2553,7 @@ GameObject:
   - component: {fileID: 1573727680}
   - component: {fileID: 1573727686}
   - component: {fileID: 1573727687}
+  - component: {fileID: 1573727688}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2593,6 +2592,7 @@ MonoBehaviour:
   speed: 50
   maxWalkSpeed: 7
   deceleration: 4
+  airControl: 0.5
   staminaRegenCooldown: 1
   maxStamina: 5
   staminaRegen: 1
@@ -2778,6 +2778,18 @@ MonoBehaviour:
   staminaBarOverlay: {fileID: 1844984371}
   healthBarOverlay: {fileID: 1885632151}
   barDamagedColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &1573727688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573727678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1901adae44dd6e3488740bdc69ff33d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1614229688
 PrefabInstance:
   m_ObjectHideFlags: 0

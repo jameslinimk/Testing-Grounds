@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,23 +8,23 @@ public class CameraController : MonoBehaviour {
 
 	public Transform player;
 	private Rigidbody playerRb;
+	private PlayerController playerController;
 
 	[Header("Camera Settings")]
-	public float lookAtHeight;
-	public float sensitivity;
+	[DefaultValue(1.5f)] public float lookAtHeight;
+	[DefaultValue(0.15f)] public float sensitivity;
 
 	private float yaw = 0f;
 	private float pitch = 0f;
 	private Vector2 lookInput;
 
-	public float minPitch;
-	public float maxPitch;
+	[DefaultValue(-30f)] public float minPitch;
+	[DefaultValue(60f)] public float maxPitch;
 
 	[Header("FOV Settings")]
-	public float maxFOV;
-	public float minFOV;
-	public float maxPlayerSpeed;
-	public float fovDeceleration;
+	[DefaultValue(75f)] public float maxFOV;
+	[DefaultValue(60f)] public float minFOV;
+	[DefaultValue(5f)] public float fovDampingRate;
 
 	private InputAction lookAction;
 	private InputAction freelookAction;
@@ -33,16 +34,7 @@ public class CameraController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		lookAtHeight = 2.25f;
-		sensitivity = 0.1f;
-
-		maxFOV = 90f;
-		minFOV = 60f;
-		maxPlayerSpeed = 35f;
-		fovDeceleration = 5f;
-
-		minPitch = -30f;
-		maxPitch = 60f;
+		Utils.SetDefaultValues(this);
 	}
 
 	void Start() {
@@ -61,6 +53,7 @@ public class CameraController : MonoBehaviour {
 
 		cam = GetComponent<Camera>();
 		playerRb = player.GetComponent<Rigidbody>();
+		playerController = player.GetComponent<PlayerController>();
 	}
 
 	void LateUpdate() {
@@ -83,8 +76,8 @@ public class CameraController : MonoBehaviour {
 
 		var r = playerRb.linearVelocity;
 		float playerSpeed = Mathf.Sqrt(r.x * r.x + r.z * r.z);
-		float targetFOV = Mathf.LerpUnclamped(minFOV, maxFOV, playerSpeed / maxPlayerSpeed);
-		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovDeceleration * Time.deltaTime);
+		float targetFOV = Mathf.LerpUnclamped(minFOV, maxFOV, playerSpeed / playerController.maxSprintSpeed);
+		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovDampingRate * Time.deltaTime);
 	}
 
 	public Vector3 TransformMovement(Vector3 mv) {

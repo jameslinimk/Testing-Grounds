@@ -63,6 +63,7 @@
         "freelook",
         "Lerp",
         "Mathf",
+        "pythag",
         "Regen",
         "Rigidbody",
         "Roguelike",

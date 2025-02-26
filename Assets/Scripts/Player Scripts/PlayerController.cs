@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 using System.ComponentModel;
+using System.Reflection;
 
-[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour {
 	private PlayerHealthController healthController;
 	private PlayerUIController uiController;
@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Movement Settings")]
 	[DefaultValue(50f)] public float speed;
 	[DefaultValue(7f)] public float maxWalkSpeed;
-	[DefaultValue(4f)] public float deceleration;
+	[DefaultValue(4f)] public float frictionDampingRate;
 	[DefaultValue(0.5f)] public float airControl;
 	private bool isGrounded = true;
 
@@ -91,14 +91,7 @@ public class PlayerController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		// FIXME
-		foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(this)) {
-			DefaultValueAttribute a = prop.Attributes[typeof(DefaultValueAttribute)] as DefaultValueAttribute;
-			Debug.Log(prop.Attributes.Count);
-			if (a == null)
-				continue;
-			prop.SetValue(this, a.Value);
-		}
+		Utils.SetDefaultValues(this);
 	}
 
 	/* -------------------------------------------------------------------------- */
@@ -254,7 +247,7 @@ public class PlayerController : MonoBehaviour {
 	/*                                    Other                                   */
 	/* -------------------------------------------------------------------------- */
 	void ApplyFriction() {
-		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, deceleration * Time.deltaTime);
+		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, frictionDampingRate * Time.deltaTime);
 	}
 
 	void ApplyGravity() {

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using UnityEngine;
 
 public class CrosshairController : MonoBehaviour {
@@ -10,7 +11,7 @@ public class CrosshairController : MonoBehaviour {
 	}
 
 	[Header("Crosshair Settings")]
-	public float outerCircleDeceleration;
+	[DefaultValue(5f)] public float outerCircleDampingRate;
 	private float originalOuterCircleSize;
 
 	[Header("Crosshair Components")]
@@ -25,7 +26,7 @@ public class CrosshairController : MonoBehaviour {
 
 	[ContextMenu("Default values")]
 	void DefaultValues() {
-		outerCircleDeceleration = 5f;
+		Utils.SetDefaultValues(this);
 
 		centerDot.size = 4f;
 		centerDot.thickness = 0f;
@@ -54,12 +55,12 @@ public class CrosshairController : MonoBehaviour {
 		originalOuterCircleSize = outerCircle.size;
 	}
 
-	void SetElementSize(ref CrosshairElement element, float size, float extraThickness = 0) {
+	private void SetElementSize(ref CrosshairElement element, float size, float extraThickness = 0) {
 		float totalSize = size + (extraThickness * 2);
 		element.rectTransform.sizeDelta = new Vector2(totalSize, totalSize);
 	}
 
-	void UpdateCrosshair() {
+	private void UpdateCrosshair() {
 		// Colors
 		centerDot.graphic.color = primaryColor;
 		outerCircle.graphic.color = primaryColor;
@@ -84,6 +85,6 @@ public class CrosshairController : MonoBehaviour {
 	}
 
 	void Update() {
-		UpdateOuterCircleSize(Mathf.Lerp(outerCircle.size, originalOuterCircleSize, Time.deltaTime * outerCircleDeceleration));
+		UpdateOuterCircleSize(Mathf.Lerp(outerCircle.size, originalOuterCircleSize, Time.deltaTime * outerCircleDampingRate));
 	}
 }

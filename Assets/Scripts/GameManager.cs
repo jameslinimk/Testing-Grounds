@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 public class GameManager : MonoBehaviour {
 	public bool IsPaused { get; private set; } = false;
 	[HideInInspector] public bool CanUnpause = true;
-	public PlayerInput playerInput;
 	private InputAction pauseAction;
 
 	public static GameManager Instance { get; private set; }
@@ -19,7 +18,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Start() {
-		pauseAction = playerInput.actions.FindAction("Pause");
+		pauseAction = InputSystem.actions.FindAction("Pause");
 		pauseAction.performed += _ => { if (CanUnpause) SetPause(!IsPaused); };
 	}
 
@@ -35,5 +34,11 @@ public class GameManager : MonoBehaviour {
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 		}
+	}
+
+	[ContextMenu("Check Script Default Values")]
+	void CheckScriptDefaultValues() {
+		Utils.CheckScriptDefaultValues(FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None));
+		Debug.Log("All scripts validated");
 	}
 }

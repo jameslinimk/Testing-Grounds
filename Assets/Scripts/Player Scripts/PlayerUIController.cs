@@ -48,7 +48,7 @@ public partial class PlayerUIController : MonoBehaviour {
 		dashCDImageAlphaTarget = alpha;
 	}
 
-	void UpdateDashUI() {
+	private void UpdateDashUI() {
 		float ratio = Mathf.Clamp01(1 - (Time.time - pc.dashStart - pc.dashDuration) / pc.dashCooldown);
 		dashIconOverlay.fillAmount = ratio;
 
@@ -62,7 +62,7 @@ public partial class PlayerUIController : MonoBehaviour {
 		dashIconText.alpha = Utils.EaseTowards(dashIconText.alpha, dashCDImageAlphaTarget, 5f, 2f);
 	}
 
-	void UpdateStaminaUI() {
+	private void UpdateStaminaUI() {
 		float current = staminaBarOverlay.rectTransform.rect.width / staminaBarWidth;
 		float target = pc.Stamina / pc.maxStamina;
 
@@ -70,7 +70,7 @@ public partial class PlayerUIController : MonoBehaviour {
 		staminaBarOverlay.rectTransform.sizeDelta = new Vector2(staminaBarWidth * ratio, staminaBarOverlay.rectTransform.rect.height);
 	}
 
-	void UpdateHealthUI() {
+	private void UpdateHealthUI() {
 		float current = healthBarOverlay.rectTransform.rect.width / healthBarWidth;
 		float target = healthController.health / healthController.maxHealth;
 

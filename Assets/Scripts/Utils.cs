@@ -1,5 +1,7 @@
 using UnityEngine;
 using System;
+using System.Reflection;
+using System.ComponentModel;
 
 public static class Utils {
 	public static float EaseOutQuart(float t) {
@@ -46,6 +48,28 @@ public static class Utils {
 			Debug.DrawLine(sX, eX, color);
 			Debug.DrawLine(sY, eY, color);
 			Debug.DrawLine(sZ, eZ, color);
+		}
+	}
+
+	public static void SetDefaultValues(object obj) {
+		FieldInfo[] props = obj.GetType().GetFields();
+		foreach (FieldInfo prop in props) {
+			var d = prop.GetCustomAttribute<DefaultValueAttribute>();
+			if (d != null) prop.SetValue(obj, d.Value);
+		}
+	}
+
+	public static void CheckScriptDefaultValues(MonoBehaviour[] scripts) {
+		foreach (MonoBehaviour script in scripts) {
+			FieldInfo[] props = script.GetType().GetFields();
+			foreach (FieldInfo prop in props) {
+				var d = prop.GetCustomAttribute<DefaultValueAttribute>();
+				if (d != null) {
+					if (!prop.GetValue(script).Equals(d.Value)) {
+						Debug.LogWarning($"Default value of {script.name}.{prop.Name} does not match current value. Default: {d.Value}, Current: {prop.GetValue(script)}");
+					}
+				}
+			}
 		}
 	}
 }

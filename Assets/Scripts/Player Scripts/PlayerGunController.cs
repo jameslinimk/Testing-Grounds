@@ -19,7 +19,7 @@ public class PlayerGunController : MonoBehaviour {
 		};
 	}
 
-	void SwitchGun(int gunIndex) {
+	private void SwitchGun(int gunIndex) {
 		Debug.Log($"Switching to gun {gunIndex}");
 	}
 }

@@ -21,7 +21,7 @@ public class EnemyMovement : MonoBehaviour {
 		navMeshAgent.SetDestination(player.position);
 	}
 
-	IEnumerator DamageOverTime(PlayerHealthController player) {
+	private IEnumerator DamageOverTime(PlayerHealthController player) {
 		while (touchingPlayer) {
 			if (Time.time - lastHit < hitCooldown)
 				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));

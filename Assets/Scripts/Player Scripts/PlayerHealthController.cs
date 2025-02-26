@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using TMPro;
 using UnityEngine;
 
@@ -6,14 +7,13 @@ public class PlayerHealthController : MonoBehaviour {
 	private Rigidbody rb;
 
 	[Header("Health Settings")]
-	public float maxHealth;
-	public float health;
+	[DefaultValue(100f)] public float maxHealth;
+	[DefaultValue(100f)] public float health;
 	public TextMeshProUGUI endText;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		maxHealth = 100f;
-		health = maxHealth;
+		Utils.SetDefaultValues(this);
 	}
 
 	void Start() {
