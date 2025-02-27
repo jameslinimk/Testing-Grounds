@@ -16,6 +16,7 @@ public class CameraController : MonoBehaviour {
 
 	private float yaw = 0f;
 	private float pitch = 0f;
+	public Quaternion rotation { get; private set; }
 	private Vector2 lookInput;
 
 	[DefaultValue(-30f)] public float minPitch;
@@ -24,7 +25,7 @@ public class CameraController : MonoBehaviour {
 	[Header("FOV Settings")]
 	[DefaultValue(75f)] public float maxFOV;
 	[DefaultValue(60f)] public float minFOV;
-	[DefaultValue(5f)] public float fovDampingRate;
+	[DefaultValue(5f)] public float fovSpeed;
 
 	private InputAction lookAction;
 	private InputAction freelookAction;
@@ -68,16 +69,17 @@ public class CameraController : MonoBehaviour {
 		pitch -= lookInput.y * sensitivity;
 		pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-		Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
+		rotation = Quaternion.Euler(pitch, yaw, 0);
 		Vector3 targetPosition = player.position + rotation * offset;
 
 		transform.position = targetPosition;
 		transform.LookAt(player.position + Vector3.up * lookAtHeight);
 
+		/* -------------------------------- FOV stuff ------------------------------- */
 		var r = playerRb.linearVelocity;
 		float playerSpeed = Mathf.Sqrt(r.x * r.x + r.z * r.z);
 		float targetFOV = Mathf.LerpUnclamped(minFOV, maxFOV, playerSpeed / playerController.maxSprintSpeed);
-		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovDampingRate * Time.deltaTime);
+		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
 	}
 
 	public Vector3 TransformMovement(Vector3 mv) {

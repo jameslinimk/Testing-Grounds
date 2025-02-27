@@ -11,7 +11,7 @@ public class CrosshairController : MonoBehaviour {
 	}
 
 	[Header("Crosshair Settings")]
-	[DefaultValue(5f)] public float outerCircleDampingRate;
+	[DefaultValue(5f)] public float outerCircleResetSpeed;
 	private float originalOuterCircleSize;
 
 	[Header("Crosshair Components")]
@@ -85,6 +85,6 @@ public class CrosshairController : MonoBehaviour {
 	}
 
 	void Update() {
-		UpdateOuterCircleSize(Mathf.Lerp(outerCircle.size, originalOuterCircleSize, Time.deltaTime * outerCircleDampingRate));
+		UpdateOuterCircleSize(Mathf.Lerp(outerCircle.size, originalOuterCircleSize, Time.deltaTime * outerCircleResetSpeed));
 	}
 }

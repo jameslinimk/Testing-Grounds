@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Movement Settings")]
 	[DefaultValue(50f)] public float speed;
 	[DefaultValue(7f)] public float maxWalkSpeed;
-	[DefaultValue(4f)] public float frictionDampingRate;
+	[DefaultValue(4f)] public float frictionSpeed;
 	[DefaultValue(0.5f)] public float airControl;
 	private bool isGrounded = true;
 
@@ -248,7 +248,7 @@ public class PlayerController : MonoBehaviour {
 	/* -------------------------------------------------------------------------- */
 	void ApplyFriction() {
 		if (!isGrounded) return;
-		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, frictionDampingRate * Time.deltaTime);
+		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, frictionSpeed * Time.deltaTime);
 	}
 
 	void ApplyGravity() {

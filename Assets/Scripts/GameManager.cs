@@ -36,9 +36,15 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	[ContextMenu("Check Script Default Values")]
+	[ContextMenu("Check All Script's Default Values")]
 	void CheckScriptDefaultValues() {
 		Utils.CheckScriptDefaultValues(FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None));
 		Debug.Log("All scripts validated");
+	}
+
+	[ContextMenu("Set All Script's Default Values")]
+	void SetScriptDefaultValues() {
+		Utils.SetScriptDefaultValues(FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None));
+		Debug.Log("All scripts reset to default values");
 	}
 }

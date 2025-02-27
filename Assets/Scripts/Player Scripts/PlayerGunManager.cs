@@ -15,7 +15,9 @@ public class PlayerGunManager : MonoBehaviour {
 	}
 
 	private void SwitchGun(int gunIndex) {
-		gunController.SwitchGun(guns[gunIndex]);
+		GunConfig gun = guns[gunIndex];
+		if (gun == null) return;
+		gunController.SwitchGun(gun);
 		currentGunIndex = gunIndex;
 	}
 }
