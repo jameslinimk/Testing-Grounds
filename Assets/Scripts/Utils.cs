@@ -51,23 +51,23 @@ public static class Utils {
 		}
 	}
 
+	[System.Diagnostics.Conditional("UNITY_EDITOR")]
 	public static void SetDefaultValues(object obj) {
-		FieldInfo[] props = obj.GetType().GetFields();
+		FieldInfo[] props = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		foreach (FieldInfo prop in props) {
 			var d = prop.GetCustomAttribute<DefaultValueAttribute>();
 			if (d != null) prop.SetValue(obj, d.Value);
 		}
 	}
 
+	[System.Diagnostics.Conditional("UNITY_EDITOR")]
 	public static void CheckScriptDefaultValues(MonoBehaviour[] scripts) {
 		foreach (MonoBehaviour script in scripts) {
-			FieldInfo[] props = script.GetType().GetFields();
+			FieldInfo[] props = script.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 			foreach (FieldInfo prop in props) {
 				var d = prop.GetCustomAttribute<DefaultValueAttribute>();
-				if (d != null) {
-					if (!prop.GetValue(script).Equals(d.Value)) {
-						Debug.LogWarning($"Default value of {script.name}.{prop.Name} does not match current value. Default: {d.Value}, Current: {prop.GetValue(script)}");
-					}
+				if (d != null && !prop.GetValue(script).Equals(d.Value)) {
+					Debug.LogWarning($"Default value of {script.name}.{prop.Name} does not match current value. Default: {d.Value}, Current: {prop.GetValue(script)}");
 				}
 			}
 		}

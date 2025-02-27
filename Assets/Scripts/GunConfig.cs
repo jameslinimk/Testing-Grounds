@@ -6,12 +6,22 @@ public enum FireType {
 	Auto
 }
 
+public enum Rarity {
+	Common,
+	Uncommon,
+	Rare,
+	Epic,
+	Legendary
+}
+
 [CreateAssetMenu(fileName = "NewWeapon", menuName = "Inventory/Weapon")]
 public class GunConfig : ScriptableObject {
 	[Header("Basic Info")]
 	public string weaponName;
 	public string description;
+	public Rarity rarity;
 	public Sprite icon;
+	// Firepoint is a child of the weapon prefab
 	public GameObject weaponPrefab;
 
 	[Header("Other Info")]
@@ -26,7 +36,7 @@ public class GunConfig : ScriptableObject {
 
 	[Header("Damage & Ammo")]
 	public float damage;
-	public float headShotMultiplier = 2f;
+	public float headshotMultiplier = 2f;
 	public int bullets = 1;
 	public int maxAmmo;
 	public float reloadTime;
@@ -37,4 +47,6 @@ public class GunConfig : ScriptableObject {
 	public float bloomRate;
 	public float bloomCooldownDelay;
 	public float bloomCooldownRate;
+
+	public float dps => damage * bullets / fireCooldown;
 }

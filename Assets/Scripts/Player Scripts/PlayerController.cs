@@ -48,10 +48,10 @@ public class PlayerController : MonoBehaviour {
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
 	[Header("Jump Settings")]
-	[DefaultValue(20f)] public float jumpForce;
+	[DefaultValue(10.5f)] public float jumpForce;
 	[DefaultValue(0.25f)] public float jumpStaminaCost;
 	[DefaultValue(2.5f)] public float fallMultiplier;
-	[DefaultValue(2f)] public float lowJumpMultiplier;
+	[DefaultValue(1.75f)] public float lowJumpMultiplier;
 	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
 
 	[Header("Crouch Settings")]
@@ -247,6 +247,7 @@ public class PlayerController : MonoBehaviour {
 	/*                                    Other                                   */
 	/* -------------------------------------------------------------------------- */
 	void ApplyFriction() {
+		if (!isGrounded) return;
 		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, frictionDampingRate * Time.deltaTime);
 	}
 
