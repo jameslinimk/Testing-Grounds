@@ -417,8 +417,8 @@ Transform:
   m_GameObject: {fileID: 199879492}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0.722, y: 1.018, z: 0.171}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.722, y: 1.018, z: 0.216}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -438,6 +438,7 @@ MonoBehaviour:
   defaultGunConfig: {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
   player: {fileID: 1573727679}
   cameraController: {fileID: 961739754}
+  rotationSpeed: 8
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -1095,7 +1096,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a35457f6d9afaa5408d65165890ab209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outerCircleDampingRate: 5
+  outerCircleResetSpeed: 5
   centerDot:
     graphic: {fileID: 243304775}
     size: 4
@@ -1850,7 +1851,7 @@ MonoBehaviour:
   maxPitch: 60
   maxFOV: 75
   minFOV: 60
-  fovDampingRate: 5
+  fovSpeed: 5
 --- !u!4 &1011901305 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6634684426664001621, guid: bb2deeee7155a18419f4a92b8bec04a1, type: 3}
@@ -2542,7 +2543,7 @@ MonoBehaviour:
   cameraController: {fileID: 961739754}
   speed: 50
   maxWalkSpeed: 7
-  frictionDampingRate: 4
+  frictionSpeed: 4
   airControl: 0.5
   staminaRegenCooldown: 1
   maxStamina: 5

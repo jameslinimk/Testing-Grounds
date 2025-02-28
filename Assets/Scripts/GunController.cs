@@ -6,8 +6,7 @@ public class GunController : MonoBehaviour {
 	public GunConfig defaultGunConfig;
 	public Transform player;
 	public CameraController cameraController;
-	[DefaultValue(8f)] public float rotationSpeed;
-	[DefaultValue(10f)] public float positionSpeed;
+	[DefaultValue(17f)] public float rotationSpeed;
 
 	private Vector3 offset;
 	private Quaternion rotationOffset;
@@ -16,6 +15,11 @@ public class GunController : MonoBehaviour {
 	private GameObject weaponInstance;
 
 	private InputAction shootAction;
+
+	[ContextMenu("Default Values")]
+	void DefaultValues() {
+		Utils.SetDefaultValues(this);
+	}
 
 	void Start() {
 		shootAction = InputSystem.actions.FindAction("Shoot");
@@ -45,10 +49,8 @@ public class GunController : MonoBehaviour {
 		Quaternion targetRotation = cameraController.rotation * rotationOffset;
 
 		transform.SetPositionAndRotation(
-			Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * positionSpeed),
+			targetPosition,
 			Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed)
 		);
-
-		// TODO gun lags behind player when moving
 	}
 }
