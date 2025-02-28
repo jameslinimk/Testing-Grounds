@@ -21,7 +21,6 @@ public class GunConfig : ScriptableObject {
 	public string description;
 	public Rarity rarity;
 	public Sprite icon;
-	// Firepoint is a child of the weapon prefab
 	public GameObject weaponPrefab;
 
 	[Header("Other Info")]
@@ -29,6 +28,7 @@ public class GunConfig : ScriptableObject {
 
 	[Header("Fire Behavior")]
 	public FireType fireType;
+	public float range;
 	public int burstCount = 0;
 	public float burstDelay = 0f;
 	public float fireCooldown;

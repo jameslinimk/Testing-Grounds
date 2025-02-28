@@ -19,6 +19,7 @@ MonoBehaviour:
   weaponPrefab: {fileID: 1694449805434718, guid: 6f1a7354265853f44b0ed5e2e43676ad, type: 3}
   drawSpeed: 0.3
   fireType: 0
+  range: 100
   burstCount: 0
   burstDelay: 0
   fireCooldown: 0.6

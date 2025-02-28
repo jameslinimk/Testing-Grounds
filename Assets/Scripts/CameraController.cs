@@ -11,7 +11,8 @@ public class CameraController : MonoBehaviour {
 	private PlayerController playerController;
 
 	[Header("Camera Settings")]
-	[DefaultValue(1.5f)] public float lookAtHeight;
+	public Vector3 shoulderOffset;
+	[DefaultValue(1.5f)] public float cameraTilt;
 	[DefaultValue(0.15f)] public float sensitivity;
 
 	private float yaw = 0f;
@@ -35,6 +36,7 @@ public class CameraController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
+		shoulderOffset = new Vector3(1.6f, 0f, 0f);
 		Utils.SetDefaultValues(this);
 	}
 
@@ -69,11 +71,15 @@ public class CameraController : MonoBehaviour {
 		pitch -= lookInput.y * sensitivity;
 		pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
+		// Shoulder
+		Vector3 shoulder = player.position + shoulderOffset;
+		Vector3 rotatedShoulder = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
+
 		rotation = Quaternion.Euler(pitch, yaw, 0);
-		Vector3 targetPosition = player.position + rotation * offset;
+		Vector3 targetPosition = rotatedShoulder + rotation * offset;
 
 		transform.position = targetPosition;
-		transform.LookAt(player.position + Vector3.up * lookAtHeight);
+		transform.LookAt(rotatedShoulder + Vector3.up * cameraTilt);
 
 		/* -------------------------------- FOV stuff ------------------------------- */
 		var r = playerRb.linearVelocity;

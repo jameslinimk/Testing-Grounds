@@ -51,6 +51,18 @@ public static class Utils {
 		}
 	}
 
+	public static void DrawPoint(Vector4 pos, float scale, Color color) {
+		var sX = pos + new Vector4(+scale, 0, 0);
+		var eX = pos + new Vector4(-scale, 0, 0);
+		var sY = pos + new Vector4(0, +scale, 0);
+		var eY = pos + new Vector4(0, -scale, 0);
+		var sZ = pos + new Vector4(0, 0, +scale);
+		var eZ = pos + new Vector4(0, 0, -scale);
+		Debug.DrawLine(sX, eX, color);
+		Debug.DrawLine(sY, eY, color);
+		Debug.DrawLine(sZ, eZ, color);
+	}
+
 	[System.Diagnostics.Conditional("UNITY_EDITOR")]
 	public static void SetDefaultValues(object obj) {
 		FieldInfo[] props = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

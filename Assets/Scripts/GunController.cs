@@ -23,6 +23,8 @@ public class GunController : MonoBehaviour {
 
 	void Start() {
 		shootAction = InputSystem.actions.FindAction("Shoot");
+		shootAction.performed += _ => OnShoot();
+
 		offset = transform.position - player.position;
 		rotationOffset = Quaternion.Inverse(player.rotation) * transform.rotation;
 		SwitchGun(defaultGunConfig);
@@ -52,5 +54,15 @@ public class GunController : MonoBehaviour {
 			targetPosition,
 			Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed)
 		);
+	}
+
+	void OnShoot() {
+		Debug.Log("Shooting!");
+		RaycastHit hit;
+		if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, config.range)) {
+			Debug.DrawLine(firePoint.position, hit.point, Color.red, 1.0f);
+		} else {
+			Debug.DrawRay(firePoint.position, firePoint.forward * config.range, Color.blue, 1.0f);
+		}
 	}
 }

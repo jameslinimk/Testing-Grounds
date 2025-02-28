@@ -438,7 +438,7 @@ MonoBehaviour:
   defaultGunConfig: {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
   player: {fileID: 1573727679}
   cameraController: {fileID: 961739754}
-  rotationSpeed: 8
+  rotationSpeed: 17
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -1845,7 +1845,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1573727679}
-  lookAtHeight: 1.5
+  shoulderOffset: {x: 1.6, y: 0, z: 0}
+  cameraTilt: 1.5
   sensitivity: 0.15
   minPitch: -30
   maxPitch: 60
