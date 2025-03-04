@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour {
 
 	[Header("Camera Settings")]
 	public Vector3 shoulderOffset;
-	[DefaultValue(1.5f)] public float cameraTilt;
+	[DefaultValue(0f)] public float cameraTilt;
 	[DefaultValue(0.15f)] public float sensitivity;
 
 	private float yaw = 0f;
@@ -20,7 +20,7 @@ public class CameraController : MonoBehaviour {
 	public Quaternion rotation { get; private set; }
 	private Vector2 lookInput;
 
-	[DefaultValue(-30f)] public float minPitch;
+	[DefaultValue(-100f)] public float minPitch;
 	[DefaultValue(60f)] public float maxPitch;
 
 	[Header("FOV Settings")]
@@ -36,7 +36,7 @@ public class CameraController : MonoBehaviour {
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		shoulderOffset = new Vector3(1.6f, 0f, 0f);
+		shoulderOffset = new Vector3(1.6f, 1f, 0f);
 		Utils.SetDefaultValues(this);
 	}
 
@@ -72,7 +72,6 @@ public class CameraController : MonoBehaviour {
 		pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
 		// Shoulder
-		Vector3 shoulder = player.position + shoulderOffset;
 		Vector3 rotatedShoulder = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
 
 		rotation = Quaternion.Euler(pitch, yaw, 0);

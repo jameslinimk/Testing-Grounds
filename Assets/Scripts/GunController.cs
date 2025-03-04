@@ -4,12 +4,14 @@ using UnityEngine.InputSystem;
 
 public class GunController : MonoBehaviour {
 	public GunConfig defaultGunConfig;
+	public LayerMask hitLayers;
 	public Transform player;
 	public CameraController cameraController;
 	[DefaultValue(17f)] public float rotationSpeed;
 
 	private Vector3 offset;
 	private Quaternion rotationOffset;
+	private float cameraToFirepointDistance;
 	private GunConfig config;
 	private Transform firePoint;
 	private GameObject weaponInstance;
@@ -26,7 +28,7 @@ public class GunController : MonoBehaviour {
 		shootAction.performed += _ => OnShoot();
 
 		offset = transform.position - player.position;
-		rotationOffset = Quaternion.Inverse(player.rotation) * transform.rotation;
+		rotationOffset = transform.rotation;
 		SwitchGun(defaultGunConfig);
 	}
 
@@ -41,6 +43,7 @@ public class GunController : MonoBehaviour {
 		config = newGun;
 		weaponInstance = Instantiate(newGun.weaponPrefab, transform.position, transform.rotation, transform);
 		firePoint = weaponInstance.transform.Find("Firepoint");
+		cameraToFirepointDistance = Vector3.Distance(cameraController.transform.position, firePoint.position);
 		if (firePoint == null) {
 			Debug.LogError("FirePoint not found in weapon prefab.");
 		}
@@ -57,12 +60,15 @@ public class GunController : MonoBehaviour {
 	}
 
 	void OnShoot() {
-		Debug.Log("Shooting!");
-		RaycastHit hit;
-		if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, config.range)) {
-			Debug.DrawLine(firePoint.position, hit.point, Color.red, 1.0f);
-		} else {
-			Debug.DrawRay(firePoint.position, firePoint.forward * config.range, Color.blue, 1.0f);
+		// Getting direction gun is pointing
+		float camRange = config.range + cameraToFirepointDistance + 2f; // 2f is a buffer
+		if (!Physics.Raycast(cameraController.transform.position, cameraController.transform.forward, out RaycastHit cameraHit, camRange, hitLayers)) return;
+		Vector3 directionFromGun = (cameraHit.point - firePoint.position).normalized;
+
+		// Real raycast
+		Debug.DrawRay(firePoint.position, directionFromGun * config.range, Color.red, 0.5f);
+		if (Physics.Raycast(firePoint.position, directionFromGun, out RaycastHit hit, config.range, hitLayers)) {
+			Debug.Log("Applying damage to " + hit.collider.name);
 		}
 	}
 }

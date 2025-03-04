@@ -20,6 +20,8 @@ public class GunConfig : ScriptableObject {
 	public string weaponName;
 	public string description;
 	public Rarity rarity;
+
+	[Header("Visuals")]
 	public Sprite icon;
 	public GameObject weaponPrefab;
 
