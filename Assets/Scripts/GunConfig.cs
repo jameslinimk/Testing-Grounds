@@ -14,6 +14,12 @@ public enum Rarity {
 	Legendary
 }
 
+public struct ProjectileInfo {
+	public GameObject projectilePrefab;
+	public float speed;
+	public float lifetime;
+}
+
 [CreateAssetMenu(fileName = "NewWeapon", menuName = "Inventory/Weapon")]
 public class GunConfig : ScriptableObject {
 	[Header("Basic Info")]
@@ -27,6 +33,7 @@ public class GunConfig : ScriptableObject {
 
 	[Header("Other Info")]
 	public float drawSpeed;
+	public ProjectileInfo? projectileInfo;
 
 	[Header("Fire Behavior")]
 	public FireType fireType;

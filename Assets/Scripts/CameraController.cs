@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour {
 
 	private float yaw = 0f;
 	private float pitch = 0f;
-	public Quaternion rotation { get; private set; }
+	public Quaternion RealRotation { get; private set; }
 	private Vector2 lookInput;
 
 	[DefaultValue(-100f)] public float minPitch;
@@ -30,6 +30,8 @@ public class CameraController : MonoBehaviour {
 
 	private InputAction lookAction;
 	private InputAction freelookAction;
+	private bool canFreelook = true;
+	public bool Freelooking => freelookAction.IsInProgress() && canFreelook;
 
 	private float lastYaw = 0f;
 	private float lastPitch = 0f;
@@ -50,6 +52,7 @@ public class CameraController : MonoBehaviour {
 		freelookAction = InputSystem.actions.FindAction("Freelook");
 
 		freelookAction.canceled += _ => {
+			canFreelook = true;
 			yaw = lastYaw;
 			pitch = lastPitch;
 		};
@@ -59,12 +62,24 @@ public class CameraController : MonoBehaviour {
 		playerController = player.GetComponent<PlayerController>();
 	}
 
+	// TODO fix logic of canceling freelook
+
+	public void OnShoot() {
+		// On shoot, aim in the last aim direction and prevent freelooking until key is re-pressed
+		if (!Freelooking) return;
+		canFreelook = false;
+		yaw = lastYaw;
+		pitch = lastPitch;
+		transform.rotation = Quaternion.Euler(pitch, yaw, 0);
+	}
+
 	void LateUpdate() {
 		lookInput = !GameManager.Instance.IsPaused ? lookAction.ReadValue<Vector2>() : Vector2.zero;
 
-		if (!freelookAction.IsPressed()) {
+		if (canFreelook && freelookAction.IsPressed()) {
 			lastYaw = yaw;
 			lastPitch = pitch;
+			RealRotation = Quaternion.Euler(pitch, yaw, 0);
 		}
 
 		yaw += lookInput.x * sensitivity;
@@ -74,8 +89,9 @@ public class CameraController : MonoBehaviour {
 		// Shoulder
 		Vector3 rotatedShoulder = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
 
-		rotation = Quaternion.Euler(pitch, yaw, 0);
+		Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
 		Vector3 targetPosition = rotatedShoulder + rotation * offset;
+		if (!Freelooking) RealRotation = rotation;
 
 		transform.position = targetPosition;
 		transform.LookAt(rotatedShoulder + Vector3.up * cameraTilt);
@@ -88,7 +104,7 @@ public class CameraController : MonoBehaviour {
 	}
 
 	public Vector3 TransformMovement(Vector3 mv) {
-		float y = freelookAction.IsPressed() ? lastYaw : yaw;
+		float y = Freelooking ? lastYaw : yaw;
 		return Quaternion.Euler(0, y, 0) * mv;
 	}
 }

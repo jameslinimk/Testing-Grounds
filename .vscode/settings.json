@@ -62,6 +62,7 @@
         "cooldown",
         "Firepoint",
         "freelook",
+        "freelooking",
         "headshot",
         "Lerp",
         "Mathf",

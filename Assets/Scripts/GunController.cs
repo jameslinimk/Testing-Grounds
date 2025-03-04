@@ -37,21 +37,21 @@ public class GunController : MonoBehaviour {
 		SwitchGun(defaultGunConfig);
 	}
 
-	public void SwitchGun(GunConfig newGun) {
+	public void SwitchGun(GunConfig newGun, int? setAmmo = null) {
 		if (weaponInstance != null) Destroy(weaponInstance);
 
 		config = newGun;
+		ammo = setAmmo ?? config.maxAmmo;
+
 		weaponInstance = Instantiate(newGun.weaponPrefab, transform.position, transform.rotation, transform);
 		firePoint = weaponInstance.transform.Find("Firepoint");
+		if (firePoint == null) Debug.LogError("FirePoint not found in weapon prefab.");
 		cameraToFirepointDistance = Vector3.Distance(cameraController.transform.position, firePoint.position);
-		if (firePoint == null) {
-			Debug.LogError("FirePoint not found in weapon prefab.");
-		}
 	}
 
 	void LateUpdate() {
-		Vector3 targetPosition = player.position + cameraController.rotation * offset;
-		Quaternion targetRotation = cameraController.rotation * rotationOffset;
+		Vector3 targetPosition = player.position + cameraController.RealRotation * offset;
+		Quaternion targetRotation = cameraController.RealRotation * rotationOffset;
 
 		transform.SetPositionAndRotation(
 			targetPosition,
@@ -59,9 +59,23 @@ public class GunController : MonoBehaviour {
 		);
 	}
 
+	void Update() {
+		if (config.fireType != FireType.Single && shootAction.IsInProgress()) OnShoot();
+	}
+
+	private float lastShot = -Mathf.Infinity;
+	private bool CanShoot => Time.time - lastShot >= config.fireCooldown && ammo > 0;
+	private int ammo = 0;
+
 	void OnShoot() {
+		if (GameManager.Instance.IsPaused || !CanShoot) return;
+		cameraController.OnShoot(); // Prevents freelook while shooting
+		lastShot = Time.time;
+
+		Debug.Log("shooting");
+
 		// Getting direction gun is pointing
-		float camRange = config.range + cameraToFirepointDistance + 2f; // 2f is a buffer
+		float camRange = config.range + cameraToFirepointDistance + 2f; // Overshoot
 		if (!Physics.Raycast(cameraController.transform.position, cameraController.transform.forward, out RaycastHit cameraHit, camRange, hitLayers)) return;
 		Vector3 directionFromGun = (cameraHit.point - firePoint.position).normalized;
 
