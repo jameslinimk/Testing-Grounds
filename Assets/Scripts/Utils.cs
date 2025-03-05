@@ -35,7 +35,7 @@ public static class Utils {
 
 	private static readonly Vector4[] s_UnitSphere = MakeUnitSphere(16);
 
-	public static void DrawSphere(Vector4 pos, float radius, Color color) {
+	public static void DrawSphere(Vector4 pos, float radius, Color color, float duration = 0) {
 		Vector4[] v = s_UnitSphere;
 		int len = s_UnitSphere.Length / 3;
 		for (int i = 0; i < len; i++) {
@@ -45,22 +45,22 @@ public static class Utils {
 			var eY = pos + radius * v[1 * len + (i + 1) % len];
 			var sZ = pos + radius * v[2 * len + i];
 			var eZ = pos + radius * v[2 * len + (i + 1) % len];
-			Debug.DrawLine(sX, eX, color);
-			Debug.DrawLine(sY, eY, color);
-			Debug.DrawLine(sZ, eZ, color);
+			Debug.DrawLine(sX, eX, color, duration);
+			Debug.DrawLine(sY, eY, color, duration);
+			Debug.DrawLine(sZ, eZ, color, duration);
 		}
 	}
 
-	public static void DrawPoint(Vector4 pos, float scale, Color color) {
+	public static void DrawPoint(Vector4 pos, float scale, Color color, float duration = 0) {
 		var sX = pos + new Vector4(+scale, 0, 0);
 		var eX = pos + new Vector4(-scale, 0, 0);
 		var sY = pos + new Vector4(0, +scale, 0);
 		var eY = pos + new Vector4(0, -scale, 0);
 		var sZ = pos + new Vector4(0, 0, +scale);
 		var eZ = pos + new Vector4(0, 0, -scale);
-		Debug.DrawLine(sX, eX, color);
-		Debug.DrawLine(sY, eY, color);
-		Debug.DrawLine(sZ, eZ, color);
+		Debug.DrawLine(sX, eX, color, duration);
+		Debug.DrawLine(sY, eY, color, duration);
+		Debug.DrawLine(sZ, eZ, color, duration);
 	}
 
 	[System.Diagnostics.Conditional("UNITY_EDITOR")]

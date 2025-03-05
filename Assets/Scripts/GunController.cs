@@ -8,10 +8,11 @@ public class GunController : MonoBehaviour {
 	public Transform player;
 	public CameraController cameraController;
 	[DefaultValue(17f)] public float rotationSpeed;
+	[DefaultValue(300f)] public float fallbackDistance;
 
 	private Vector3 offset;
 	private Quaternion rotationOffset;
-	private float cameraToFirepointDistance;
+	private float camRange;
 	private GunConfig config;
 	private Transform firePoint;
 	private GameObject weaponInstance;
@@ -46,7 +47,7 @@ public class GunController : MonoBehaviour {
 		weaponInstance = Instantiate(newGun.weaponPrefab, transform.position, transform.rotation, transform);
 		firePoint = weaponInstance.transform.Find("Firepoint");
 		if (firePoint == null) Debug.LogError("FirePoint not found in weapon prefab.");
-		cameraToFirepointDistance = Vector3.Distance(cameraController.transform.position, firePoint.position);
+		camRange = config.range + Vector3.Distance(cameraController.transform.position, firePoint.position) + 2f;
 	}
 
 	void LateUpdate() {
@@ -69,17 +70,18 @@ public class GunController : MonoBehaviour {
 
 	void OnShoot() {
 		if (GameManager.Instance.IsPaused || !CanShoot) return;
-		cameraController.OnShoot(); // Prevents freelook while shooting
 		lastShot = Time.time;
 
-		Debug.Log("shooting");
+		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
+		Vector3 targetPoint;
+		if (Physics.Raycast(position, lastLook, out RaycastHit cameraHit, camRange, hitLayers)) {
+			targetPoint = cameraHit.point;
+		} else {
+			targetPoint = position + lastLook * fallbackDistance;
+		}
 
-		// Getting direction gun is pointing
-		float camRange = config.range + cameraToFirepointDistance + 2f; // Overshoot
-		if (!Physics.Raycast(cameraController.transform.position, cameraController.transform.forward, out RaycastHit cameraHit, camRange, hitLayers)) return;
-		Vector3 directionFromGun = (cameraHit.point - firePoint.position).normalized;
-
-		// Real raycast
+		// Real raycast from gun
+		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
 		Debug.DrawRay(firePoint.position, directionFromGun * config.range, Color.red, 0.5f);
 		if (Physics.Raycast(firePoint.position, directionFromGun, out RaycastHit hit, config.range, hitLayers)) {
 			Debug.Log("Applying damage to " + hit.collider.name);

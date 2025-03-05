@@ -439,10 +439,11 @@ MonoBehaviour:
   defaultGunConfig: {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
   hitLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 51
   player: {fileID: 1573727679}
   cameraController: {fileID: 961739754}
   rotationSpeed: 17
+  fallbackDistance: 300
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -857,7 +858,7 @@ GameObject:
   - component: {fileID: 277791104}
   - component: {fileID: 277791103}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: TestSlope
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2107,7 +2108,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1573727679}
-  shoulderOffset: {x: 1.6, y: 0, z: 0}
+  shoulderOffset: {x: 1.6, y: 1, z: 0}
   cameraTilt: 0
   sensitivity: 0.15
   minPitch: -100
@@ -3096,7 +3097,7 @@ MonoBehaviour:
   sprintStaminaCost: 1
   dashCooldown: 1
   dashDuration: 0.2
-  dashSpeed: 150
+  dashSpeed: 20
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
 --- !u!54 &1573727681

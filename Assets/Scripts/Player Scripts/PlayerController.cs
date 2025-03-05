@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour {
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
 	[DefaultValue(0.2f)] public float dashDuration;
-	[DefaultValue(150f)] public float dashSpeed;
+	[DefaultValue(20f)] public float dashSpeed;
 	[DefaultValue(0.5f)] public float dashStaminaCost;
 
 	private Vector3 dashDirection;
@@ -112,6 +112,9 @@ public class PlayerController : MonoBehaviour {
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
 		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
+
+		var targetLV = dashDirection * dashSpeed;
+		rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
 	}
 
 	void OnJump() {
@@ -174,10 +177,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* --------------------------------- Dashing -------------------------------- */
-		if (IsDashing) {
-			AddForceSlope(dashDirection * dashSpeed, ForceMode.Force);
-			return;
-		}
+		if (IsDashing) return;
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
 		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
@@ -267,8 +267,6 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			onSlope = false;
 		}
-
-		// rb.useGravity = !onSlope;
 	}
 
 	void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
@@ -279,7 +277,5 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 forceOnSlope = Vector3.ProjectOnPlane(force, slopeHit.normal);//.normalized * force.magnitude;
 		rb.AddForce(forceOnSlope, forceMode);
-
-		// Debug.DrawRay(transform.position, forceOnSlope, Color.red, 0.5f);
 	}
 }

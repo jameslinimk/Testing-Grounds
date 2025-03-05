@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum FireType {
@@ -14,6 +15,7 @@ public enum Rarity {
 	Legendary
 }
 
+[Serializable]
 public struct ProjectileInfo {
 	public GameObject projectilePrefab;
 	public float speed;
@@ -33,7 +35,8 @@ public class GunConfig : ScriptableObject {
 
 	[Header("Other Info")]
 	public float drawSpeed;
-	public ProjectileInfo? projectileInfo;
+	public bool isProjectile;
+	public ProjectileInfo projectileInfo;
 
 	[Header("Fire Behavior")]
 	public FireType fireType;

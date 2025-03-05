@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour {
 
 	private float yaw = 0f;
 	private float pitch = 0f;
-	public Quaternion RealRotation { get; private set; }
+	private Quaternion rotation = Quaternion.identity;
 	private Vector2 lookInput;
 
 	[DefaultValue(-100f)] public float minPitch;
@@ -31,10 +31,18 @@ public class CameraController : MonoBehaviour {
 	private InputAction lookAction;
 	private InputAction freelookAction;
 	private bool canFreelook = true;
-	public bool Freelooking => freelookAction.IsInProgress() && canFreelook;
+	public bool IsFreelooking => freelookAction.IsInProgress() && canFreelook;
 
 	private float lastYaw = 0f;
 	private float lastPitch = 0f;
+
+	private Vector3 lastPosition = Vector3.zero;
+	private Quaternion lastViewRotation = Quaternion.identity;
+	private Quaternion lastRotation = Quaternion.identity;
+
+	public float RealYaw => IsFreelooking ? lastYaw : yaw;
+	public float RealPitch => IsFreelooking ? lastPitch : pitch;
+	public Quaternion RealRotation => IsFreelooking ? lastViewRotation : rotation;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
@@ -51,10 +59,20 @@ public class CameraController : MonoBehaviour {
 		lookAction = InputSystem.actions.FindAction("Look");
 		freelookAction = InputSystem.actions.FindAction("Freelook");
 
+		freelookAction.started += _ => {
+			if (!canFreelook) return;
+			lastYaw = yaw;
+			lastPitch = pitch;
+			lastPosition = transform.position;
+			lastRotation = transform.rotation;
+			lastViewRotation = Quaternion.Euler(pitch, yaw, 0);
+		};
 		freelookAction.canceled += _ => {
+			if (canFreelook) {
+				yaw = lastYaw;
+				pitch = lastPitch;
+			}
 			canFreelook = true;
-			yaw = lastYaw;
-			pitch = lastPitch;
 		};
 
 		cam = GetComponent<Camera>();
@@ -62,38 +80,26 @@ public class CameraController : MonoBehaviour {
 		playerController = player.GetComponent<PlayerController>();
 	}
 
-	// TODO fix logic of canceling freelook
-
-	public void OnShoot() {
-		// On shoot, aim in the last aim direction and prevent freelooking until key is re-pressed
-		if (!Freelooking) return;
+	public (Vector3, Vector3) ShootReset() {
+		// Aim in the last aim direction and prevent freelooking until key is re-pressed and return last position and rotation
 		canFreelook = false;
 		yaw = lastYaw;
 		pitch = lastPitch;
-		transform.rotation = Quaternion.Euler(pitch, yaw, 0);
+		return (lastPosition, lastRotation * Vector3.forward);
 	}
 
 	void LateUpdate() {
 		lookInput = !GameManager.Instance.IsPaused ? lookAction.ReadValue<Vector2>() : Vector2.zero;
 
-		if (canFreelook && freelookAction.IsPressed()) {
-			lastYaw = yaw;
-			lastPitch = pitch;
-			RealRotation = Quaternion.Euler(pitch, yaw, 0);
-		}
-
 		yaw += lookInput.x * sensitivity;
 		pitch -= lookInput.y * sensitivity;
 		pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-		// Shoulder
 		Vector3 rotatedShoulder = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
 
-		Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
-		Vector3 targetPosition = rotatedShoulder + rotation * offset;
-		if (!Freelooking) RealRotation = rotation;
+		rotation = Quaternion.Euler(pitch, yaw, 0);
 
-		transform.position = targetPosition;
+		transform.position = rotatedShoulder + rotation * offset;
 		transform.LookAt(rotatedShoulder + Vector3.up * cameraTilt);
 
 		/* -------------------------------- FOV stuff ------------------------------- */
@@ -104,7 +110,6 @@ public class CameraController : MonoBehaviour {
 	}
 
 	public Vector3 TransformMovement(Vector3 mv) {
-		float y = Freelooking ? lastYaw : yaw;
-		return Quaternion.Euler(0, y, 0) * mv;
+		return Quaternion.Euler(0, RealYaw, 0) * mv;
 	}
 }
