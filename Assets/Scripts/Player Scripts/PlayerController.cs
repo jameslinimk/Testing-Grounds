@@ -113,7 +113,7 @@ public class PlayerController : MonoBehaviour {
 		dashStart = Time.time;
 		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
 
-		var targetLV = dashDirection * dashSpeed;
+		Vector3 targetLV = dashDirection * dashSpeed;
 		rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
 	}
 
@@ -238,7 +238,7 @@ public class PlayerController : MonoBehaviour {
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
 			score += 1;
-			uiController.UpdateScoreText();
+			uiController.RefreshScoreText();
 			Destroy(other.gameObject);
 		}
 	}

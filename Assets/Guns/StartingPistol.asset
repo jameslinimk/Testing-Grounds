@@ -18,12 +18,17 @@ MonoBehaviour:
   icon: {fileID: 0}
   weaponPrefab: {fileID: 1694449805434718, guid: 6f1a7354265853f44b0ed5e2e43676ad, type: 3}
   drawSpeed: 0.3
+  isProjectile: 0
+  projectileInfo:
+    projectilePrefab: {fileID: 0}
+    speed: 0
+    lifetime: 0
   fireType: 0
   range: 100
   burstCount: 0
   burstDelay: 0
-  fireCooldown: 0.6
-  kickback: 0
+  fireCooldown: 0.25
+  kickback: 3
   damage: 10
   headshotMultiplier: 2
   bullets: 1

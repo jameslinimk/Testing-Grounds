@@ -33,15 +33,17 @@ public partial class PlayerUIController : MonoBehaviour {
 		UpdateDashUI();
 		UpdateStaminaUI();
 		UpdateHealthUI();
-		UpdateScoreText();
 	}
 
 	void Start() {
 		pc = GetComponent<PlayerController>();
 		healthController = GetComponent<PlayerHealthController>();
+
 		barHealthyColor = healthBarOverlay.color;
 		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
 		healthBarWidth = healthBarOverlay.rectTransform.rect.width;
+
+		RefreshScoreText();
 	}
 
 	public void SetAlphaTarget(float alpha) {
@@ -79,7 +81,7 @@ public partial class PlayerUIController : MonoBehaviour {
 		healthBarOverlay.color = Color.Lerp(barDamagedColor, barHealthyColor, ratio); ;
 	}
 
-	public void UpdateScoreText() {
+	public void RefreshScoreText() {
 		scoreText.text = $"Score: {pc.score}";
 	}
 }

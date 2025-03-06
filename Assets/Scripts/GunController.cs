@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,6 +19,7 @@ public class GunController : MonoBehaviour {
 	private GameObject weaponInstance;
 
 	private InputAction shootAction;
+	private InputAction reloadAction;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
@@ -26,7 +28,10 @@ public class GunController : MonoBehaviour {
 
 	void Start() {
 		shootAction = InputSystem.actions.FindAction("Shoot");
+		reloadAction = InputSystem.actions.FindAction("Reload");
+
 		shootAction.performed += _ => OnShoot();
+		reloadAction.performed += _ => OnReload();
 
 		offset = transform.position - player.position;
 		rotationOffset = transform.rotation;
@@ -40,6 +45,11 @@ public class GunController : MonoBehaviour {
 
 	public void SwitchGun(GunConfig newGun, int? setAmmo = null) {
 		if (weaponInstance != null) Destroy(weaponInstance);
+		if (reloading) {
+			StopCoroutine(reloadCoroutine);
+			reloading = false;
+			reloadStart = -Mathf.Infinity;
+		}
 
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
@@ -66,11 +76,11 @@ public class GunController : MonoBehaviour {
 
 	private float lastShot = -Mathf.Infinity;
 	private bool CanShoot => Time.time - lastShot >= config.fireCooldown && ammo > 0;
-	private int ammo = 0;
 
 	void OnShoot() {
 		if (GameManager.Instance.IsPaused || !CanShoot) return;
 		lastShot = Time.time;
+		ammo--;
 
 		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
 		Vector3 targetPoint;
@@ -84,7 +94,30 @@ public class GunController : MonoBehaviour {
 		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
 		Debug.DrawRay(firePoint.position, directionFromGun * config.range, Color.red, 0.5f);
 		if (Physics.Raycast(firePoint.position, directionFromGun, out RaycastHit hit, config.range, hitLayers)) {
-			Debug.Log("Applying damage to " + hit.collider.name);
+			if (hit.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
+				enemy.TakeDamage(config.damage, hit.point);
+				Debug.Log($"Hit {hit.collider.name} for {config.damage} damage.");
+			}
 		}
+	}
+
+	private int ammo = 0;
+	private bool reloading = false;
+	public float reloadStart { get; private set; } = -Mathf.Infinity;
+	private Coroutine reloadCoroutine;
+
+	void OnReload() {
+		if (reloading || ammo == config.maxAmmo) return;
+		reloadCoroutine = StartCoroutine(ReloadCoroutine());
+	}
+
+	IEnumerator ReloadCoroutine() {
+		reloadStart = Time.time;
+		reloading = true;
+
+		yield return new WaitForSeconds(config.reloadTime);
+
+		reloading = false;
+		ammo = config.maxAmmo;
 	}
 }

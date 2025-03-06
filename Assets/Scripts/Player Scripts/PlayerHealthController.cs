@@ -22,7 +22,7 @@ public class PlayerHealthController : MonoBehaviour {
 		rb = GetComponent<Rigidbody>();
 	}
 
-	public void TakeDamage(int damage, Vector3 hitOrigin) {
+	public void TakeDamage(float damage, Vector3 hitOrigin) {
 		health -= damage;
 		rb.AddForce((transform.position - hitOrigin).normalized * 10, ForceMode.Impulse);
 

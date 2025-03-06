@@ -81,6 +81,11 @@ public class CameraController : MonoBehaviour {
 	}
 
 	public (Vector3, Vector3) ShootReset() {
+		if (!IsFreelooking) {
+			Debug.LogWarning("Trying to reset shoot while not freelooking");
+			return (Vector3.zero, Vector3.zero);
+		}
+
 		// Aim in the last aim direction and prevent freelooking until key is re-pressed and return last position and rotation
 		canFreelook = false;
 		yaw = lastYaw;
