@@ -19,6 +19,9 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	[DefaultValue(10f)] public float knockbackForce;
 	[DefaultValue(0.5f)] public float knockbackDuration;
 
+	[DefaultValue(2.3f)] public float deathKnockbackForceMultiplier;
+	[DefaultValue(3f)] public float deathKnockbackDuration;
+
 	private bool knockedback = false;
 
 	[ContextMenu("Default Values")]
@@ -44,17 +47,17 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		knockbackCoroutine = StartCoroutine(KnockbackCoroutine(hitOrigin));
 	}
 
-	IEnumerator KnockbackCoroutine(Vector3 hitOrigin, float multiplier = 1f, float? duration = null, bool dieAtEnd = false) {
+	IEnumerator KnockbackCoroutine(Vector3 hitOrigin, bool die = false) {
 		knockedback = true;
 		agent.enabled = false;
 		rb.isKinematic = false;
 
 		Vector3 force = (transform.position - hitOrigin).normalized;
-		force.y = 0;
-		rb.AddForce(knockbackForce * multiplier * force, ForceMode.Impulse);
+		if (!die) force.y = 0;
+		rb.AddForce(knockbackForce * (die ? deathKnockbackForceMultiplier : 1f) * force, ForceMode.Impulse);
 
-		yield return new WaitForSeconds(duration ?? knockbackDuration);
-		if (dieAtEnd) Destroy(gameObject);
+		yield return new WaitForSeconds(die ? deathKnockbackDuration : knockbackDuration);
+		if (die) Destroy(gameObject);
 
 		rb.linearVelocity = Vector3.zero;
 
@@ -68,7 +71,7 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		if (knockbackCoroutine != null) StopCoroutine(knockbackCoroutine);
 		rb.constraints = RigidbodyConstraints.None;
 
-		if (hitOrigin != null) StartCoroutine(KnockbackCoroutine(hitOrigin.Value, 2f, 2f, true));
+		if (hitOrigin != null) StartCoroutine(KnockbackCoroutine(hitOrigin.Value, true));
 		else Destroy(gameObject);
 	}
 
@@ -78,7 +81,6 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
 
 			lastHit = Time.time;
-			Debug.Log("Dealing damage to player");
 			player.TakeDamage(damage, transform.position);
 			yield return new WaitForSeconds(hitCooldown);
 		}

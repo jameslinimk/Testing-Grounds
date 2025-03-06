@@ -8,13 +8,14 @@ public class GunController : MonoBehaviour {
 	public LayerMask hitLayers;
 	public Transform player;
 	public CameraController cameraController;
+	public PlayerUIController playerUIController;
 	[DefaultValue(17f)] public float rotationSpeed;
 	[DefaultValue(300f)] public float fallbackDistance;
 
 	private Vector3 offset;
 	private Quaternion rotationOffset;
-	private float camRange;
-	private GunConfig config;
+	private float camRange = 0f;
+	public GunConfig config { get; private set; }
 	private Transform firePoint;
 	private GameObject weaponInstance;
 
@@ -43,6 +44,15 @@ public class GunController : MonoBehaviour {
 		SwitchGun(defaultGunConfig);
 	}
 
+	private bool switchingGuns;
+	private Coroutine switchGunCoroutine;
+
+	public void SwitchGun(GunSlot gunSlot) {
+		if (gunSlot.CanPocketReload) gunSlot.Reload();
+		SwitchGun(gunSlot.config, gunSlot.currentAmmo);
+	}
+
+	// setAmmo == null also switches instant
 	public void SwitchGun(GunConfig newGun, int? setAmmo = null) {
 		if (weaponInstance != null) Destroy(weaponInstance);
 		if (reloading) {
@@ -50,14 +60,28 @@ public class GunController : MonoBehaviour {
 			reloading = false;
 			reloadStart = -Mathf.Infinity;
 		}
+		if (switchingGuns) {
+			StopCoroutine(switchGunCoroutine);
+			switchingGuns = false;
+		}
 
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
+		playerUIController.RefreshAmmoText();
 
-		weaponInstance = Instantiate(newGun.weaponPrefab, transform.position, transform.rotation, transform);
+		switchGunCoroutine = StartCoroutine(SwitchGunCoroutine(config, setAmmo == null));
+	}
+
+	IEnumerator SwitchGunCoroutine(GunConfig config, bool instant = false) {
+		switchingGuns = true;
+		if (!instant) yield return new WaitForSeconds(config.drawSpeed);
+		switchingGuns = false;
+
+		weaponInstance = Instantiate(config.weaponPrefab, transform.position, transform.rotation, transform);
 		firePoint = weaponInstance.transform.Find("Firepoint");
 		if (firePoint == null) Debug.LogError("FirePoint not found in weapon prefab.");
-		camRange = config.range + Vector3.Distance(cameraController.transform.position, firePoint.position) + 2f;
+
+		if (camRange == 0f) camRange = config.range + Vector3.Distance(cameraController.transform.position, firePoint.position) + 2f;
 	}
 
 	void LateUpdate() {
@@ -81,6 +105,7 @@ public class GunController : MonoBehaviour {
 		if (GameManager.Instance.IsPaused || !CanShoot) return;
 		lastShot = Time.time;
 		ammo--;
+		playerUIController.RefreshAmmoText();
 
 		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
 		Vector3 targetPoint;
@@ -101,7 +126,7 @@ public class GunController : MonoBehaviour {
 		}
 	}
 
-	private int ammo = 0;
+	public int ammo { get; private set; } = 0;
 	private bool reloading = false;
 	public float reloadStart { get; private set; } = -Mathf.Infinity;
 	private Coroutine reloadCoroutine;
@@ -113,11 +138,11 @@ public class GunController : MonoBehaviour {
 
 	IEnumerator ReloadCoroutine() {
 		reloadStart = Time.time;
+
 		reloading = true;
-
 		yield return new WaitForSeconds(config.reloadTime);
-
 		reloading = false;
+
 		ammo = config.maxAmmo;
 	}
 }

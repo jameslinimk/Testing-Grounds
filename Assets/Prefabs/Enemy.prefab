@@ -180,6 +180,8 @@ MonoBehaviour:
   hitCooldown: 1
   knockbackForce: 10
   knockbackDuration: 0.5
+  deathKnockbackForceMultiplier: 2.3
+  deathKnockbackDuration: 3
 --- !u!114 &4892941265834407905
 MonoBehaviour:
   m_ObjectHideFlags: 0

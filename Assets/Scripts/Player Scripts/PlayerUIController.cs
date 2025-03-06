@@ -24,6 +24,10 @@ public partial class PlayerUIController : MonoBehaviour {
 	public Image healthBarOverlay;
 	public Color barDamagedColor;
 
+	[Header("Gun UI")]
+	public GunController gunController;
+	public TextMeshProUGUI ammoCounterText;
+
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
 		barDamagedColor = Color.red;
@@ -79,6 +83,10 @@ public partial class PlayerUIController : MonoBehaviour {
 		float ratio = Utils.EaseTowards(current, target, 5f, 2f);
 		healthBarOverlay.rectTransform.sizeDelta = new Vector2(healthBarWidth * ratio, healthBarOverlay.rectTransform.rect.height);
 		healthBarOverlay.color = Color.Lerp(barDamagedColor, barHealthyColor, ratio); ;
+	}
+
+	public void RefreshAmmoText() {
+		ammoCounterText.text = $"{gunController.ammo}/{gunController.config.maxAmmo}";
 	}
 
 	public void RefreshScoreText() {

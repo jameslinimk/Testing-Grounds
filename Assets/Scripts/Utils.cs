@@ -19,6 +19,10 @@ public static class Utils {
 		return Mathf.MoveTowards(current, target, step);
 	}
 
+	public static int WrapAround(int index, int max) {
+		return ((index % max) + max) % max;
+	}
+
 	private static Vector4[] MakeUnitSphere(int len) {
 		Debug.Assert(len > 2);
 		var v = new Vector4[len * 3];
