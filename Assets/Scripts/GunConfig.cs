@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum FireType {
@@ -61,4 +62,8 @@ public class GunConfig : ScriptableObject {
 	public float bloomCooldownRate;
 
 	public float dps => damage * bullets / fireCooldown;
+
+	public GunConfig Clone() {
+		return Instantiate(this);
+	}
 }

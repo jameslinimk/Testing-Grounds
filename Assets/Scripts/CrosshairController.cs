@@ -2,6 +2,19 @@ using System.ComponentModel;
 using UnityEngine;
 
 public class CrosshairController : MonoBehaviour {
+	private static CrosshairController _instance;
+	public static CrosshairController Instance => _instance;
+
+	private void Awake() {
+		if (_instance != null && _instance != this) {
+			Destroy(gameObject);
+			return;
+		}
+
+		_instance = this;
+		DontDestroyOnLoad(gameObject);
+	}
+
 	[System.Serializable]
 	public struct CrosshairElement {
 		public CircleGraphic graphic;

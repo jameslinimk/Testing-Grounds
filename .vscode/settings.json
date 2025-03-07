@@ -56,9 +56,10 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Testing Grounds.sln",
+    "dotnet.defaultSolution": "Testing-Grounds.sln",
     "cSpell.words": [
         "Behaviour",
+        "Cloneable",
         "cooldown",
         "Firepoint",
         "freelook",
@@ -69,6 +70,7 @@
         "knockedback",
         "Lerp",
         "Mathf",
+        "Memberwise",
         "pythag",
         "Regen",
         "Rigidbody",

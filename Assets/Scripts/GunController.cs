@@ -67,7 +67,6 @@ public class GunController : MonoBehaviour {
 
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
-		playerUIController.RefreshAmmoText();
 
 		switchGunCoroutine = StartCoroutine(SwitchGunCoroutine(config, setAmmo == null));
 	}
@@ -99,13 +98,12 @@ public class GunController : MonoBehaviour {
 	}
 
 	private float lastShot = -Mathf.Infinity;
-	private bool CanShoot => Time.time - lastShot >= config.fireCooldown && ammo > 0;
+	private bool CanShoot => Time.time - lastShot >= config.fireCooldown && ammo > 0 && !switchingGuns && !reloading;
 
 	void OnShoot() {
 		if (GameManager.Instance.IsPaused || !CanShoot) return;
 		lastShot = Time.time;
 		ammo--;
-		playerUIController.RefreshAmmoText();
 
 		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
 		Vector3 targetPoint;
@@ -121,7 +119,6 @@ public class GunController : MonoBehaviour {
 		if (Physics.Raycast(firePoint.position, directionFromGun, out RaycastHit hit, config.range, hitLayers)) {
 			if (hit.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
 				enemy.TakeDamage(config.damage, hit.point);
-				Debug.Log($"Hit {hit.collider.name} for {config.damage} damage.");
 			}
 		}
 	}

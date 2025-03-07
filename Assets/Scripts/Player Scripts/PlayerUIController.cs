@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public partial class PlayerUIController : MonoBehaviour {
 	private PlayerController pc;
 	private PlayerHealthController healthController;
+	private PlayerGunManager gunManager;
 
 	[Header("Score UI")]
 	public TextMeshProUGUI scoreText;
@@ -37,11 +38,13 @@ public partial class PlayerUIController : MonoBehaviour {
 		UpdateDashUI();
 		UpdateStaminaUI();
 		UpdateHealthUI();
+		UpdateGunUI();
 	}
 
 	void Start() {
 		pc = GetComponent<PlayerController>();
 		healthController = GetComponent<PlayerHealthController>();
+		gunManager = GetComponent<PlayerGunManager>();
 
 		barHealthyColor = healthBarOverlay.color;
 		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
@@ -85,8 +88,9 @@ public partial class PlayerUIController : MonoBehaviour {
 		healthBarOverlay.color = Color.Lerp(barDamagedColor, barHealthyColor, ratio); ;
 	}
 
-	public void RefreshAmmoText() {
-		ammoCounterText.text = $"{gunController.ammo}/{gunController.config.maxAmmo}";
+	private void UpdateGunUI() {
+		GunConfig gun = gunManager.CurrentGun.config;
+		ammoCounterText.text = $"{gun.name} {gunController.ammo}/{gun.maxAmmo}";
 	}
 
 	public void RefreshScoreText() {
