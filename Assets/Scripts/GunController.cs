@@ -11,6 +11,7 @@ public class GunController : MonoBehaviour {
 	public PlayerUIController playerUIController;
 	[DefaultValue(17f)] public float rotationSpeed;
 	[DefaultValue(300f)] public float fallbackDistance;
+	[DefaultValue(true)] public bool autoReload;
 
 	private Vector3 offset;
 	private Quaternion rotationOffset;
@@ -46,6 +47,11 @@ public class GunController : MonoBehaviour {
 
 	private bool switchingGuns;
 	private Coroutine switchGunCoroutine;
+	private void StopSwitchGunCoroutine() {
+		if (switchGunCoroutine == null) return;
+		StopCoroutine(switchGunCoroutine);
+		switchingGuns = false;
+	}
 
 	public void SwitchGun(GunSlot gunSlot) {
 		if (gunSlot.CanPocketReload) gunSlot.Reload();
@@ -55,15 +61,10 @@ public class GunController : MonoBehaviour {
 	// setAmmo == null also switches instant
 	public void SwitchGun(GunConfig newGun, int? setAmmo = null) {
 		if (weaponInstance != null) Destroy(weaponInstance);
-		if (reloading) {
-			StopCoroutine(reloadCoroutine);
-			reloading = false;
-			reloadStart = -Mathf.Infinity;
-		}
-		if (switchingGuns) {
-			StopCoroutine(switchGunCoroutine);
-			switchingGuns = false;
-		}
+
+		if (bursting) StopBurstCoroutine();
+		if (reloading) StopReloadCoroutine();
+		if (switchingGuns) StopSwitchGunCoroutine();
 
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
@@ -75,6 +76,8 @@ public class GunController : MonoBehaviour {
 		switchingGuns = true;
 		if (!instant) yield return new WaitForSeconds(config.drawSpeed);
 		switchingGuns = false;
+
+		currentSpread = config.spread;
 
 		weaponInstance = Instantiate(config.weaponPrefab, transform.position, transform.rotation, transform);
 		firePoint = weaponInstance.transform.Find("Firepoint");
@@ -95,13 +98,27 @@ public class GunController : MonoBehaviour {
 
 	void Update() {
 		if (config.fireType != FireType.Single && shootAction.IsInProgress()) OnShoot();
+
+		Debug.Log($"{reloading} {bursting} {switchingGuns}");
+	}
+
+	/* -------------------------------- Shooting -------------------------------- */
+
+	private bool bursting = false;
+	private Coroutine burstCoroutine;
+	private void StopBurstCoroutine() {
+		if (burstCoroutine == null) return;
+		StopCoroutine(burstCoroutine);
+		bursting = false;
 	}
 
 	private float lastShot = -Mathf.Infinity;
-	private bool CanShoot => Time.time - lastShot >= config.fireCooldown && ammo > 0 && !switchingGuns && !reloading;
+	private bool CanShoot => ammo > 0 && Time.time - lastShot >= config.fireCooldown && !switchingGuns && !bursting && !reloading;
 
 	void OnShoot() {
+		if (ammo == 0 && Time.time - lastShot >= config.fireCooldown) OnReload();
 		if (GameManager.Instance.IsPaused || !CanShoot) return;
+
 		lastShot = Time.time;
 		ammo--;
 
@@ -115,21 +132,64 @@ public class GunController : MonoBehaviour {
 
 		// Real raycast from gun
 		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
-		Debug.DrawRay(firePoint.position, directionFromGun * config.range, Color.red, 0.5f);
-		if (Physics.Raycast(firePoint.position, directionFromGun, out RaycastHit hit, config.range, hitLayers)) {
+		if (config.burstCount == 0) {
+			ShootBullet(directionFromGun);
+		} else {
+			burstCoroutine = StartCoroutine(BurstCoroutine(directionFromGun));
+		}
+	}
+
+	IEnumerator BurstCoroutine(Vector3 directionFromGun) {
+		bursting = true;
+		for (int i = 0; i < config.burstCount; i++) {
+			ShootBullet(directionFromGun);
+			yield return new WaitForSeconds(config.burstDelay);
+		}
+		lastShot = Time.time;
+		bursting = false;
+	}
+
+	/* ------------------------ Bloom/recoil/kickback/etc ----------------------- */
+
+	[SerializeField]
+	private float currentSpread = 0f;
+
+	private Vector3 ApplySpread(Vector3 direction, float spread) {
+		return Quaternion.Euler(
+			Random.Range(-spread, spread),
+			Random.Range(-spread, spread),
+			0f
+		) * direction;
+	}
+
+	private void ShootBullet(Vector3 directionFromGun) {
+		Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
+
+		Debug.DrawRay(firePoint.position, newDir * config.range, Color.red, 0.5f);
+		if (Physics.Raycast(firePoint.position, newDir, out RaycastHit hit, config.range, hitLayers)) {
 			if (hit.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
 				enemy.TakeDamage(config.damage, hit.point);
 			}
 		}
 	}
 
+	/* ----------------------------- Ammo/reloading ----------------------------- */
+
 	public int ammo { get; private set; } = 0;
-	private bool reloading = false;
 	public float reloadStart { get; private set; } = -Mathf.Infinity;
+
+	private bool reloading = false;
 	private Coroutine reloadCoroutine;
+	private void StopReloadCoroutine() {
+		if (reloadCoroutine == null) return;
+		StopCoroutine(reloadCoroutine);
+		reloading = false;
+		reloadStart = -Mathf.Infinity;
+	}
 
 	void OnReload() {
-		if (reloading || ammo == config.maxAmmo) return;
+		if (bursting) StopBurstCoroutine();
+		if (reloading || switchingGuns || ammo == config.maxAmmo) return;
 		reloadCoroutine = StartCoroutine(ReloadCoroutine());
 	}
 
