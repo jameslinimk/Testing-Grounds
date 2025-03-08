@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81262f004b3a8954ba5c33c872529097, type: 3}
   m_Name: StartingPistol
   m_EditorClassIdentifier: 
-  weaponName: Pistol 3
+  weaponName: Basic Pistol
   description: Your basic starter pistol. Not shiny, but will do the job
   rarity: 0
   icon: {fileID: 0}

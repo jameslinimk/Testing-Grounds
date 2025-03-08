@@ -47,8 +47,8 @@ public class PlayerGunManager : MonoBehaviour {
 		// For testing add other guns with diff names (rename default gun config)
 		gunSlots[1].ReConfig(gunController.defaultGunConfig.Clone());
 		gunSlots[2].ReConfig(gunController.defaultGunConfig.Clone());
-		gunSlots[1].config.name = "Gun2";
-		gunSlots[2].config.name = "Gun3";
+		gunSlots[1].config.weaponName = "Gun2";
+		gunSlots[2].config.weaponName = "Gun3";
 
 		InputSystem.actions.FindAction("Gun1").performed += _ => SwitchGun(0);
 		InputSystem.actions.FindAction("Gun2").performed += _ => SwitchGun(1);
