@@ -23,19 +23,19 @@ MonoBehaviour:
     projectilePrefab: {fileID: 0}
     speed: 0
     lifetime: 0
-  fireType: 0
+  fireType: 2
   range: 100
   burstCount: 0
   burstDelay: 0
-  fireCooldown: 0.25
+  fireCooldown: 0.1
   kickback: 3
   damage: 10
   headshotMultiplier: 2
-  bullets: 1
-  maxAmmo: 16
+  bullets: 2
+  maxAmmo: 100
   reloadTime: 1.5
-  spread: 5
-  maxBloom: 2
-  bloomRate: 0.5
-  bloomCooldownDelay: 0.25
-  bloomCooldownRate: 1.5
+  spread: 3
+  maxBloom: 7
+  bloom: 0.4
+  bloomCooldownDelay: 0.75
+  bloomCooldownRate: 4
