@@ -42,7 +42,8 @@ public class PlayerGunManager : MonoBehaviour {
 
 	void Start() {
 		for (int i = 0; i < gunSlots.Length; i++) gunSlots[i] = new GunSlot();
-		gunSlots[0].ReConfig(gunController.defaultGunConfig.Clone());
+		gunSlots[0].ReConfig(gunController.defaultGunConfig);
+		gunController.SwitchGun(gunSlots[currentGunIndex].config);
 
 		// For testing add other guns with diff names (rename default gun config)
 		gunSlots[1].ReConfig(gunController.defaultGunConfig.Clone());

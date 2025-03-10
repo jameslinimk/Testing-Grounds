@@ -89,7 +89,7 @@ public partial class PlayerUIController : MonoBehaviour {
 	}
 
 	private void UpdateGunUI() {
-		GunConfig gun = gunManager.CurrentGun.config;
+		GunConfig gun = gunController.config;
 		ammoCounterText.text = $"{gun.weaponName} {gunController.ammo}/{gun.maxAmmo}";
 	}
 

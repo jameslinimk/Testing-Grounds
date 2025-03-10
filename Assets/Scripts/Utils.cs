@@ -23,6 +23,10 @@ public static class Utils {
 		return ((index % max) + max) % max;
 	}
 
+	public static bool IsInLayerMask(this LayerMask mask, int layer) {
+		return (mask & (1 << layer)) != 0;
+	}
+
 	private static Vector4[] MakeUnitSphere(int len) {
 		Debug.Assert(len > 2);
 		var v = new Vector4[len * 3];

@@ -36,6 +36,7 @@
         "**/*.MA": true,
         "**/*.obj": true,
         "**/*.OBJ": true,
+        "**/*.asset": true,
         "**/*.cubemap": true,
         "**/*.flare": true,
         "**/*.mat": true,
@@ -55,7 +56,7 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Testing-Grounds.sln",
+    "dotnet.defaultSolution": "Testing Grounds.sln",
     "cSpell.words": [
         "Behaviour",
         "Cloneable",

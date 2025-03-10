@@ -37,7 +37,6 @@ public class GunController : MonoBehaviour {
 
 		offset = transform.position - player.position;
 		rotationOffset = transform.rotation;
-		SwitchGun(defaultGunConfig);
 	}
 
 	[ContextMenu("Add default gun")]
@@ -66,8 +65,10 @@ public class GunController : MonoBehaviour {
 		if (reloading) StopReloadCoroutine();
 		if (switchingGuns) StopSwitchGunCoroutine();
 
+		// Switch before for UI
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
+		currentSpread = config.spread;
 
 		switchGunCoroutine = StartCoroutine(SwitchGunCoroutine(config, setAmmo == null));
 	}
@@ -99,7 +100,12 @@ public class GunController : MonoBehaviour {
 	void Update() {
 		if (config.fireType != FireType.Single && shootAction.IsInProgress()) OnShoot();
 
-		Debug.Log($"{reloading} {bursting} {switchingGuns}");
+		// Bloom reset
+		if (Time.time - lastShot >= config.bloomCooldownDelay) {
+			currentSpread = Mathf.MoveTowards(currentSpread, config.spread, config.bloomCooldownRate * Time.deltaTime);
+		}
+
+		CrosshairController.Instance.UpdateOuterCircleSize(currentSpread * 10);
 	}
 
 	/* -------------------------------- Shooting -------------------------------- */
@@ -133,16 +139,18 @@ public class GunController : MonoBehaviour {
 		// Real raycast from gun
 		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
 		if (config.burstCount == 0) {
-			ShootBullet(directionFromGun);
+			ShootBullets(directionFromGun);
+			CrosshairController.Instance.Shoot();
 		} else {
 			burstCoroutine = StartCoroutine(BurstCoroutine(directionFromGun));
+			CrosshairController.Instance.Shoot(config.burstCount * config.burstDelay);
 		}
 	}
 
 	IEnumerator BurstCoroutine(Vector3 directionFromGun) {
 		bursting = true;
 		for (int i = 0; i < config.burstCount; i++) {
-			ShootBullet(directionFromGun);
+			ShootBullets(directionFromGun);
 			yield return new WaitForSeconds(config.burstDelay);
 		}
 		lastShot = Time.time;
@@ -162,15 +170,29 @@ public class GunController : MonoBehaviour {
 		) * direction;
 	}
 
-	private void ShootBullet(Vector3 directionFromGun) {
-		Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
+	private void ShootBullets(Vector3 directionFromGun) {
+		currentSpread += config.bloom;
+		currentSpread = Mathf.Clamp(currentSpread, 0f, config.maxBloom);
 
-		Debug.DrawRay(firePoint.position, newDir * config.range, Color.red, 0.5f);
-		if (Physics.Raycast(firePoint.position, newDir, out RaycastHit hit, config.range, hitLayers)) {
-			if (hit.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
-				enemy.TakeDamage(config.damage, hit.point);
+		for (int i = 0; i < config.bullets; i++) {
+			Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
+
+			if (!config.isProjectile) {
+				Debug.DrawRay(firePoint.position, newDir * config.range, Color.red, 0.5f);
+				if (!Physics.Raycast(firePoint.position, newDir, out RaycastHit hit, config.range, hitLayers)) continue;
+				if (!hit.collider.TryGetComponent<EnemyHealthController>(out var enemy)) continue;
+
+				ApplyDamage(enemy, hit.point);
+			} else {
+				ProjectileInfo info = config.projectileInfo;
+				GameObject projectile = Instantiate(info.projectilePrefab, firePoint.position, Quaternion.LookRotation(newDir));
+				projectile.GetComponent<ProjectileController>().Initialize(newDir, info.speed, info.lifetime, hitLayers, ApplyDamage);
 			}
 		}
+	}
+
+	private void ApplyDamage(EnemyHealthController enemy, Vector3 hitPoint) {
+		enemy.TakeDamage(config.damage, hitPoint);
 	}
 
 	/* ----------------------------- Ammo/reloading ----------------------------- */

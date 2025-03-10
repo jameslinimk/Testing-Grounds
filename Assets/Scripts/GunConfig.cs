@@ -56,7 +56,7 @@ public class GunConfig : ScriptableObject {
 	[Header("Accuracy")]
 	public float spread;
 	public float maxBloom;
-	public float bloomRate;
+	public float bloom;
 	public float bloomCooldownDelay;
 	public float bloomCooldownRate;
 

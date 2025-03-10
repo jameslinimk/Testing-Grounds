@@ -24,8 +24,6 @@ public class CrosshairController : MonoBehaviour {
 	}
 
 	[Header("Crosshair Settings")]
-	[DefaultValue(5f)] public float outerCircleResetSpeed;
-	private float originalOuterCircleSize;
 
 	[Header("Crosshair Components")]
 	public CrosshairElement centerDot;
@@ -65,7 +63,6 @@ public class CrosshairController : MonoBehaviour {
 		outerCircleBorder.rectTransform = outerCircleBorder.graphic.GetComponent<RectTransform>();
 
 		UpdateCrosshair();
-		originalOuterCircleSize = outerCircle.size;
 	}
 
 	private void SetElementSize(ref CrosshairElement element, float size, float extraThickness = 0) {
@@ -91,13 +88,25 @@ public class CrosshairController : MonoBehaviour {
 		outerCircleBorder.graphic.edgeThickness = outerCircle.thickness + (outerCircleBorder.thickness * 2);
 	}
 
-	public void UpdateOuterCircleSize(float size) {
+	private void SetOuterSize(float size) {
 		outerCircle.size = size;
 		SetElementSize(ref outerCircle, outerCircle.size);
 		SetElementSize(ref outerCircleBorder, outerCircle.size, outerCircleBorder.thickness);
 	}
 
+	private float outerCircleSizeTarget = 0f;
+
+	public void UpdateOuterCircleSize(float currentSpread) {
+		outerCircleSizeTarget = currentSpread * 10;
+	}
+
+	public void Shoot(float duration = 0f) {
+		SetOuterSize(outerCircle.size + 10f);
+	}
+
 	void Update() {
-		UpdateOuterCircleSize(Mathf.Lerp(outerCircle.size, originalOuterCircleSize, Time.deltaTime * outerCircleResetSpeed));
+		SetOuterSize(Mathf.MoveTowards(outerCircle.size, outerCircleSizeTarget, 10f * Time.deltaTime));
+
+		// TODO crosshair stuff
 	}
 }
