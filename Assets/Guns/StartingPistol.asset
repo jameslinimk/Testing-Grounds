@@ -23,7 +23,7 @@ MonoBehaviour:
     projectilePrefab: {fileID: 0}
     speed: 0
     lifetime: 0
-  fireType: 2
+  fireType: 0
   range: 100
   burstCount: 0
   burstDelay: 0
@@ -37,5 +37,5 @@ MonoBehaviour:
   spread: 3
   maxBloom: 7
   bloom: 0.4
-  bloomCooldownDelay: 0.75
+  bloomCooldownDelay: 0.2
   bloomCooldownRate: 4

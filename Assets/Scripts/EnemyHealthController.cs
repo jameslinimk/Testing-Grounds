@@ -2,8 +2,8 @@ using System.ComponentModel;
 using UnityEngine;
 
 public interface IKnockbackable {
-	void OnKnockback(Vector3 hitOrigin);
-	void OnDie(Vector3? hitOrigin);
+	void OnKnockback(Vector3 hitOrigin, float damage);
+	void OnDie(Vector3 hitOrigin, float damage);
 }
 
 public class EnemyHealthController : MonoBehaviour {
@@ -23,11 +23,7 @@ public class EnemyHealthController : MonoBehaviour {
 	public void TakeDamage(float damage, Vector3 hitOrigin) {
 		health -= damage;
 
-		if (health <= 0) Die(hitOrigin);
-		else knockbackable.OnKnockback(hitOrigin);
-	}
-
-	public void Die(Vector3? hitOrigin) {
-		knockbackable.OnDie(hitOrigin);
+		if (health <= 0) knockbackable.OnDie(hitOrigin, damage);
+		else knockbackable.OnKnockback(hitOrigin, damage);
 	}
 }

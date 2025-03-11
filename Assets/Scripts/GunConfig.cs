@@ -3,7 +3,8 @@ using UnityEngine;
 
 public enum FireType {
 	Single,
-	Burst,
+	BurstSingle,
+	BurstAuto,
 	Auto
 }
 
@@ -61,8 +62,4 @@ public class GunConfig : ScriptableObject {
 	public float bloomCooldownRate;
 
 	public float dps => damage * bullets / fireCooldown;
-
-	public GunConfig Clone() {
-		return Instantiate(this);
-	}
 }

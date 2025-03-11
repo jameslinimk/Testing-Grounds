@@ -25,7 +25,7 @@ public class ProjectileController : MonoBehaviour {
 	}
 
 	void OnCollisionEnter(Collision collision) {
-		if (!hitLayers.IsInLayerMask(collision.gameObject.layer)) return;
+		if (!hitLayers.ContainsLayer(collision.gameObject.layer)) return;
 
 		if (collision.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
 			Vector3 hitPoint = collision.contacts[0].point;

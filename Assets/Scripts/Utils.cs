@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Reflection;
 using System.ComponentModel;
+using System.Linq;
 
 public static class Utils {
 	public static float EaseOutQuart(float t) {
@@ -23,8 +24,24 @@ public static class Utils {
 		return ((index % max) + max) % max;
 	}
 
-	public static bool IsInLayerMask(this LayerMask mask, int layer) {
+	public static bool ContainsLayer(this LayerMask mask, int layer) {
 		return (mask & (1 << layer)) != 0;
+	}
+
+	public static bool Is<T>(this T source, params T[] list) {
+		if (source == null) throw new ArgumentNullException(nameof(source));
+		return list.Contains(source);
+	}
+
+	public static T Clone<T>(this T scriptableObject) where T : ScriptableObject {
+		if (scriptableObject == null) {
+			Debug.LogError($"ScriptableObject was null. Returning default {typeof(T)} object.");
+			return (T)ScriptableObject.CreateInstance(typeof(T));
+		}
+
+		T instance = UnityEngine.Object.Instantiate(scriptableObject);
+		instance.name = scriptableObject.name; // Remove (Clone) from the name
+		return instance;
 	}
 
 	private static Vector4[] MakeUnitSphere(int len) {

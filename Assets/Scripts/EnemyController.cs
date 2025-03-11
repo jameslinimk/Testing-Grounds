@@ -16,7 +16,7 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	private bool touchingPlayer = false;
 	private Coroutine damageCoroutine;
 
-	[DefaultValue(10f)] public float knockbackForce;
+	[DefaultValue(0.8f)] public float knockbackForceMultiplier;
 	[DefaultValue(0.5f)] public float knockbackDuration;
 
 	[DefaultValue(2.3f)] public float deathKnockbackForceMultiplier;
@@ -42,19 +42,19 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 
 	private Coroutine knockbackCoroutine;
 
-	public void OnKnockback(Vector3 hitOrigin) {
+	public void OnKnockback(Vector3 hitOrigin, float damage) {
 		if (knockbackCoroutine != null) StopCoroutine(knockbackCoroutine);
-		knockbackCoroutine = StartCoroutine(KnockbackCoroutine(hitOrigin));
+		knockbackCoroutine = StartCoroutine(KnockbackCoroutine(hitOrigin, damage));
 	}
 
-	IEnumerator KnockbackCoroutine(Vector3 hitOrigin, bool die = false) {
+	IEnumerator KnockbackCoroutine(Vector3 hitOrigin, float damage, bool die = false) {
 		knockedback = true;
 		agent.enabled = false;
 		rb.isKinematic = false;
 
 		Vector3 force = (transform.position - hitOrigin).normalized;
 		if (!die) force.y = 0;
-		rb.AddForce(knockbackForce * (die ? deathKnockbackForceMultiplier : 1f) * force, ForceMode.Impulse);
+		rb.AddForce(damage * knockbackForceMultiplier * (die ? deathKnockbackForceMultiplier : 1f) * force, ForceMode.Impulse);
 
 		yield return new WaitForSeconds(die ? deathKnockbackDuration : knockbackDuration);
 		if (die) Destroy(gameObject);
@@ -67,12 +67,11 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		knockedback = false;
 	}
 
-	public void OnDie(Vector3? hitOrigin) {
+	public void OnDie(Vector3 hitOrigin, float damage) {
 		if (knockbackCoroutine != null) StopCoroutine(knockbackCoroutine);
-		rb.constraints = RigidbodyConstraints.None;
 
-		if (hitOrigin != null) StartCoroutine(KnockbackCoroutine(hitOrigin.Value, true));
-		else Destroy(gameObject);
+		rb.constraints = RigidbodyConstraints.None;
+		StartCoroutine(KnockbackCoroutine(hitOrigin, damage, true));
 	}
 
 	private IEnumerator DamageOverTime(PlayerHealthController player) {

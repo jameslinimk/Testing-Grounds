@@ -13,6 +13,8 @@ public class GunController : MonoBehaviour {
 	[DefaultValue(300f)] public float fallbackDistance;
 	[DefaultValue(true)] public bool autoReload;
 
+	private Rigidbody playerRb;
+
 	private Vector3 offset;
 	private Quaternion rotationOffset;
 	private float camRange = 0f;
@@ -37,6 +39,8 @@ public class GunController : MonoBehaviour {
 
 		offset = transform.position - player.position;
 		rotationOffset = transform.rotation;
+
+		playerRb = player.GetComponent<Rigidbody>();
 	}
 
 	[ContextMenu("Add default gun")]
@@ -68,7 +72,6 @@ public class GunController : MonoBehaviour {
 		// Switch before for UI
 		config = newGun;
 		ammo = setAmmo ?? config.maxAmmo;
-		currentSpread = config.spread;
 
 		switchGunCoroutine = StartCoroutine(SwitchGunCoroutine(config, setAmmo == null));
 	}
@@ -98,14 +101,14 @@ public class GunController : MonoBehaviour {
 	}
 
 	void Update() {
-		if (config.fireType != FireType.Single && shootAction.IsInProgress()) OnShoot();
+		if (config.fireType.Is(FireType.BurstAuto, FireType.Auto) && shootAction.IsInProgress()) OnShoot();
 
 		// Bloom reset
 		if (Time.time - lastShot >= config.bloomCooldownDelay) {
 			currentSpread = Mathf.MoveTowards(currentSpread, config.spread, config.bloomCooldownRate * Time.deltaTime);
 		}
 
-		CrosshairController.Instance.UpdateOuterCircleSize(currentSpread * 10);
+		CrosshairController.Instance.UpdateOuterCircleSize(currentSpread);
 	}
 
 	/* -------------------------------- Shooting -------------------------------- */
@@ -140,10 +143,8 @@ public class GunController : MonoBehaviour {
 		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
 		if (config.burstCount == 0) {
 			ShootBullets(directionFromGun);
-			CrosshairController.Instance.Shoot();
 		} else {
 			burstCoroutine = StartCoroutine(BurstCoroutine(directionFromGun));
-			CrosshairController.Instance.Shoot(config.burstCount * config.burstDelay);
 		}
 	}
 
@@ -158,8 +159,6 @@ public class GunController : MonoBehaviour {
 	}
 
 	/* ------------------------ Bloom/recoil/kickback/etc ----------------------- */
-
-	[SerializeField]
 	private float currentSpread = 0f;
 
 	private Vector3 ApplySpread(Vector3 direction, float spread) {
@@ -175,6 +174,7 @@ public class GunController : MonoBehaviour {
 		currentSpread = Mathf.Clamp(currentSpread, 0f, config.maxBloom);
 
 		for (int i = 0; i < config.bullets; i++) {
+			CrosshairController.Instance.PulseCrosshair(config.burstCount);
 			Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
 
 			if (!config.isProjectile) {
@@ -189,6 +189,9 @@ public class GunController : MonoBehaviour {
 				projectile.GetComponent<ProjectileController>().Initialize(newDir, info.speed, info.lifetime, hitLayers, ApplyDamage);
 			}
 		}
+
+		Vector3 kickback = -config.kickback * directionFromGun;
+		playerRb.AddForce(kickback, ForceMode.Impulse);
 	}
 
 	private void ApplyDamage(EnemyHealthController enemy, Vector3 hitPoint) {

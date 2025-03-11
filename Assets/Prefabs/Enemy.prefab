@@ -178,7 +178,7 @@ MonoBehaviour:
   player: {fileID: 0}
   damage: 10
   hitCooldown: 1
-  knockbackForce: 10
+  knockbackForceMultiplier: 0.8
   knockbackDuration: 0.5
   deathKnockbackForceMultiplier: 2.3
   deathKnockbackDuration: 3

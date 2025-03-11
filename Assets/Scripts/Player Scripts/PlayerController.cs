@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 using System.ComponentModel;
-using System.Reflection;
 
 public class PlayerController : MonoBehaviour {
 	private PlayerHealthController healthController;
@@ -26,7 +25,10 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(50f)] public float speed;
 	[DefaultValue(7f)] public float maxWalkSpeed;
 	[DefaultValue(4f)] public float frictionSpeed;
+
 	[DefaultValue(0.5f)] public float airControl;
+	private float groundHitSpeedMultiplier = 1f;
+	private float airTime = 0f;
 	private bool isGrounded = true;
 
 	[Header("Stamina Settings")]
@@ -50,8 +52,8 @@ public class PlayerController : MonoBehaviour {
 	[Header("Jump Settings")]
 	[DefaultValue(10.5f)] public float jumpForce;
 	[DefaultValue(0.25f)] public float jumpStaminaCost;
-	[DefaultValue(2.5f)] public float fallMultiplier;
-	[DefaultValue(1.75f)] public float lowJumpMultiplier;
+	[DefaultValue(1.5f)] public float fallMultiplier;
+	[DefaultValue(0.75f)] public float lowJumpMultiplier;
 	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
 
 	[Header("Crouch Settings")]
@@ -146,6 +148,7 @@ public class PlayerController : MonoBehaviour {
 		uiController = GetComponent<PlayerUIController>();
 
 		rb = GetComponent<Rigidbody>();
+		rb.useGravity = false;
 		capsuleCollider = GetComponent<CapsuleCollider>();
 
 		originalScale = transform.localScale;
@@ -169,18 +172,18 @@ public class PlayerController : MonoBehaviour {
 
 		/* --------------------------------- Falling -------------------------------- */
 		if (!onSlope && rb.linearVelocity.y < 0) {
-			rb.AddForce((fallMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
+			rb.AddForce(fallMultiplier * Physics.gravity, ForceMode.Acceleration);
 		}
 
 		if (!onSlope && rb.linearVelocity.y > 0 && !jumpAction.IsPressed()) {
-			rb.AddForce((lowJumpMultiplier - 1) * Physics.gravity, ForceMode.Acceleration);
+			rb.AddForce(lowJumpMultiplier * Physics.gravity, ForceMode.Acceleration);
 		}
 
 		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) return;
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
-		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
+		float maxSpeed = (isCrouching ? maxCrouchSpeed : maxWalkSpeed) * groundHitSpeedMultiplier;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
@@ -228,11 +231,6 @@ public class PlayerController : MonoBehaviour {
 		if (v1.magnitude != maxSpeed) ApplyFriction();
 
 		// Debug.Log(v1.magnitude);
-
-		/**
-		 FIXME: when player collides with wall, player "jumps"
-		 FIXME: speed slightly above maxSpeed. adding perp still increases mag b/c pythag. work on this l8r it seems to work
-		*/
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -259,7 +257,17 @@ public class PlayerController : MonoBehaviour {
 
 	void UpdateGrounded() {
 		float checkDistance = capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius + 0.1f;
+		bool old = isGrounded;
 		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, checkDistance);
+
+		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * 1.5f);
+		Debug.Log(groundHitSpeedMultiplier);
+		if (!old && isGrounded) {
+			// Hit the ground
+			groundHitSpeedMultiplier = 1f - airTime;
+			airTime = 0f;
+		}
+		if (!isGrounded) airTime += Time.deltaTime;
 
 		if (isGrounded) {
 			float angle = Vector3.Angle(Vector3.up, slopeHit.normal);

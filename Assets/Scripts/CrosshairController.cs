@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using UnityEngine;
 
 public class CrosshairController : MonoBehaviour {
@@ -12,7 +11,6 @@ public class CrosshairController : MonoBehaviour {
 		}
 
 		_instance = this;
-		DontDestroyOnLoad(gameObject);
 	}
 
 	[System.Serializable]
@@ -100,13 +98,13 @@ public class CrosshairController : MonoBehaviour {
 		outerCircleSizeTarget = currentSpread * 10;
 	}
 
-	public void Shoot(float duration = 0f) {
-		SetOuterSize(outerCircle.size + 10f);
+	public void PulseCrosshair(int burstCount) {
+		SetOuterSize(outerCircle.size + (7f / (burstCount == 0 ? 1 : burstCount)));
 	}
 
 	void Update() {
-		SetOuterSize(Mathf.MoveTowards(outerCircle.size, outerCircleSizeTarget, 10f * Time.deltaTime));
+		SetOuterSize(Utils.EaseTowards(outerCircle.size, outerCircleSizeTarget, 200f, 20f));
 
-		// TODO crosshair stuff
+		// Debug.Log($"{outerCircle.size} {outerCircleSizeTarget}");
 	}
 }
