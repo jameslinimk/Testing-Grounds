@@ -183,7 +183,7 @@ public class PlayerController : MonoBehaviour {
 		if (IsDashing) return;
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
-		float maxSpeed = (isCrouching ? maxCrouchSpeed : maxWalkSpeed) * groundHitSpeedMultiplier;
+		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
@@ -196,6 +196,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* ---------------------------- General movement ---------------------------- */
+		maxSpeed *= groundHitSpeedMultiplier;
 		if (!isGrounded) maxSpeed *= airControl;
 		if (mv == Vector3.zero) {
 			ApplyFriction();
