@@ -98,8 +98,9 @@ public class CrosshairController : MonoBehaviour {
 		outerCircleSizeTarget = currentSpread * 10;
 	}
 
-	public void PulseCrosshair(int burstCount) {
-		SetOuterSize(outerCircle.size + (7f / (burstCount == 0 ? 1 : burstCount)));
+	public void PulseCrosshair(int bulletCount, int burstCount) {
+		float divisor = burstCount == 0 ? bulletCount : bulletCount * burstCount;
+		SetOuterSize(outerCircle.size + (7f / divisor));
 	}
 
 	void Update() {

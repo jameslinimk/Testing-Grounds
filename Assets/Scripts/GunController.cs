@@ -44,7 +44,8 @@ public class GunController : MonoBehaviour {
 
 	[ContextMenu("Add default gun")]
 	void AddDefaultGun() {
-		SwitchGun(player.GetComponent<PlayerGunManager>().defaultGunConfig);
+		GunConfig gun = GunsManager.Instance.DefaultGunConfig();
+		weaponInstance = Instantiate(gun.weaponPrefab, transform.position, transform.rotation, transform);
 	}
 
 	private bool switchingGuns;
@@ -175,7 +176,7 @@ public class GunController : MonoBehaviour {
 		currentSpread = Mathf.Clamp(currentSpread, 0f, config.maxBloom);
 
 		for (int i = 0; i < config.bullets; i++) {
-			CrosshairController.Instance.PulseCrosshair(config.burstCount);
+			CrosshairController.Instance.PulseCrosshair(config.bullets, config.burstCount);
 			Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
 
 			if (!config.isProjectile) {

@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[System.Serializable]
 public class GunSlot {
 	public GunConfig config;
 	public int currentAmmo;
+
 	public bool Empty => config == null;
 	public float putAwayTime = Mathf.Infinity;
 	public bool CanPocketReload => Time.time - putAwayTime >= config.reloadTime;
@@ -34,27 +36,23 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
-	public GunConfig defaultGunConfig;
 	public GunController gunController;
-	private readonly GunSlot[] gunSlots = new GunSlot[3];
+	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
 
 	public GunSlot CurrentGun => gunSlots[currentGunIndex];
 
 	void Start() {
 		for (int i = 0; i < gunSlots.Length; i++) gunSlots[i] = new GunSlot();
-		gunSlots[0].ReConfig(defaultGunConfig);
+		gunSlots[0].ReConfig(GunsManager.Instance.DefaultGunConfig());
 		gunController.SwitchGun(gunSlots[0].config);
 
-		// For testing add other guns with diff names (rename default gun config)
-		gunSlots[1].ReConfig(defaultGunConfig.Clone());
-		gunSlots[2].ReConfig(defaultGunConfig.Clone());
-		gunSlots[1].config.weaponName = "Gun2";
-		gunSlots[2].config.weaponName = "Gun3";
+		AddGun(GunsManager.Instance.TestConfig());
 
 		// Input actions
 		for (int i = 0; i < gunSlots.Length; i++) {
-			InputSystem.actions.FindAction($"Gun{i + 1}").performed += _ => SwitchGun(i);
+			int iCopy = i;
+			InputSystem.actions.FindAction($"Gun{i + 1}").performed += _ => SwitchGun(iCopy);
 		}
 		InputSystem.actions.FindAction("NextGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex + 1, gunSlots.Length));
 		InputSystem.actions.FindAction("PreviousGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex - 1, gunSlots.Length));

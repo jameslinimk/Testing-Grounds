@@ -2122,6 +2122,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gunConfigs:
   - {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
+  defaultGunConfig: {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
 --- !u!4 &1336348083 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6634684426664001621, guid: bb2deeee7155a18419f4a92b8bec04a1, type: 3}
@@ -2142,7 +2143,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1364666732
 Transform:
   m_ObjectHideFlags: 0
@@ -2903,8 +2904,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1901adae44dd6e3488740bdc69ff33d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultGunConfig: {fileID: 0}
   gunController: {fileID: 199879494}
+  gunSlots:
+  - config: {fileID: 0}
+    currentAmmo: 0
+    putAwayTime: Infinity
+  - config: {fileID: 0}
+    currentAmmo: 0
+    putAwayTime: Infinity
+  - config: {fileID: 0}
+    currentAmmo: 0
+    putAwayTime: Infinity
 --- !u!1 &1632061511
 GameObject:
   m_ObjectHideFlags: 0

@@ -262,7 +262,6 @@ public class PlayerController : MonoBehaviour {
 		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, checkDistance);
 
 		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * 1.5f);
-		Debug.Log(groundHitSpeedMultiplier);
 		if (!old && isGrounded) {
 			// Hit the ground
 			groundHitSpeedMultiplier = 1f - airTime;

@@ -57,7 +57,10 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		rb.AddForce(damage * knockbackForceMultiplier * (die ? deathKnockbackForceMultiplier : 1f) * force, ForceMode.Impulse);
 
 		yield return new WaitForSeconds(die ? deathKnockbackDuration : knockbackDuration);
-		if (die) Destroy(gameObject);
+		if (die) {
+			Destroy(gameObject);
+			yield break;
+		}
 
 		rb.linearVelocity = Vector3.zero;
 

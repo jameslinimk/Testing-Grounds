@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum FireType {
@@ -62,14 +64,23 @@ public class GunConfig : ScriptableObject {
 	public float bloomCooldownRate;
 
 	public float dps => damage * bullets / fireCooldown;
+
+	/* ---------------------------------- Mods ---------------------------------- */
+	[HideInInspector] public readonly List<IGunMod> mods = new();
+
+	public void AddMod(IGunMod mod) {
+		mods.Add(mod);
+		mod.Apply(this);
+	}
+
+	public void AddMods(IEnumerable<IGunMod> mods) {
+		foreach (var mod in mods) {
+			this.mods.Add(mod);
+			mod.Apply(this);
+		}
+	}
+
+	public GunConfig Clone() {
+		return Instantiate(this);
+	}
 }
-
-public interface GunMod {
-	public Rarity rarity { get; set; }
-	public string modName { get; set; }
-
-	void Apply(GunConfig config);
-	void UnApply(GunConfig config);
-}
-
-// TODO here

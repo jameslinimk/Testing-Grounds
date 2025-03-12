@@ -33,17 +33,6 @@ public static class Utils {
 		return list.Contains(source);
 	}
 
-	public static T Clone<T>(this T scriptableObject) where T : ScriptableObject {
-		if (scriptableObject == null) {
-			Debug.LogError($"ScriptableObject was null. Returning default {typeof(T)} object.");
-			return (T)ScriptableObject.CreateInstance(typeof(T));
-		}
-
-		T instance = UnityEngine.Object.Instantiate(scriptableObject);
-		instance.name = scriptableObject.name; // Remove (Clone) from the name
-		return instance;
-	}
-
 	private static Vector4[] MakeUnitSphere(int len) {
 		Debug.Assert(len > 2);
 		var v = new Vector4[len * 3];

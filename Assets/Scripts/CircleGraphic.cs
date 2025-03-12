@@ -1,3 +1,5 @@
+// Taken from https://gist.github.com/yasirkula/d09bbc1e16dc96354b2e7162b351f964
+
 using UnityEngine;
 using UnityEngine.UI;
 

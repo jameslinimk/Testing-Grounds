@@ -3,8 +3,15 @@ using UnityEditor;
 using UnityEngine;
 
 public class GunsManager : Singleton<GunsManager> {
-	public GunConfig[] gunConfigs;
-	public GunConfig defaultGunConfig;
+	[SerializeField] private GunConfig[] gunConfigs;
+	private readonly IGunMod[] gunMods = new IGunMod[] {
+		new TestMod()
+	};
+
+	[SerializeField] private GunConfig defaultGunConfig;
+	public GunConfig DefaultGunConfig() {
+		return defaultGunConfig.Clone();
+	}
 
 	[ContextMenu("Find All Guns")]
 	void FindAllGuns() {
@@ -13,5 +20,11 @@ public class GunsManager : Singleton<GunsManager> {
 			string path = AssetDatabase.GUIDToAssetPath(guid);
 			return AssetDatabase.LoadAssetAtPath<GunConfig>(path);
 		}).ToArray();
+	}
+
+	public GunConfig TestConfig() {
+		GunConfig conf = DefaultGunConfig();
+		conf.AddMods(gunMods);
+		return conf;
 	}
 }
