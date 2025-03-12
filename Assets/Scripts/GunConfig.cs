@@ -63,3 +63,13 @@ public class GunConfig : ScriptableObject {
 
 	public float dps => damage * bullets / fireCooldown;
 }
+
+public interface GunMod {
+	public Rarity rarity { get; set; }
+	public string modName { get; set; }
+
+	void Apply(GunConfig config);
+	void UnApply(GunConfig config);
+}
+
+// TODO here

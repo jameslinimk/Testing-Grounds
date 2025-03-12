@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class GunController : MonoBehaviour {
-	public GunConfig defaultGunConfig;
 	public LayerMask hitLayers;
 	public Transform player;
 	public CameraController cameraController;
@@ -45,7 +44,7 @@ public class GunController : MonoBehaviour {
 
 	[ContextMenu("Add default gun")]
 	void AddDefaultGun() {
-		SwitchGun(defaultGunConfig);
+		SwitchGun(player.GetComponent<PlayerGunManager>().defaultGunConfig);
 	}
 
 	private bool switchingGuns;
@@ -61,7 +60,9 @@ public class GunController : MonoBehaviour {
 		SwitchGun(gunSlot.config, gunSlot.currentAmmo);
 	}
 
-	// setAmmo == null also switches instant
+	/// <summary>
+	/// If setAmmo is null, it will switch guns instantly
+	/// </summary>
 	public void SwitchGun(GunConfig newGun, int? setAmmo = null) {
 		if (weaponInstance != null) Destroy(weaponInstance);
 

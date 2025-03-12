@@ -1,34 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : Singleton<GameManager> {
 	public bool IsPaused { get; private set; } = false;
 	[HideInInspector] public bool CanUnpause = true;
 	private InputAction pauseAction;
-
-	private static GameManager _instance;
-	public static GameManager Instance {
-		get {
-			if (_instance == null) {
-				_instance = FindFirstObjectByType<GameManager>();
-				if (_instance == null) {
-					GameObject singletonObject = new GameObject("GameManager");
-					_instance = singletonObject.AddComponent<GameManager>();
-				}
-			}
-			return _instance;
-		}
-	}
-
-	void Awake() {
-		if (_instance != null && _instance != this) {
-			Destroy(gameObject);
-			return;
-		}
-
-		_instance = this;
-		DontDestroyOnLoad(gameObject);
-	}
 
 	void Start() {
 		pauseAction = InputSystem.actions.FindAction("Pause");

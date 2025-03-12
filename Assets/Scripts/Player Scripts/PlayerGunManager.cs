@@ -34,6 +34,7 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
+	public GunConfig defaultGunConfig;
 	public GunController gunController;
 	private readonly GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
@@ -42,21 +43,21 @@ public class PlayerGunManager : MonoBehaviour {
 
 	void Start() {
 		for (int i = 0; i < gunSlots.Length; i++) gunSlots[i] = new GunSlot();
-		gunSlots[0].ReConfig(gunController.defaultGunConfig);
-		gunController.SwitchGun(gunSlots[currentGunIndex].config);
+		gunSlots[0].ReConfig(defaultGunConfig);
+		gunController.SwitchGun(gunSlots[0].config);
 
 		// For testing add other guns with diff names (rename default gun config)
-		gunSlots[1].ReConfig(gunController.defaultGunConfig.Clone());
-		gunSlots[2].ReConfig(gunController.defaultGunConfig.Clone());
+		gunSlots[1].ReConfig(defaultGunConfig.Clone());
+		gunSlots[2].ReConfig(defaultGunConfig.Clone());
 		gunSlots[1].config.weaponName = "Gun2";
 		gunSlots[2].config.weaponName = "Gun3";
 
-		InputSystem.actions.FindAction("Gun1").performed += _ => SwitchGun(0);
-		InputSystem.actions.FindAction("Gun2").performed += _ => SwitchGun(1);
-		InputSystem.actions.FindAction("Gun3").performed += _ => SwitchGun(2);
+		// Input actions
+		for (int i = 0; i < gunSlots.Length; i++) {
+			InputSystem.actions.FindAction($"Gun{i + 1}").performed += _ => SwitchGun(i);
+		}
 		InputSystem.actions.FindAction("NextGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex + 1, gunSlots.Length));
 		InputSystem.actions.FindAction("PreviousGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex - 1, gunSlots.Length));
-
 		InputSystem.actions.FindAction("DropCurrentGun").performed += _ => DropGun(currentGunIndex);
 	}
 

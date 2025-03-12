@@ -1,0 +1,17 @@
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
+
+public class GunsManager : Singleton<GunsManager> {
+	public GunConfig[] gunConfigs;
+	public GunConfig defaultGunConfig;
+
+	[ContextMenu("Find All Guns")]
+	void FindAllGuns() {
+		string[] guids = AssetDatabase.FindAssets($"t:{typeof(GunConfig).Name}");
+		gunConfigs = guids.Select(guid => {
+			string path = AssetDatabase.GUIDToAssetPath(guid);
+			return AssetDatabase.LoadAssetAtPath<GunConfig>(path);
+		}).ToArray();
+	}
+}
