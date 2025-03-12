@@ -477,12 +477,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 199879492}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0009887315, y: 0.9961306, z: -0.011301247, w: -0.08715018}
-  m_LocalPosition: {x: 0.722, y: 1.018, z: 0.216}
+  m_LocalRotation: {x: -0.0009887316, y: 0.9961306, z: -0.011301248, w: -0.08715018}
+  m_LocalPosition: {x: 0.722, y: 0.018000007, z: 0.216}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1573727679}
   m_LocalEulerAnglesHint: {x: 1.3, y: 190, z: 0}
 --- !u!114 &199879494
 MonoBehaviour:
@@ -496,7 +496,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3141b4c1eff91d84180d6694b3877fbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultGunConfig: {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
   hitLayers:
     serializedVersion: 2
     m_Bits: 51
@@ -2073,6 +2072,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1290750462}
   - component: {fileID: 1290750463}
+  - component: {fileID: 1290750464}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2108,6 +2108,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanUnpause: 1
+--- !u!114 &1290750464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290750460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b49c2ccadfdf52b4e8c23d23f01d5326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gunConfigs:
+  - {fileID: 11400000, guid: 9eb56254c8a517b4ca024b626b85c354, type: 2}
 --- !u!4 &1336348083 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6634684426664001621, guid: bb2deeee7155a18419f4a92b8bec04a1, type: 3}
@@ -2669,7 +2683,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 199879493}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1573727680
@@ -2888,6 +2903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1901adae44dd6e3488740bdc69ff33d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultGunConfig: {fileID: 0}
   gunController: {fileID: 199879494}
 --- !u!1 &1632061511
 GameObject:
@@ -3743,16 +3759,15 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1558018671}
   - {fileID: 1290750462}
   - {fileID: 203844589}
+  - {fileID: 961739753}
   - {fileID: 1422807648}
   - {fileID: 277791107}
   - {fileID: 1826962328}
   - {fileID: 1573727679}
-  - {fileID: 199879493}
   - {fileID: 1783877089}
-  - {fileID: 961739753}
   - {fileID: 1364666732}
   - {fileID: 1691918894}
-  - {fileID: 1558018671}
   - {fileID: 645355876}
