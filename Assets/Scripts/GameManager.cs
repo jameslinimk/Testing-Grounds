@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,7 +29,18 @@ public class GameManager : Singleton<GameManager> {
 
 	[ContextMenu("Check All Script's Default Values")]
 	void CheckScriptDefaultValues() {
-		Utils.CheckScriptDefaultValues(FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None));
+		// Utils.CheckScriptDefaultValues(FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None));
+		foreach (MonoBehaviour script in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)) {
+			FieldInfo[] props = script.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			foreach (FieldInfo prop in props) {
+				var d = prop.GetCustomAttribute<DefaultValueAttribute>();
+				if (prop == null) {
+					Debug.LogWarning($"{script.name}.{prop.Name} is null!");
+				} else if (!prop.GetValue(script).Equals(d.Value)) {
+					Debug.LogWarning($"{script.name}.{prop.Name} doesn't match: Default: {d.Value} | Current: {prop.GetValue(script)}");
+				}
+			}
+		}
 		Debug.Log("All scripts validated");
 	}
 

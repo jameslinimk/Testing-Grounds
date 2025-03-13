@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyController : MonoBehaviour, IKnockbackable {
+public class MeleeEnemyController : MonoBehaviour, IKnockbackable {
 	public Transform player;
 	private NavMeshAgent agent;
 	private Rigidbody rb;

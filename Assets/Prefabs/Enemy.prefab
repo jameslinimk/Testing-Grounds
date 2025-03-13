@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3582088134583369335}
   - component: {fileID: 8042418641441034356}
   - component: {fileID: 5959783283521713014}
-  - component: {fileID: 8991138723728023508}
+  - component: {fileID: 1482800306957763402}
   - component: {fileID: 4892941265834407905}
   m_Layer: 0
   m_Name: Enemy
@@ -163,7 +163,7 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &8991138723728023508
+--- !u!114 &1482800306957763402
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -172,16 +172,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 799769256733061976}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d167bb582f742884ea11d6581ab93e4d, type: 3}
+  m_Script: {fileID: 11500000, guid: d01c2753be16fa940bde97691671b144, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  damage: 10
-  hitCooldown: 1
+  accelerationFactor: 10
+  maxSpeed: 5
+  rotationSpeed: 5
   knockbackForceMultiplier: 0.8
-  knockbackDuration: 0.5
   deathKnockbackForceMultiplier: 2.3
-  deathKnockbackDuration: 3
+  deathKnockbackDelay: 3
 --- !u!114 &4892941265834407905
 MonoBehaviour:
   m_ObjectHideFlags: 0
