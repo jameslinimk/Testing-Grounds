@@ -67,16 +67,22 @@ public class GunConfig : ScriptableObject {
 
 	/* ---------------------------------- Mods ---------------------------------- */
 	[HideInInspector] public readonly List<IGunMod> mods = new();
+	private readonly HashSet<string> modSet = new();
 
 	public void AddMod(IGunMod mod) {
+		if (!mod.CanApply(this)) return;
+		if (mod.unique) {
+			if (modSet.Contains(mod.name)) return;
+			modSet.Add(mod.name);
+		}
+
 		mods.Add(mod);
 		mod.Apply(this);
 	}
 
 	public void AddMods(IEnumerable<IGunMod> mods) {
 		foreach (var mod in mods) {
-			this.mods.Add(mod);
-			mod.Apply(this);
+			AddMod(mod);
 		}
 	}
 
