@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5959783283521713014}
   - component: {fileID: 1482800306957763402}
   - component: {fileID: 4892941265834407905}
+  - component: {fileID: -8121795006567385282}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -98,7 +99,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 799769256733061976}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: aa90b3e975dc5f743bac7934d8e0c30e, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -175,10 +176,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d01c2753be16fa940bde97691671b144, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  accelerationFactor: 10
-  maxSpeed: 5
-  rotationSpeed: 5
   knockbackForceMultiplier: 0.8
   deathKnockbackForceMultiplier: 2.3
   deathKnockbackDelay: 3
@@ -196,3 +193,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   health: 100
+--- !u!114 &-8121795006567385282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799769256733061976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d167bb582f742884ea11d6581ab93e4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  damage: 10
+  hitCooldown: 1

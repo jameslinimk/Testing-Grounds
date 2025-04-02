@@ -253,7 +253,6 @@ public class PlayerController : MonoBehaviour {
 	void ApplyGravity() {
 		Vector3 currentGravity = onSlope ? -slopeHit.normal * Physics.gravity.magnitude : Physics.gravity;
 		rb.AddForce(currentGravity, ForceMode.Acceleration);
-		Debug.DrawRay(transform.position, currentGravity, Color.yellow);
 	}
 
 	void UpdateGrounded() {

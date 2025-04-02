@@ -1,21 +1,23 @@
+using System;
 using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyController : MonoBehaviour, IKnockbackable {
-	public Transform player;
+	public Func<Vector3> GetTarget;
 
-	[DefaultValue(0.8f)] public float knockbackForceMultiplier;
-	[DefaultValue(2.3f)] public float deathKnockbackForceMultiplier;
-	[DefaultValue(3f)] public float deathKnockbackDelay;
+	[DefaultValue(1.2f)] public float knockbackForceMultiplier;
+	[DefaultValue(2.6f)] public float deathKnockbackForceMultiplier;
+	[DefaultValue(5f)] public float deathKnockbackDelay;
 
 	private NavMeshAgent agent;
 	private Rigidbody rb;
 
+	private bool dead = false;
+
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		player = GameObject.FindWithTag("Player").transform;
 		Utils.SetDefaultValues(this);
 	}
 
@@ -23,41 +25,48 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		agent = GetComponent<NavMeshAgent>();
 		rb = GetComponent<Rigidbody>();
 
-		agent.updatePosition = false;
-		agent.updateRotation = false;
+		ToggleAgent(true);
+	}
+
+	private void ToggleAgent(bool on) {
+		agent.enabled = on;
+		rb.isKinematic = !on;
+		if (on) {
+			agent.nextPosition = rb.position;
+		} else {
+			rb.position = agent.nextPosition;
+		}
 	}
 
 	void FixedUpdate() {
-		agent.SetDestination(player.position);
-		Vector3 desiredVelocity = agent.desiredVelocity;
-
-		if (rb.linearVelocity.magnitude < agent.speed) {
-			rb.AddForce(desiredVelocity - rb.linearVelocity, ForceMode.VelocityChange);
+		if (agent.enabled) return;
+		if (rb.linearVelocity.magnitude < 0.1f) {
+			ToggleAgent(true);
+			rb.linearVelocity = Vector3.zero;
+			if (dead) Destroy(gameObject);
 		}
-
-		if (desiredVelocity.magnitude > 0.1f) {
-			Quaternion targetRotation = Quaternion.LookRotation(desiredVelocity);
-			rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, agent.angularSpeed * Time.fixedDeltaTime));
-		}
-
-		agent.nextPosition = rb.position;
 	}
 
-	void LateUpdate() {
-		agent.nextPosition = rb.position;
+	void Update() {
+		if (agent.enabled && GetTarget != null) agent.SetDestination(GetTarget());
 	}
 
 	public void OnKnockback(Vector3 hitOrigin, float damage) {
+		Debug.Log($"Enemy {gameObject.name} knocked back from {hitOrigin} with damage {damage}.");
+		ToggleAgent(false);
+
 		Vector3 force = (transform.position - hitOrigin).normalized;
 		force.y = 0;
 		rb.AddForce(damage * knockbackForceMultiplier * force, ForceMode.Impulse);
 	}
 
 	public void OnDie(Vector3 hitOrigin, float damage) {
-		Vector3 force = (transform.position - hitOrigin).normalized;
-
 		rb.constraints = RigidbodyConstraints.None;
-		rb.AddForce(damage * knockbackForceMultiplier * deathKnockbackForceMultiplier * force, ForceMode.Impulse);
+		dead = true;
+		ToggleAgent(false);
+
+		Vector3 force = (transform.position - hitOrigin).normalized;
+		rb.AddForce(damage * deathKnockbackForceMultiplier * force, ForceMode.Impulse);
 
 		Destroy(gameObject, deathKnockbackDelay);
 	}

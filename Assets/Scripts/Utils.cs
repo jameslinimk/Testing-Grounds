@@ -92,7 +92,7 @@ public static class Utils {
 				var d = prop.GetCustomAttribute<DefaultValueAttribute>();
 				if (prop == null) {
 					Debug.LogWarning($"{script.name}.{prop.Name} is null!");
-				} else if (!prop.GetValue(script).Equals(d.Value)) {
+				} else if (d != null && !prop.GetValue(script).Equals(d.Value)) {
 					Debug.LogWarning($"{script.name}.{prop.Name} doesn't match: Default: {d.Value} | Current: {prop.GetValue(script)}");
 				}
 			}

@@ -4,10 +4,9 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class MeleeEnemyController : MonoBehaviour, IKnockbackable {
+public class MeleeEnemyController : MonoBehaviour {
+	private EnemyController enemyController;
 	public Transform player;
-	private NavMeshAgent agent;
-	private Rigidbody rb;
 
 	[DefaultValue(10f)] public float damage;
 	[DefaultValue(1f)] public float hitCooldown;
@@ -16,65 +15,15 @@ public class MeleeEnemyController : MonoBehaviour, IKnockbackable {
 	private bool touchingPlayer = false;
 	private Coroutine damageCoroutine;
 
-	[DefaultValue(0.8f)] public float knockbackForceMultiplier;
-	[DefaultValue(0.5f)] public float knockbackDuration;
-
-	[DefaultValue(2.3f)] public float deathKnockbackForceMultiplier;
-	[DefaultValue(3f)] public float deathKnockbackDuration;
-
-	private bool knockedback = false;
-
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
-		player = GameObject.FindWithTag("Player").transform;
+		player = GameObject.FindGameObjectWithTag("Player").transform;
 		Utils.SetDefaultValues(this);
 	}
 
 	void Start() {
-		agent = GetComponent<NavMeshAgent>();
-		rb = GetComponent<Rigidbody>();
-		rb.isKinematic = true;
-	}
-
-	void Update() {
-		if (!knockedback) agent.SetDestination(player.position);
-	}
-
-	private Coroutine knockbackCoroutine;
-
-	public void OnKnockback(Vector3 hitOrigin, float damage) {
-		if (knockbackCoroutine != null) StopCoroutine(knockbackCoroutine);
-		knockbackCoroutine = StartCoroutine(KnockbackCoroutine(hitOrigin, damage));
-	}
-
-	IEnumerator KnockbackCoroutine(Vector3 hitOrigin, float damage, bool die = false) {
-		knockedback = true;
-		agent.enabled = false;
-		rb.isKinematic = false;
-
-		Vector3 force = (transform.position - hitOrigin).normalized;
-		if (!die) force.y = 0;
-		rb.AddForce(damage * knockbackForceMultiplier * (die ? deathKnockbackForceMultiplier : 1f) * force, ForceMode.Impulse);
-
-		yield return new WaitForSeconds(die ? deathKnockbackDuration : knockbackDuration);
-		if (die) {
-			Destroy(gameObject);
-			yield break;
-		}
-
-		rb.linearVelocity = Vector3.zero;
-
-		rb.isKinematic = true;
-		agent.enabled = true;
-
-		knockedback = false;
-	}
-
-	public void OnDie(Vector3 hitOrigin, float damage) {
-		if (knockbackCoroutine != null) StopCoroutine(knockbackCoroutine);
-
-		rb.constraints = RigidbodyConstraints.None;
-		StartCoroutine(KnockbackCoroutine(hitOrigin, damage, true));
+		enemyController = GetComponent<EnemyController>();
+		enemyController.GetTarget = () => player.position;
 	}
 
 	private IEnumerator DamageOverTime(PlayerHealthController player) {
