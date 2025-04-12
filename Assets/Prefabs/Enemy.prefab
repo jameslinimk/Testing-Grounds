@@ -176,9 +176,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d01c2753be16fa940bde97691671b144, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  knockbackForceMultiplier: 0.8
-  deathKnockbackForceMultiplier: 2.3
-  deathKnockbackDelay: 3
+  knockbackForceMultiplier: 1.2
+  deathKnockbackForceMultiplier: 2.6
+  deathKnockbackDelay: 5
+  minimumKnockbackDuration: 0.1
 --- !u!114 &4892941265834407905
 MonoBehaviour:
   m_ObjectHideFlags: 0

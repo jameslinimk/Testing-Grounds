@@ -7,14 +7,17 @@ public class ProjectileController : MonoBehaviour {
 	private Action<PlayerHealthController, Vector3> onPlayerHit;
 	private bool enemy;
 
+	private Vector3 direction;
+	private float speed;
+
 	public void Initialize(Vector3 direction, float speed, float lifetime, LayerMask hitLayers, Action<EnemyHealthController, Vector3> onEnemyHit) {
 		this.hitLayers = hitLayers;
 		this.onEnemyHit = onEnemyHit;
 		enemy = false;
 
-		Rigidbody rb = GetComponent<Rigidbody>();
+		this.direction = direction;
+		this.speed = speed;
 
-		rb.linearVelocity = direction * speed;
 		Destroy(gameObject, lifetime);
 	}
 
@@ -23,23 +26,28 @@ public class ProjectileController : MonoBehaviour {
 		this.onPlayerHit = onPlayerHit;
 		enemy = true;
 
-		Rigidbody rb = GetComponent<Rigidbody>();
+		this.direction = direction;
+		this.speed = speed;
 
-		rb.linearVelocity = direction * speed;
 		Destroy(gameObject, lifetime);
 	}
 
-	void OnCollisionEnter(Collision collision) {
-		if (!hitLayers.ContainsLayer(collision.gameObject.layer)) return;
+	void Update() {
+		transform.position += speed * Time.deltaTime * direction;
+	}
+
+	void OnTriggerEnter(Collider other) {
+		if (!enemy && other.gameObject.CompareTag("Player")) return;
+		if (!hitLayers.ContainsLayer(other.gameObject.layer)) return;
 
 		if (!enemy) {
-			if (collision.collider.TryGetComponent<EnemyHealthController>(out var enemy)) {
-				Vector3 hitPoint = collision.contacts[0].point;
+			if (other.TryGetComponent<EnemyHealthController>(out var enemy)) {
+				Vector3 hitPoint = other.ClosestPointOnBounds(transform.position);
 				onEnemyHit.Invoke(enemy, hitPoint);
 			}
 		} else {
-			if (collision.collider.TryGetComponent<PlayerHealthController>(out var player)) {
-				Vector3 hitPoint = collision.contacts[0].point;
+			if (other.TryGetComponent<PlayerHealthController>(out var player)) {
+				Vector3 hitPoint = other.ClosestPointOnBounds(transform.position);
 				onPlayerHit.Invoke(player, hitPoint);
 			}
 		}

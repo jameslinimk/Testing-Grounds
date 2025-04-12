@@ -24,6 +24,7 @@ public class GunsManager : Singleton<GunsManager> {
 
 	public GunConfig TestConfig() {
 		GunConfig conf = DefaultGunConfig();
+		conf.name += " (test)";
 		conf.AddMods(gunMods);
 		return conf;
 	}

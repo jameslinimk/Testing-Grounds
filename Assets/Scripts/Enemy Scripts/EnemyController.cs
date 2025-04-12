@@ -15,6 +15,9 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	private Rigidbody rb;
 
 	private bool dead = false;
+	private float knockbackStart = 0f;
+	[DefaultValue(0.1f)] public float minimumKnockbackDuration;
+	private bool GracePeriodActive => Time.time - knockbackStart < minimumKnockbackDuration;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
@@ -30,19 +33,14 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 
 	private void ToggleAgent(bool on) {
 		agent.enabled = on;
-		rb.isKinematic = !on;
-		if (on) {
-			agent.nextPosition = rb.position;
-		} else {
-			rb.position = agent.nextPosition;
-		}
+		rb.isKinematic = on;
 	}
 
 	void FixedUpdate() {
 		if (agent.enabled) return;
-		if (rb.linearVelocity.magnitude < 0.1f) {
-			ToggleAgent(true);
+		if (rb.linearVelocity.magnitude < 0.05f && !GracePeriodActive) {
 			rb.linearVelocity = Vector3.zero;
+			ToggleAgent(true);
 			if (dead) Destroy(gameObject);
 		}
 	}
@@ -52,9 +50,9 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	}
 
 	public void OnKnockback(Vector3 hitOrigin, float damage) {
-		Debug.Log($"Enemy {gameObject.name} knocked back from {hitOrigin} with damage {damage}.");
 		ToggleAgent(false);
 
+		knockbackStart = Time.time;
 		Vector3 force = (transform.position - hitOrigin).normalized;
 		force.y = 0;
 		rb.AddForce(damage * knockbackForceMultiplier * force, ForceMode.Impulse);
@@ -65,6 +63,7 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		dead = true;
 		ToggleAgent(false);
 
+		knockbackStart = Time.time;
 		Vector3 force = (transform.position - hitOrigin).normalized;
 		rb.AddForce(damage * deathKnockbackForceMultiplier * force, ForceMode.Impulse);
 
