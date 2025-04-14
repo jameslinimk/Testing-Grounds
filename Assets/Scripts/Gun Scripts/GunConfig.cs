@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public enum FireType {
@@ -66,7 +65,7 @@ public class GunConfig : ScriptableObject {
 	public float dps => damage * bullets / fireCooldown;
 
 	/* ---------------------------------- Mods ---------------------------------- */
-	[HideInInspector] public readonly List<IGunMod> mods = new();
+	[HideInInspector] public readonly List<(IGunMod, float)> mods = new();
 	private readonly HashSet<string> modSet = new();
 
 	public void AddMod(IGunMod mod) {
@@ -76,14 +75,22 @@ public class GunConfig : ScriptableObject {
 			modSet.Add(mod.name);
 		}
 
-		mods.Add(mod);
-		mod.Apply(this);
+		float seed = UnityEngine.Random.Range(0f, 1f);
+		mods.Add((mod, seed));
+		mod.Apply(this, seed);
 	}
 
 	public void AddMods(IEnumerable<IGunMod> mods) {
 		foreach (var mod in mods) {
 			AddMod(mod);
 		}
+	}
+
+	public void RemoveMod(int index) {
+		var (mod, seed) = mods[index];
+		mod.UnApply(this, seed);
+		if (mod.unique) modSet.Remove(mod.name);
+		mods.RemoveAt(index);
 	}
 
 	public GunConfig Clone() {

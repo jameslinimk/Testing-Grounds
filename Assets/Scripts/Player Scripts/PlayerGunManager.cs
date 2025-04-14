@@ -89,10 +89,10 @@ public class PlayerGunManager : MonoBehaviour {
 		GunSlot newGunSlot = gunSlots[gunIndex];
 		if (newGunSlot.Empty || gunIndex == currentGunIndex) return;
 
-		gunController.SwitchGun(newGunSlot);
-
 		gunSlots[currentGunIndex].currentAmmo = gunController.ammo;
 		gunSlots[currentGunIndex].putAwayTime = Time.time;
+
+		gunController.SwitchGun(newGunSlot);
 
 		currentGunIndex = gunIndex;
 	}

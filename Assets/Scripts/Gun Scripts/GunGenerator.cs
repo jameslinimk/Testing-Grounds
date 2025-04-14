@@ -5,7 +5,7 @@ using UnityEngine;
 public class GunsManager : Singleton<GunsManager> {
 	[SerializeField] private GunConfig[] gunConfigs;
 	private readonly IGunMod[] gunMods = new IGunMod[] {
-		new TestMod()
+		new FireRateMod()
 	};
 
 	[SerializeField] private GunConfig defaultGunConfig;
