@@ -10,7 +10,7 @@ public class GunCollectableController : MonoBehaviour {
 	private new BoxCollider collider;
 	private Rigidbody rb;
 
-	private bool grounded = false;
+	private bool isGrounded = false;
 
 	private readonly float pickupDelay = 1.5f;
 	private readonly float floatHeight = 0.5f;
@@ -42,31 +42,28 @@ public class GunCollectableController : MonoBehaviour {
 
 	void Update() {
 		UpdateGrounded();
-		// transform.Rotate(rotation * Time.deltaTime);
+		transform.Rotate(rotation * Time.deltaTime);
 
-		// if (rb.linearVelocity.magnitude < 0.1f) {
-		// 	if (startTime == 0f) {
-		// 		Debug.Log("GunCollectableController: Rigidbody is not moving, starting floating behavior.");
+		if (isGrounded && rb.linearVelocity.magnitude < 0.1f) {
+			if (startTime == 0f) {
+				Debug.Log("GunCollectableController: Rigidbody is not moving, starting floating behavior.");
 
-		// 		rb.isKinematic = true;
-		// 		collider.isTrigger = true;
-		// 		startTime = Time.time;
-		// 	}
+				rb.isKinematic = true;
+				collider.isTrigger = true;
+				startTime = Time.time;
+			}
 
-		// 	float floatingY = floatHeight * (Mathf.Sin(((Time.time - startTime) * floatFrequency) + Mathf.PI) + 1);
-		// 	transform.position = new Vector3(transform.position.x, floatingY, transform.position.z);
-		// }
+			float floatingY = floatHeight * (Mathf.Sin(((Time.time - startTime) * floatFrequency) + Mathf.PI) + 1);
+			transform.position = new Vector3(transform.position.x, floatingY, transform.position.z);
+		}
 	}
 
 	private void UpdateGrounded() {
 		Vector3 boxCenter = transform.TransformPoint(collider.center);
 		Vector3 halfExtents = Vector3.Scale(collider.size, transform.lossyScale) * 0.5f;
 		Vector3 direction = Vector3.down;
-		float distance = 0.1f;
 
-		if (Physics.BoxCast(boxCenter, halfExtents, direction, out RaycastHit hit, transform.rotation, distance)) {
-			Debug.Log($"Hit: {hit.collider.name} at distance {hit.distance}");
-		}
+		isGrounded = Physics.BoxCast(boxCenter, halfExtents, direction, out _, transform.rotation, 0.1f);
 	}
 
 	void OnTriggerEnter(Collider other) {

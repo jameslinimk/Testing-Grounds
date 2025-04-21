@@ -3,7 +3,7 @@ using System.ComponentModel;
 using TMPro;
 using UnityEngine;
 
-public class ErrorTextController : Singleton<MonoBehaviour> {
+public class ErrorTextController : Singleton<ErrorTextController> {
 	private TextMeshProUGUI text;
 	[DefaultValue(3f)] public float fadeSpeed;
 
