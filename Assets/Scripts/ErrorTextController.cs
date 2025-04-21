@@ -3,19 +3,7 @@ using System.ComponentModel;
 using TMPro;
 using UnityEngine;
 
-public class ErrorTextController : MonoBehaviour {
-	private static ErrorTextController _instance;
-	public static ErrorTextController Instance => _instance;
-
-	private void Awake() {
-		if (_instance != null && _instance != this) {
-			Destroy(gameObject);
-			return;
-		}
-
-		_instance = this;
-	}
-
+public class ErrorTextController : Singleton<MonoBehaviour> {
 	private TextMeshProUGUI text;
 	[DefaultValue(3f)] public float fadeSpeed;
 

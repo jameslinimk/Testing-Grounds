@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using System.ComponentModel;
 using System.Linq;
+using System.Collections.Generic;
 
 public static class Utils {
 	public static float EaseOutQuart(float t) {
@@ -29,8 +30,30 @@ public static class Utils {
 	}
 
 	public static bool Is<T>(this T source, params T[] list) {
-		if (source == null) throw new ArgumentNullException(nameof(source));
+		if (source == null) throw new ArgumentNullException(nameof(source), "Source cannot be null.");
 		return list.Contains(source);
+	}
+
+	public static T Rand<T>(this List<T> source) {
+		if (source == null || source.Count == 0) throw new ArgumentException("Source list cannot be null or empty.", nameof(source));
+		return source[UnityEngine.Random.Range(0, source.Count)];
+	}
+
+	public static T Rand<T>(this Dictionary<T, float> source) {
+		if (source == null || source.Count == 0) throw new ArgumentException("Source dictionary cannot be null or empty.", nameof(source));
+
+		float totalWeight = source.Values.Sum();
+		if (totalWeight <= 0) throw new InvalidOperationException("Total weight must be greater than zero.");
+		float randomValue = UnityEngine.Random.Range(0, totalWeight);
+
+		float cumulativeWeight = 0f;
+		foreach (var kvp in source) {
+			cumulativeWeight += kvp.Value;
+			if (randomValue < cumulativeWeight) {
+				return kvp.Key;
+			}
+		}
+		throw new InvalidOperationException("Failed to select a random item from the dictionary.");
 	}
 
 	private static Vector4[] MakeUnitSphere(int len) {
