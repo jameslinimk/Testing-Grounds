@@ -133,6 +133,15 @@ public class GunController : MonoBehaviour {
 		lastShot = Time.time;
 		ammo--;
 
+		Vector3 directionFromGun = CalculateLookPoint();
+		if (config.burstCount == 0) {
+			ShootBullets(directionFromGun);
+		} else {
+			burstCoroutine = StartCoroutine(BurstCoroutine(directionFromGun));
+		}
+	}
+
+	public Vector3 CalculateLookPoint() {
 		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
 		Vector3 targetPoint;
 		if (Physics.Raycast(position, lastLook, out RaycastHit cameraHit, camRange, hitLayers)) {
@@ -142,12 +151,7 @@ public class GunController : MonoBehaviour {
 		}
 
 		// Real raycast from gun
-		Vector3 directionFromGun = (targetPoint - firePoint.position).normalized;
-		if (config.burstCount == 0) {
-			ShootBullets(directionFromGun);
-		} else {
-			burstCoroutine = StartCoroutine(BurstCoroutine(directionFromGun));
-		}
+		return (targetPoint - firePoint.position).normalized;
 	}
 
 	IEnumerator BurstCoroutine(Vector3 directionFromGun) {

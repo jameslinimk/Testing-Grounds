@@ -6,6 +6,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class MeleeEnemyController : MonoBehaviour {
 	private EnemyController enemyController;
+	private EnemyHealthController health;
 	public Transform player;
 
 	[DefaultValue(10f)] public float damage;
@@ -24,6 +25,7 @@ public class MeleeEnemyController : MonoBehaviour {
 	void Start() {
 		enemyController = GetComponent<EnemyController>();
 		enemyController.GetTarget = () => player.position;
+		health = GetComponent<EnemyHealthController>();
 	}
 
 	private IEnumerator DamageOverTime(PlayerHealthController player) {
@@ -32,7 +34,7 @@ public class MeleeEnemyController : MonoBehaviour {
 				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
 
 			lastHit = Time.time;
-			player.TakeDamage(damage, transform.position);
+			if (health.health > 0) player.TakeDamage(damage, transform.position);
 			yield return new WaitForSeconds(hitCooldown);
 		}
 	}

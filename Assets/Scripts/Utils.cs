@@ -77,6 +77,58 @@ public static class Utils {
 		Debug.DrawLine(sZ, eZ, color, duration);
 	}
 
+	private static readonly Vector4[] s_UnitCube = {
+		new(-0.5f,  0.5f, -0.5f, 1),
+		new(0.5f,  0.5f, -0.5f, 1),
+		new(0.5f, -0.5f, -0.5f, 1),
+		new(-0.5f, -0.5f, -0.5f, 1),
+
+		new(-0.5f,  0.5f,  0.5f, 1),
+		new(0.5f,  0.5f,  0.5f, 1),
+		new(0.5f, -0.5f,  0.5f, 1),
+		new(-0.5f, -0.5f,  0.5f, 1)
+	};
+
+	public static void DrawBox(Vector4 pos, Vector3 size, Color color, float duration = 0) {
+		Vector4[] v = s_UnitCube;
+		Vector4 sz = new Vector4(size.x, size.y, size.z, 1);
+		for (int i = 0; i < 4; i++) {
+			var s = pos + Vector4.Scale(v[i], sz);
+			var e = pos + Vector4.Scale(v[(i + 1) % 4], sz);
+			Debug.DrawLine(s, e, color, duration);
+		}
+		for (int i = 0; i < 4; i++) {
+			var s = pos + Vector4.Scale(v[4 + i], sz);
+			var e = pos + Vector4.Scale(v[4 + ((i + 1) % 4)], sz);
+			Debug.DrawLine(s, e, color, duration);
+		}
+		for (int i = 0; i < 4; i++) {
+			var s = pos + Vector4.Scale(v[i], sz);
+			var e = pos + Vector4.Scale(v[i + 4], sz);
+			Debug.DrawLine(s, e, color, duration);
+		}
+	}
+
+	public static void DrawBox(Matrix4x4 transform, Color color, float duration = 0) {
+		Vector4[] v = s_UnitCube;
+		Matrix4x4 m = transform;
+		for (int i = 0; i < 4; i++) {
+			var s = m * v[i];
+			var e = m * v[(i + 1) % 4];
+			Debug.DrawLine(s, e, color, duration);
+		}
+		for (int i = 0; i < 4; i++) {
+			var s = m * v[4 + i];
+			var e = m * v[4 + ((i + 1) % 4)];
+			Debug.DrawLine(s, e, color, duration);
+		}
+		for (int i = 0; i < 4; i++) {
+			var s = m * v[i];
+			var e = m * v[i + 4];
+			Debug.DrawLine(s, e, color, duration);
+		}
+	}
+
 	public static void SetDefaultValues(object obj) {
 		FieldInfo[] props = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		foreach (FieldInfo prop in props) {

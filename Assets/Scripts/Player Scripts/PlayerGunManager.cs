@@ -1,8 +1,13 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [System.Serializable]
 public class GunSlot {
+	public GunSlot Clone() {
+		return (GunSlot)MemberwiseClone();
+	}
+
 	public GunConfig config;
 	public int currentAmmo;
 
@@ -23,6 +28,12 @@ public class GunSlot {
 		putAwayTime = Mathf.Infinity;
 	}
 
+	public void ReSlot(GunSlot slot) {
+		config = slot.config;
+		currentAmmo = slot.currentAmmo;
+		putAwayTime = slot.putAwayTime;
+	}
+
 	public void Reload() {
 		currentAmmo = config.maxAmmo;
 		putAwayTime = Mathf.Infinity;
@@ -36,6 +47,8 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
+	private PlayerController pc;
+
 	public GunController gunController;
 	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
@@ -48,6 +61,7 @@ public class PlayerGunManager : MonoBehaviour {
 		gunController.SwitchGun(gunSlots[0].config);
 
 		AddGun(GunsManager.Instance.TestConfig());
+		AddGun(GunsManager.Instance.TestConfig());
 
 		// Input actions
 		for (int i = 0; i < gunSlots.Length; i++) {
@@ -57,6 +71,8 @@ public class PlayerGunManager : MonoBehaviour {
 		InputSystem.actions.FindAction("NextGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex + 1, gunSlots.Length));
 		InputSystem.actions.FindAction("PreviousGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex - 1, gunSlots.Length));
 		InputSystem.actions.FindAction("DropCurrentGun").performed += _ => DropGun(currentGunIndex);
+
+		pc = GetComponent<PlayerController>();
 	}
 
 	public bool AddGun(GunConfig config) {
@@ -69,6 +85,17 @@ public class PlayerGunManager : MonoBehaviour {
 		return false;
 	}
 
+	public bool AddGun(GunSlot slot) {
+		foreach (var gunSlot in gunSlots) {
+			if (gunSlot.Empty) {
+				gunSlot.ReSlot(slot);
+				return true;
+			}
+		}
+		ErrorTextController.Instance.SetText("No empty gun slot available");
+		return false;
+	}
+
 	public void DropGun(int gunIndex) {
 		GunSlot gunSlot = gunSlots[gunIndex];
 		if (gunSlot.Empty) return;
@@ -76,6 +103,10 @@ public class PlayerGunManager : MonoBehaviour {
 		for (int i = Utils.WrapAround(gunIndex - 1, gunSlots.Length); i != gunIndex; i = Utils.WrapAround(i - 1, gunSlots.Length)) {
 			if (i == gunIndex) break;
 			if (!gunSlots[i].Empty) {
+				GameObject gun = Instantiate(gunSlot.config.weaponPrefab, gunController.transform.position, gunController.transform.rotation);
+				gun.transform.localScale = gunController.transform.localScale;
+				gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookPoint(), GetComponent<Collider>());
+
 				SwitchGun(i);
 				gunSlot.Clear();
 				return;
@@ -96,4 +127,12 @@ public class PlayerGunManager : MonoBehaviour {
 
 		currentGunIndex = gunIndex;
 	}
+
+	// void OnTriggerEnter(Collider other) {
+	// 	if (other.TryGetComponent<GunCollectableController>(out var gunCollectable)) {
+	// 		if (AddGun(gunCollectable.gunSlot)) {
+	// 			Destroy(other.gameObject);
+	// 		}
+	// 	}
+	// }
 }

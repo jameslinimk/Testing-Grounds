@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 
 public class PlayerController : MonoBehaviour {
-	private PlayerHealthController healthController;
 	private PlayerUIController uiController;
 
 	private CapsuleCollider capsuleCollider;
@@ -144,7 +143,6 @@ public class PlayerController : MonoBehaviour {
 	/*                                Unity events                                */
 	/* -------------------------------------------------------------------------- */
 	void Start() {
-		healthController = GetComponent<PlayerHealthController>();
 		uiController = GetComponent<PlayerUIController>();
 
 		rb = GetComponent<Rigidbody>();
