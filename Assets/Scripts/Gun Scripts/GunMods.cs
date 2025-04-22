@@ -11,7 +11,9 @@ public interface IGunMod {
 	void UpdateSeed(float seed);
 	void Apply(GunConfig config);
 	void UnApply(GunConfig config);
-	bool CanApply(GunConfig config);
+	bool CanApply(GunConfig config) {
+		return true;
+	}
 }
 
 public class FireRateMod : IGunMod {
@@ -36,8 +38,30 @@ public class FireRateMod : IGunMod {
 	public void UnApply(GunConfig config) {
 		config.fireCooldown += fireRate;
 	}
+}
 
-	public bool CanApply(GunConfig config) {
-		return config.bullets < 100;
+public class DoubleBulletMod : IGunMod {
+	public IGunMod Clone() {
+		return (IGunMod)MemberwiseClone();
+	}
+
+	public Rarity rarity => Rarity.Uncommon;
+	public string name => "Double Bullet Mod";
+	public bool unique => false;
+	public string description => $"Doubles the amount of bullets, but reduces fire rate by {fireRate} seconds.";
+
+	private float fireRate;
+	public void UpdateSeed(float seed) {
+		fireRate = Mathf.Lerp(0.1f, 0.5f, seed);
+	}
+
+	public void Apply(GunConfig config) {
+		config.bullets *= 2;
+		config.fireCooldown += fireRate;
+	}
+
+	public void UnApply(GunConfig config) {
+		config.bullets /= 2;
+		config.fireCooldown -= fireRate;
 	}
 }

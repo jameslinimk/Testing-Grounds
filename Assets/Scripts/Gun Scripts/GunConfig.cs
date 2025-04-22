@@ -68,17 +68,18 @@ public class GunConfig : ScriptableObject {
 	[HideInInspector] public readonly List<IGunMod> mods = new();
 	private readonly HashSet<string> modSet = new();
 
-	public void AddMod(IGunMod mod, bool clone = true) {
+	public bool AddMod(IGunMod mod, bool clone = true) {
 		if (clone) mod = mod.Clone();
-		if (!mod.CanApply(this)) return;
+		if (!mod.CanApply(this)) return false;
 		if (mod.unique) {
-			if (modSet.Contains(mod.name)) return;
+			if (modSet.Contains(mod.name)) return false;
 			modSet.Add(mod.name);
 		}
 
 		mod.UpdateSeed(UnityEngine.Random.Range(0f, 1f));
 		mod.Apply(this);
 		mods.Add(mod);
+		return true;
 	}
 
 	public void AddMods(IEnumerable<IGunMod> mods, bool clone = true) {

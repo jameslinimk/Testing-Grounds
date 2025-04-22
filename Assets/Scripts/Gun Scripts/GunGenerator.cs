@@ -6,7 +6,8 @@ using UnityEngine;
 public class GunsManager : Singleton<GunsManager> {
 	[SerializeField] private GunConfig[] gunConfigs;
 	private readonly IGunMod[] gunMods = new IGunMod[] {
-		new FireRateMod()
+		new FireRateMod(),
+		new DoubleBulletMod(),
 	};
 
 	private Dictionary<Rarity, List<GunConfig>> gunConfigsByRarity;
@@ -56,8 +57,22 @@ public class GunsManager : Singleton<GunsManager> {
 			return null;
 		}
 		GunConfig gun = configs.Rand().Clone();
-		IGunMod mod = modsByRarity[ModRarityChances.Rand()].Rand();
-		gun.AddMod(mod);
+		Rarity modRarity = ModRarityChances.Rand();
+		if (!modsByRarity.TryGetValue(modRarity, out var mods)) {
+			Debug.LogWarning($"No mods found for rarity: {modRarity}");
+			return gun;
+		}
+
+		int addedMods = 0;
+		foreach (var mod in mods) {
+			if (mod.CanApply(gun)) {
+				gun.AddMod(mod);
+				addedMods++;
+			}
+
+			if (addedMods >= 2) break;
+		}
+
 		return gun;
 	}
 }

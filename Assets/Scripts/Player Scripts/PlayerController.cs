@@ -196,10 +196,7 @@ public class PlayerController : MonoBehaviour {
 		/* ---------------------------- General movement ---------------------------- */
 		maxSpeed *= groundHitSpeedMultiplier;
 		if (!isGrounded) maxSpeed *= airControl;
-		if (mv == Vector3.zero) {
-			ApplyFriction();
-			return;
-		}
+		if (mv == Vector3.zero) return;
 
 		Vector3 v1 = rb.linearVelocity;
 		v1.y = 0;
@@ -227,9 +224,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		AddForceSlope(vPerp, ForceMode.Force);
-		if (v1.magnitude != maxSpeed) ApplyFriction();
-
-		// Debug.Log(v1.magnitude);
+		Debug.Log(v1.magnitude);
 	}
 
 	void OnTriggerEnter(Collider other) {
@@ -243,11 +238,6 @@ public class PlayerController : MonoBehaviour {
 	/* -------------------------------------------------------------------------- */
 	/*                                    Other                                   */
 	/* -------------------------------------------------------------------------- */
-	void ApplyFriction() {
-		if (!isGrounded) return;
-		rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, frictionSpeed * Time.deltaTime);
-	}
-
 	void ApplyGravity() {
 		Vector3 currentGravity = onSlope ? -slopeHit.normal * Physics.gravity.magnitude : Physics.gravity;
 		rb.AddForce(currentGravity, ForceMode.Acceleration);

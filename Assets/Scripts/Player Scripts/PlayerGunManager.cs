@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -47,8 +46,6 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
-	private PlayerController pc;
-
 	public GunController gunController;
 	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
@@ -71,8 +68,6 @@ public class PlayerGunManager : MonoBehaviour {
 		InputSystem.actions.FindAction("NextGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex + 1, gunSlots.Length));
 		InputSystem.actions.FindAction("PreviousGun").performed += _ => SwitchGun(Utils.WrapAround(currentGunIndex - 1, gunSlots.Length));
 		InputSystem.actions.FindAction("DropCurrentGun").performed += _ => DropGun(currentGunIndex);
-
-		pc = GetComponent<PlayerController>();
 	}
 
 	public bool AddGun(GunConfig config) {
