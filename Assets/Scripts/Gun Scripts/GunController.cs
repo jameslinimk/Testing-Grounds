@@ -45,7 +45,7 @@ public class GunController : MonoBehaviour {
 		playerRb = player.GetComponent<Rigidbody>();
 
 		if (transform.localScale != Vector3.one * GunPrefabScale) {
-			GunPrefabScale = transform.localScale.x;
+			transform.localScale = Vector3.one * GunPrefabScale;
 			Debug.LogWarning("GunController's transform scale doesn't match gunPrefabScale.");
 		}
 	}

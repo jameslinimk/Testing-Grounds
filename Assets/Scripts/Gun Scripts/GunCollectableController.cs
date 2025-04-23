@@ -1,11 +1,23 @@
 using System.Collections;
 using UnityEngine;
 
+[CreateAssetMenu(menuName = "Settings/GunCollectableSettings")]
+public class GunCollectableSettings : ScriptableObject {
+	public float pickupDelay = 1.5f;
+	public float floatHeight = 0.5f;
+	public float floatFrequency = 1f;
+	public float dropSpeed = 20f;
+	public float upwardComponent = 8f;
+	public float linearDamping = 4f;
+}
+
 public class GunCollectableController : MonoBehaviour {
+	public GunCollectableSettings settings;
 	public GunSlot gunSlot;
+	public Collider playerCollider;
+
 	private Vector3 rotation;
 	private Vector3 dropDirection;
-	private Collider playerCollider;
 	private new BoxCollider collider;
 	private Rigidbody rb;
 
@@ -13,25 +25,20 @@ public class GunCollectableController : MonoBehaviour {
 	private bool isGrounded = false;
 	private float baseY = 0f;
 
-	// Config
-	private readonly float pickupDelay = 1.5f;
-	private readonly float floatHeight = 0.5f;
-	private readonly float floatFrequency = 1f;
-	private readonly float dropSpeed = 20f;
-	private readonly float upwardComponent = 8f;
-	private readonly float linearDamping = 4f;
-
-	public void Initialize(GunSlot gunSlot, Vector3 dropDirection, Collider playerCollider) {
+	public void Initialize(GunSlot gunSlot, Vector3 dropDirection, Collider playerCollider, GunCollectableSettings settings = null) {
 		this.gunSlot = gunSlot.Clone();
 		this.dropDirection = dropDirection;
 		this.playerCollider = playerCollider;
+		this.settings = settings;
 	}
 
-	public void Initialize(GunSlot gunSlot) {
+	public void Initialize(GunSlot gunSlot, GunCollectableSettings settings = null) {
 		this.gunSlot = gunSlot.Clone();
+		this.settings = settings;
 	}
 
 	void Start() {
+		if (settings == null) settings = Resources.Load<GunCollectableSettings>("Settings/GunCollectableSettings");
 		transform.localScale = Vector3.one * GunController.GunPrefabScale;
 
 		collider = GetComponent<BoxCollider>();
@@ -42,14 +49,14 @@ public class GunCollectableController : MonoBehaviour {
 		}
 
 		rb = gameObject.AddComponent<Rigidbody>();
-		rb.linearDamping = linearDamping;
-		if (dropDirection != null) rb.AddForce((dropDirection.normalized * dropSpeed) + (Vector3.up * upwardComponent), ForceMode.Impulse);
+		rb.linearDamping = settings.linearDamping;
+		if (dropDirection != null) rb.AddForce((dropDirection.normalized * settings.dropSpeed) + (Vector3.up * settings.upwardComponent), ForceMode.Impulse);
 
 		rotation = new Vector3(Random.Range(-5, 5), Random.Range(15, 45), Random.Range(-5, 5));
 	}
 
 	IEnumerator CollisionCoroutine() {
-		yield return new WaitForSeconds(pickupDelay);
+		yield return new WaitForSeconds(settings.pickupDelay);
 		Physics.IgnoreCollision(collider, playerCollider, false);
 	}
 
@@ -65,7 +72,7 @@ public class GunCollectableController : MonoBehaviour {
 		}
 
 		if (startTime != 0f) {
-			float floatingY = floatHeight * 0.5f * (Mathf.Cos(((Time.time - startTime) * floatFrequency) + Mathf.PI) + 1);
+			float floatingY = settings.floatHeight * 0.5f * (Mathf.Cos(((Time.time - startTime) * settings.floatFrequency) + Mathf.PI) + 1);
 			transform.position = new Vector3(transform.position.x, baseY + floatingY, transform.position.z);
 		}
 	}
