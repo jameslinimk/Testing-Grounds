@@ -224,7 +224,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		AddForceSlope(vPerp, ForceMode.Force);
-		Debug.Log(v1.magnitude);
+		// Debug.Log(v1.magnitude);
 	}
 
 	void OnTriggerEnter(Collider other) {

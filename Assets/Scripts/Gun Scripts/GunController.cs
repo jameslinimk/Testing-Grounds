@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class GunController : MonoBehaviour {
+	public static float GunPrefabScale = 3f;
+
 	public LayerMask hitLayers;
 	public Transform player;
 	public CameraController cameraController;
@@ -19,6 +21,7 @@ public class GunController : MonoBehaviour {
 	private float camRange = 0f;
 	public GunConfig config { get; private set; }
 	private Transform firePoint;
+	public Vector3 FirePointWithFallback => firePoint != null ? firePoint.position : transform.position;
 	private GameObject weaponInstance;
 
 	private InputAction shootAction;
@@ -40,6 +43,11 @@ public class GunController : MonoBehaviour {
 		rotationOffset = transform.rotation;
 
 		playerRb = player.GetComponent<Rigidbody>();
+
+		if (transform.localScale != Vector3.one * GunPrefabScale) {
+			GunPrefabScale = transform.localScale.x;
+			Debug.LogWarning("GunController's transform scale doesn't match gunPrefabScale.");
+		}
 	}
 
 	[ContextMenu("Add default gun")]
@@ -133,7 +141,7 @@ public class GunController : MonoBehaviour {
 		lastShot = Time.time;
 		ammo--;
 
-		Vector3 directionFromGun = CalculateLookPoint();
+		Vector3 directionFromGun = CalculateLookDirection();
 		if (config.burstCount == 0) {
 			ShootBullets(directionFromGun);
 		} else {
@@ -141,8 +149,8 @@ public class GunController : MonoBehaviour {
 		}
 	}
 
-	public Vector3 CalculateLookPoint() {
-		var (position, lastLook) = cameraController.IsFreelooking ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
+	public Vector3 CalculateLookDirection(bool resetFreelook = true) {
+		var (position, lastLook) = (resetFreelook && cameraController.IsFreelooking) ? cameraController.ShootReset() : (cameraController.transform.position, cameraController.transform.forward);
 		Vector3 targetPoint;
 		if (Physics.Raycast(position, lastLook, out RaycastHit cameraHit, camRange, hitLayers)) {
 			targetPoint = cameraHit.point;
@@ -151,7 +159,7 @@ public class GunController : MonoBehaviour {
 		}
 
 		// Real raycast from gun
-		return (targetPoint - firePoint.position).normalized;
+		return (targetPoint - FirePointWithFallback).normalized;
 	}
 
 	IEnumerator BurstCoroutine(Vector3 directionFromGun) {

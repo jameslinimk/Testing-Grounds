@@ -32,6 +32,8 @@ public class GunCollectableController : MonoBehaviour {
 	}
 
 	void Start() {
+		transform.localScale = Vector3.one * GunController.GunPrefabScale;
+
 		collider = GetComponent<BoxCollider>();
 		collider.enabled = true;
 		if (playerCollider != null) {
@@ -73,14 +75,5 @@ public class GunCollectableController : MonoBehaviour {
 		Vector3 halfExtents = Vector3.Scale(collider.size, transform.lossyScale) * 0.5f;
 
 		isGrounded = Physics.Raycast(boxCenter, Vector3.down, out RaycastHit hit, halfExtents.y + 0.1f) && hit.collider != null;
-	}
-
-	void OnTriggerEnter(Collider other) {
-		if (other.CompareTag("Player")) {
-			var playerGunManager = other.GetComponent<PlayerGunManager>();
-			if (playerGunManager.AddGun(gunSlot)) {
-				Destroy(gameObject);
-			}
-		}
 	}
 }

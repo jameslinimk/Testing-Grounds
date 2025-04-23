@@ -99,8 +99,7 @@ public class PlayerGunManager : MonoBehaviour {
 			if (i == gunIndex) break;
 			if (!gunSlots[i].Empty) {
 				GameObject gun = Instantiate(gunSlot.config.weaponPrefab, gunController.transform.position, gunController.transform.rotation);
-				gun.transform.localScale = gunController.transform.localScale;
-				gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookPoint(), GetComponent<Collider>());
+				gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookDirection(), GetComponent<Collider>());
 
 				SwitchGun(i);
 				gunSlot.Clear();
@@ -123,11 +122,11 @@ public class PlayerGunManager : MonoBehaviour {
 		currentGunIndex = gunIndex;
 	}
 
-	// void OnTriggerEnter(Collider other) {
-	// 	if (other.TryGetComponent<GunCollectableController>(out var gunCollectable)) {
-	// 		if (AddGun(gunCollectable.gunSlot)) {
-	// 			Destroy(other.gameObject);
-	// 		}
-	// 	}
-	// }
+	void OnTriggerEnter(Collider other) {
+		if (other.TryGetComponent<GunCollectableController>(out var gunCollectable)) {
+			if (AddGun(gunCollectable.gunSlot)) {
+				Destroy(other.gameObject);
+			}
+		}
+	}
 }

@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public partial class PlayerUIController : MonoBehaviour {
+public class PlayerUIController : MonoBehaviour {
 	private PlayerController pc;
 	private PlayerHealthController healthController;
 	private PlayerGunManager gunManager;
