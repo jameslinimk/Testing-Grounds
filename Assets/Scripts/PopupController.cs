@@ -1,14 +1,13 @@
+using TMPro;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Settings/GunPopupSettings")]
-public class GunPopupSettings : ScriptableObject {
-	public GameObject popupPrefab;
-	public float displayDistance = 7f;
-	public float fadeDuration = 0.5f;
-}
-
 public class PopupController : MonoBehaviour {
-	public GunPopupSettings settings;
+	private readonly float displayDistance = 7f;
+	private readonly float fadeDuration = 0.5f;
+
+	public bool canShow = false;
+
+	public Transform collectableTransform;
 	public PlayerGunManager player;
 	public new Transform camera;
 	public GunSlot gunSlot;
@@ -16,26 +15,49 @@ public class PopupController : MonoBehaviour {
 	private GameObject canvas;
 
 	void Start() {
-		if (settings == null) settings = Resources.Load<GunPopupSettings>("Settings/GunPopupSettings");
-		canvas = Instantiate(settings.popupPrefab, transform.position, Quaternion.identity, transform);
+		canvas = transform.GetChild(0).gameObject;
 		canvas.SetActive(false);
+		canvas.GetComponent<Canvas>().worldCamera = camera.GetComponent<Camera>();
+
+		/* ------------------------------ Setting text ------------------------------ */
+		TextMeshProUGUI nameText = canvas.transform.GetChild(0).Find("NameText").GetComponent<TextMeshProUGUI>();
+		TextMeshProUGUI modsText = canvas.transform.GetChild(0).Find("ModsText").GetComponent<TextMeshProUGUI>();
+
+		nameText.text = "";
+		modsText.text = "";
+
+		nameText.text = gunSlot.config.name;
+		foreach (IGunMod mod in gunSlot.config.mods) {
+			modsText.text += $"{mod.name}\n";
+			modsText.text += $"<size=0.15>- {mod.description}\n\n</size>";
+		}
+
+		// FIXME: when player first looks at it, the styling is not there
 	}
 
-	void Initialize(GunSlot gunSlot, PlayerGunManager player, Transform camera) {
+	public void Initialize(GunSlot gunSlot, Transform collectableTransform, PlayerGunManager player, Transform camera) {
 		this.gunSlot = gunSlot;
+		this.collectableTransform = collectableTransform;
 		this.player = player;
 		this.camera = camera;
 	}
 
 	void Update() {
-		bool inDistance = Vector3.Distance(player.transform.position, transform.position) <= settings.displayDistance;
+		transform.position = collectableTransform.position;
+
+		if (!canShow) {
+			canvas.SetActive(false);
+			return;
+		}
+
+		bool inDistance = Vector3.Distance(player.transform.position, transform.position) <= displayDistance;
 		if (!inDistance) {
 			canvas.SetActive(false);
 			return;
 		}
 
 		Vector3 cameraLook = player.gunController.CalculateLookDirection(false);
-		if (!Physics.Raycast(player.gunController.FirePointWithFallback, cameraLook, out RaycastHit hit, settings.displayDistance) || hit.collider.gameObject != gameObject) {
+		if (!Physics.Raycast(player.gunController.FirePointWithFallback, cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
 			canvas.SetActive(false);
 			return;
 		}

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public interface IGunMod {
@@ -24,7 +25,7 @@ public class FireRateMod : IGunMod {
 	public Rarity rarity => Rarity.Common;
 	public string name => "Fire Rate Mod";
 	public bool unique => false;
-	public string description => $"Increases fire rate by {fireRate} seconds.";
+	public string description => $"Increases fire rate by {Math.Round(fireRate, 2)} seconds.";
 
 	private float fireRate;
 	public void UpdateSeed(float seed) {
@@ -48,7 +49,7 @@ public class DoubleBulletMod : IGunMod {
 	public Rarity rarity => Rarity.Uncommon;
 	public string name => "Double Bullet Mod";
 	public bool unique => false;
-	public string description => $"Doubles the amount of bullets, but reduces fire rate by {fireRate} seconds.";
+	public string description => $"Doubles the amount of bullets, but reduces fire rate by {Math.Round(fireRate, 2)} seconds.";
 
 	private float fireRate;
 	public void UpdateSeed(float seed) {

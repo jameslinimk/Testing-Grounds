@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: GunCollectableSettings
   m_EditorClassIdentifier: Assembly-CSharp::GunCollectableSettings
+  popupPrefab: {fileID: 2685562542291415902, guid: 4ea8600d97fae1444aa71583f82e8001, type: 3}
   pickupDelay: 1.5
   floatHeight: 0.5
   floatFrequency: 1
   dropSpeed: 20
   upwardComponent: 8
   linearDamping: 4
+  ignoreLayerMask:
+    serializedVersion: 2
+    m_Bits: 55

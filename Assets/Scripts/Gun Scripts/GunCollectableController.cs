@@ -3,18 +3,21 @@ using UnityEngine;
 
 [CreateAssetMenu(menuName = "Settings/GunCollectableSettings")]
 public class GunCollectableSettings : ScriptableObject {
+	public GameObject popupPrefab;
 	public float pickupDelay = 1.5f;
 	public float floatHeight = 0.5f;
 	public float floatFrequency = 1f;
 	public float dropSpeed = 20f;
 	public float upwardComponent = 8f;
 	public float linearDamping = 4f;
+	public LayerMask layerMask;
 }
 
 public class GunCollectableController : MonoBehaviour {
 	public GunCollectableSettings settings;
 	public GunSlot gunSlot;
 	public Collider playerCollider;
+	public GameObject popup;
 
 	private Vector3 rotation;
 	private Vector3 dropDirection;
@@ -41,6 +44,8 @@ public class GunCollectableController : MonoBehaviour {
 		if (settings == null) settings = Resources.Load<GunCollectableSettings>("Settings/GunCollectableSettings");
 		transform.localScale = Vector3.one * GunController.GunPrefabScale;
 
+		gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
 		collider = GetComponent<BoxCollider>();
 		collider.enabled = true;
 		if (playerCollider != null) {
@@ -53,6 +58,10 @@ public class GunCollectableController : MonoBehaviour {
 		if (dropDirection != null) rb.AddForce((dropDirection.normalized * settings.dropSpeed) + (Vector3.up * settings.upwardComponent), ForceMode.Impulse);
 
 		rotation = new Vector3(Random.Range(-5, 5), Random.Range(15, 45), Random.Range(-5, 5));
+
+		popup = Instantiate(settings.popupPrefab, transform.position, Quaternion.identity);
+		popup.AddComponent<PopupController>().Initialize(gunSlot, transform, playerCollider.GetComponent<PlayerGunManager>(), playerCollider.GetComponent<PlayerController>().cameraController.transform);
+		Physics.IgnoreCollision(collider, popup.GetComponent<Collider>(), true);
 	}
 
 	IEnumerator CollisionCoroutine() {
@@ -65,6 +74,7 @@ public class GunCollectableController : MonoBehaviour {
 		transform.Rotate(rotation * Time.deltaTime);
 
 		if (isGrounded && startTime == 0f) {
+			popup.GetComponent<PopupController>().canShow = true;
 			rb.isKinematic = true;
 			collider.isTrigger = true;
 			startTime = Time.time;
@@ -77,10 +87,17 @@ public class GunCollectableController : MonoBehaviour {
 		}
 	}
 
+	void OnDestroy() {
+		if (popup != null) Destroy(popup);
+	}
+
 	private void UpdateGrounded() {
 		Vector3 boxCenter = transform.TransformPoint(collider.center);
 		Vector3 halfExtents = Vector3.Scale(collider.size, transform.lossyScale) * 0.5f;
 
-		isGrounded = Physics.Raycast(boxCenter, Vector3.down, out RaycastHit hit, halfExtents.y + 0.1f) && hit.collider != null;
+		isGrounded = Physics.Raycast(boxCenter, Vector3.down, out RaycastHit hit, halfExtents.y + 0.1f, settings.layerMask) && hit.collider != null;
+		if (isGrounded) {
+			Debug.Log($"Grounded: {hit.collider.gameObject.name}");
+		}
 	}
 }
