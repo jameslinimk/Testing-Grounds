@@ -19,6 +19,6 @@ MonoBehaviour:
   dropSpeed: 20
   upwardComponent: 8
   linearDamping: 4
-  ignoreLayerMask:
+  layerMask:
     serializedVersion: 2
     m_Bits: 55
