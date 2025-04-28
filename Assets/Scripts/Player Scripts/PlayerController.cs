@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour {
 	public CameraController cameraController;
 
 	public int score { get; private set; } = 0;
+	private float CenterToEdgeDistance => capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius;
 
 	[Header("Movement Settings")]
 	[DefaultValue(50f)] public float speed;
@@ -163,6 +164,18 @@ public class PlayerController : MonoBehaviour {
 
 	void Update() {
 		UpdateGrounded();
+
+		Vector3 test = cameraController.TransformMovement(Vector3.forward);
+		Debug.DrawLine(transform.position, transform.position + test, Color.red);
+	}
+
+	private bool onLedge = false;
+
+	private void CheckLedges(Vector3 tmv) {
+		// if (rb.linearVelocity.y >= 0 || onLedge) return;
+		if (Physics.SphereCast(transform.position + (Vector3.up * CenterToEdgeDistance), capsuleCollider.radius, tmv, out RaycastHit hit, capsuleCollider.radius * 2f)) {
+			Debug.Log($"Hit ledge: {hit.collider.name}");
+		}
 	}
 
 	void FixedUpdate() {
@@ -202,6 +215,8 @@ public class PlayerController : MonoBehaviour {
 		v1.y = 0;
 		Vector3 v2 = cameraController.TransformMovement(mv * speed);
 
+		CheckLedges(v2);
+
 		if (Mathf.Abs(v1.magnitude - maxSpeed) < 0.1f) {
 			Vector3 maxV1 = v1.normalized * maxSpeed;
 			rb.linearVelocity = new Vector3(maxV1.x, rb.linearVelocity.y, maxV1.z);
@@ -238,15 +253,14 @@ public class PlayerController : MonoBehaviour {
 	/* -------------------------------------------------------------------------- */
 	/*                                    Other                                   */
 	/* -------------------------------------------------------------------------- */
-	void ApplyGravity() {
+	private void ApplyGravity() {
 		Vector3 currentGravity = onSlope ? -slopeHit.normal * Physics.gravity.magnitude : Physics.gravity;
 		rb.AddForce(currentGravity, ForceMode.Acceleration);
 	}
 
-	void UpdateGrounded() {
-		float checkDistance = capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius + 0.1f;
+	private void UpdateGrounded() {
 		bool old = isGrounded;
-		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, checkDistance);
+		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, CenterToEdgeDistance + 0.1f);
 
 		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * 1.5f);
 		if (!old && isGrounded) {
@@ -264,7 +278,7 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
+	private void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
 		if (!onSlope) {
 			rb.AddForce(force, forceMode);
 			return;
