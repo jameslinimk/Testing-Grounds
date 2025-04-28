@@ -96,8 +96,5 @@ public class GunCollectableController : MonoBehaviour {
 		Vector3 halfExtents = Vector3.Scale(collider.size, transform.lossyScale) * 0.5f;
 
 		isGrounded = Physics.Raycast(boxCenter, Vector3.down, out RaycastHit hit, halfExtents.y + 0.1f, settings.layerMask) && hit.collider != null;
-		if (isGrounded) {
-			Debug.Log($"Grounded: {hit.collider.gameObject.name}");
-		}
 	}
 }

@@ -15,6 +15,8 @@ public static class Utils {
 	}
 
 	public static float EaseTowards(float current, float target, float speed, float maxDistance, Func<float, float> easingFunction) {
+		if (Mathf.Abs(current - target) < 0.001f) return target;
+
 		float ratioToMax = easingFunction(Mathf.Clamp01(Mathf.Abs(current - target) / maxDistance));
 		float step = speed * ratioToMax * Time.deltaTime;
 

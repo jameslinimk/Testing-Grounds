@@ -29,7 +29,7 @@ public class ErrorTextController : Singleton<ErrorTextController> {
 
 		float alpha = text.color.a;
 		while (alpha > 0) {
-			alpha -= fadeSpeed * Time.deltaTime;
+			alpha = Utils.EaseTowards(alpha, 0, fadeSpeed, 1f);
 			text.color = new Color(text.color.r, text.color.g, text.color.b, alpha);
 			yield return null;
 		}
