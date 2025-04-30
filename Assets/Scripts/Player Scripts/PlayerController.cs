@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 using System.ComponentModel;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 	private PlayerUIController uiController;
@@ -26,7 +27,7 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(7f)] public float maxWalkSpeed;
 	[DefaultValue(4f)] public float frictionSpeed;
 
-	[DefaultValue(0.5f)] public float airControl;
+	[DefaultValue(0.7f)] public float airControl;
 	private float groundHitSpeedMultiplier = 1f;
 	private float airTime = 0f;
 	private bool isGrounded = true;
@@ -165,30 +166,61 @@ public class PlayerController : MonoBehaviour {
 	void Update() {
 		UpdateGrounded();
 
-		Vector3 test = cameraController.TransformMovement(Vector3.forward);
-		Debug.DrawLine(transform.position, transform.position + test, Color.red);
+		// Vector3 forward = cameraController.TransformMovement(Vector3.forward);
+		// Debug.DrawLine(transform.position, transform.position + forward, Color.red);
 	}
 
 	[Header("Ledge Settings")]
+	[DefaultValue(0.35f)] public float climbDuration;
 	public LayerMask ledgeLayerMask;
+
 	private bool onLedge = false;
-	private GameObject ledge;
+	private Vector3 climbStartPos;
+	private Vector3 climbEndPos;
 
 	private void CheckLedges(Vector3 tmv) {
-		if (rb.linearVelocity.y >= 0 || onLedge) return;
+		if (rb.linearVelocity.y >= 0f || onLedge) return;
 
-		float x = capsuleCollider.radius * 2f / 5;
+		float step = capsuleCollider.radius * 2f / 5f;
 		for (int i = 0; i < 5; i++) {
-			float y = -capsuleCollider.radius + (i * x);
+			float offset = -capsuleCollider.radius + (i * step);
 			Vector3 perp = new(tmv.z, tmv.y, -tmv.x);
-			Vector3 start = transform.position + (Vector3.up * (CenterToEdgeDistance + capsuleCollider.radius)) + perp.normalized * y;
+			Vector3 start = transform.position + Vector3.up * (capsuleCollider.height * 0.5f) + perp.normalized * offset;
+
 			if (Physics.Raycast(start, tmv, out RaycastHit hit, capsuleCollider.radius + 0.1f, ledgeLayerMask)) {
-				Debug.Log($"Hit ledge: {hit.collider.name}");
-				ledge = hit.collider.gameObject;
 				onLedge = true;
+
+				// Compute an end‑position that puts the character standing on top of the ledge.
+				Vector3 ledgeUp = hit.transform.up; // Assumes the ledge top faces its +Y.
+				float standHeight = capsuleCollider.height * 0.5f + 0.05f; // Small extra so feet clear the edge.
+				climbEndPos = hit.point + ledgeUp * standHeight;
+
+				// Start the automatic climb.
+				StartCoroutine(ClimbRoutine());
 				return;
 			}
 		}
+	}
+
+	private IEnumerator ClimbRoutine() {
+		onLedge = true;
+		climbStartPos = transform.position;
+
+		rb.linearVelocity = Vector3.zero;
+		rb.isKinematic = true;
+
+		float elapsed = 0f;
+		while (elapsed < climbDuration) {
+			float t = elapsed / climbDuration;
+			transform.position = Vector3.Lerp(climbStartPos, climbEndPos, t);
+			elapsed += Time.deltaTime;
+			yield return null;
+		}
+
+		transform.position = climbEndPos;
+		rb.isKinematic = false;
+
+		onLedge = false;
 	}
 
 	void FixedUpdate() {
@@ -278,7 +310,7 @@ public class PlayerController : MonoBehaviour {
 		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * 1.5f);
 		if (!old && isGrounded) {
 			// Hit the ground
-			groundHitSpeedMultiplier = 1f - airTime;
+			groundHitSpeedMultiplier = Mathf.Clamp01(1f - airTime);
 			airTime = 0f;
 		}
 		if (!isGrounded) airTime += Time.deltaTime;

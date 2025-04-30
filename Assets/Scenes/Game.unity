@@ -2642,12 +2642,12 @@ MonoBehaviour:
   speed: 50
   maxWalkSpeed: 7
   frictionSpeed: 4
-  airControl: 0.5
+  airControl: 0.7
   staminaRegenCooldown: 1
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 20
+  jumpForce: 12
   jumpStaminaCost: 0.25
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
