@@ -437,7 +437,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitLayers:
     serializedVersion: 2
-    m_Bits: 51
+    m_Bits: 1
   player: {fileID: 1573727679}
   cameraController: {fileID: 961739754}
   playerUIController: {fileID: 1573727687}
@@ -2647,7 +2647,7 @@ MonoBehaviour:
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 10.5
+  jumpForce: 20
   jumpStaminaCost: 0.25
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
@@ -2662,6 +2662,9 @@ MonoBehaviour:
   dashSpeed: 20
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
+  ledgeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!54 &1573727681
 Rigidbody:
   m_ObjectHideFlags: 0

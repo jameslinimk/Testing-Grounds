@@ -169,12 +169,25 @@ public class PlayerController : MonoBehaviour {
 		Debug.DrawLine(transform.position, transform.position + test, Color.red);
 	}
 
+	[Header("Ledge Settings")]
+	public LayerMask ledgeLayerMask;
 	private bool onLedge = false;
+	private GameObject ledge;
 
 	private void CheckLedges(Vector3 tmv) {
-		// if (rb.linearVelocity.y >= 0 || onLedge) return;
-		if (Physics.SphereCast(transform.position + (Vector3.up * CenterToEdgeDistance), capsuleCollider.radius, tmv, out RaycastHit hit, capsuleCollider.radius * 2f)) {
-			Debug.Log($"Hit ledge: {hit.collider.name}");
+		if (rb.linearVelocity.y >= 0 || onLedge) return;
+
+		float x = capsuleCollider.radius * 2f / 5;
+		for (int i = 0; i < 5; i++) {
+			float y = -capsuleCollider.radius + (i * x);
+			Vector3 perp = new(tmv.z, tmv.y, -tmv.x);
+			Vector3 start = transform.position + (Vector3.up * (CenterToEdgeDistance + capsuleCollider.radius)) + perp.normalized * y;
+			if (Physics.Raycast(start, tmv, out RaycastHit hit, capsuleCollider.radius + 0.1f, ledgeLayerMask)) {
+				Debug.Log($"Hit ledge: {hit.collider.name}");
+				ledge = hit.collider.gameObject;
+				onLedge = true;
+				return;
+			}
 		}
 	}
 
