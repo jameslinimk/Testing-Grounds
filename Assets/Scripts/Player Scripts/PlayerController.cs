@@ -171,7 +171,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	[Header("Ledge Settings")]
-	[DefaultValue(0.35f)] public float climbDuration;
+	[DefaultValue(10f)] public float climbDuration;
 	public LayerMask ledgeLayerMask;
 
 	private bool onLedge = false;
