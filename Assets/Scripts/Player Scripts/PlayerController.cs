@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour {
 	private Animator animator;
 
 	private Vector3 mv;
-	private Vector3 lastMV;
+	private Vector3 lastMV = Vector3.forward;
 
 	private InputAction sprintAction;
 	private InputAction jumpAction;
@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(4f)] public float frictionSpeed;
 
 	[DefaultValue(0.7f)] public float airControl;
+	[DefaultValue(0.75f)] public float groundHitRecoverSpeed;
+	[Tooltip("Changes max seconds in air scale")][DefaultValue(2f)] public float groundHitCurveMaxTime;
+	[Tooltip("F(seconds in air)=% of movement lost")] public AnimationCurve groundHitCurve;
 	private float groundHitSpeedMultiplier = 1f;
 	private float airTime = 0f;
 	private bool isGrounded = true;
@@ -78,15 +81,15 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
-	[DefaultValue(0.2f)] public float dashDuration;
-	[DefaultValue(20f)] public float dashSpeed;
+	[DefaultValue(1.1f)] public float dashDuration; // Match animation length
+	[DefaultValue(15f)] public float dashSpeed;
 	[DefaultValue(0.5f)] public float dashStaminaCost;
 
 	private Vector3 dashDirection;
 	public float dashStart { get; private set; } = -Mathf.Infinity;
 
 	private bool IsDashing => Time.time - dashStart < dashDuration;
-	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost;
+	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded;
 
 	[Header("Slope Settings")]
 	[DefaultValue(45f)] public float maxSlopeAngle;
@@ -110,19 +113,21 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnDash() {
-		if (GameManager.Instance.IsPaused || !CanDash) return;
+		if (GameManager.Instance.IsPaused || healthController.isDead || !CanDash) return;
 		uiController.SetAlphaTarget(1f);
 
 		Stamina -= dashStaminaCost;
 		dashStart = Time.time;
-		dashDirection = cameraController.TransformMovement(mv == Vector3.zero ? lastMV : mv);
+		Vector3 rawDir = mv == Vector3.zero ? lastMV : mv;
+		dashDirection = cameraController.TransformMovement(rawDir);
 
-		Vector3 targetLV = dashDirection * dashSpeed;
-		rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
+		animator.SetFloat("DashHorizontal", rawDir.x);
+		animator.SetFloat("DashVertical", rawDir.z);
+		animator.SetTrigger("Dash");
 	}
 
 	void OnJump() {
-		if (GameManager.Instance.IsPaused || !CanJump) return;
+		if (GameManager.Instance.IsPaused || healthController.isDead || !CanJump) return;
 		if (animator.GetCurrentAnimatorStateInfo(0).IsName("Land")) {
 			Debug.Log("Jumping from landing state");
 			return;
@@ -130,7 +135,7 @@ public class PlayerController : MonoBehaviour {
 
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
-		animator.SetInteger("JumpState", 1);
+		animator.SetTrigger("Jump");
 
 
 		/**
@@ -143,14 +148,14 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || isCrouching) return;
+		if (GameManager.Instance.IsPaused || healthController.isDead || isCrouching) return;
 		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
 		transform.position -= new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = true;
 	}
 
 	void OnCrouchRelease(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || !isCrouching) return;
+		if (GameManager.Instance.IsPaused || healthController.isDead || !isCrouching) return;
 		transform.localScale = originalScale;
 		transform.position += new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = false;
@@ -182,19 +187,20 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void Update() {
-		UpdateGrounded();
-
 		if (healthController.isDead) return;
+
+		UpdateGrounded();
 
 		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
 		transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
 	}
 
 	void FixedUpdate() {
+		if (healthController.isDead) return;
+
 		ApplyGravity();
 
 		/* --------------------------------- Falling -------------------------------- */
-		animator.SetBool("IsFalling", !isGrounded);
 		if (!onSlope && rb.linearVelocity.y < 0) {
 			rb.AddForce(fallMultiplier * Physics.gravity, ForceMode.Acceleration);
 		}
@@ -204,7 +210,12 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* --------------------------------- Dashing -------------------------------- */
-		if (IsDashing) return;
+		if (IsDashing) {
+			Vector3 targetLV = dashDirection * dashSpeed;
+			rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
+
+			return;
+		}
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
 		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
@@ -223,7 +234,7 @@ public class PlayerController : MonoBehaviour {
 		maxSpeed *= groundHitSpeedMultiplier;
 		if (!isGrounded) maxSpeed *= airControl;
 
-		animator.SetFloat("Horizontal", -mv.normalized.x, 0.1f, Time.deltaTime);
+		animator.SetFloat("Horizontal", mv.normalized.x, 0.1f, Time.deltaTime);
 		animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
 
 		// Animator speed: 0-0.5: idle | 0.5-1.5: walk | 1.5+: run
@@ -281,15 +292,12 @@ public class PlayerController : MonoBehaviour {
 		bool old = isGrounded;
 		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, CenterToEdgeDistance + 0.1f);
 
-		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * 1.5f);
+		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * groundHitRecoverSpeed);
 		if (!old && isGrounded) {
 			// Hit the ground
-			groundHitSpeedMultiplier = Mathf.Clamp01(1f - airTime);
+			groundHitSpeedMultiplier = Mathf.Clamp01(1f - groundHitCurve.Evaluate(airTime / groundHitCurveMaxTime));
+			Debug.Log($"Hit the ground! {airTime} -> {groundHitSpeedMultiplier}");
 			airTime = 0f;
-
-			if (animator.GetInteger("JumpState") == 1) {
-				animator.SetInteger("JumpState", -1);
-			}
 		}
 		if (!isGrounded) airTime += Time.deltaTime;
 
@@ -299,6 +307,8 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			onSlope = false;
 		}
+
+		animator.SetBool("IsFalling", !isGrounded);
 	}
 
 	private void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {

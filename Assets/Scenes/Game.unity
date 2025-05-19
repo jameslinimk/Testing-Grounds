@@ -2649,11 +2649,37 @@ MonoBehaviour:
   maxWalkSpeed: 7
   frictionSpeed: 4
   airControl: 0.7
+  groundHitRecoverSpeed: 0.75
+  groundHitCurveMaxTime: 2
+  groundHitCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   staminaRegenCooldown: 1
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 12
+  jumpForce: 10.5
   jumpStaminaCost: 0.25
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
@@ -2664,8 +2690,8 @@ MonoBehaviour:
   sprintCooldown: 0.25
   sprintStaminaCost: 1
   dashCooldown: 1
-  dashDuration: 0.2
-  dashSpeed: 20
+  dashDuration: 1.1
+  dashSpeed: 15
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
 --- !u!54 &1573727681
