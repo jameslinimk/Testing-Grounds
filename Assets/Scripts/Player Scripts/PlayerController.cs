@@ -2,13 +2,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 using System.ComponentModel;
-using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 	private PlayerUIController uiController;
+	private PlayerHealthController healthController;
 
 	private CapsuleCollider capsuleCollider;
 	private Rigidbody rb;
+	private Animator animator;
 
 	private Vector3 mv;
 	private Vector3 lastMV;
@@ -122,9 +123,23 @@ public class PlayerController : MonoBehaviour {
 
 	void OnJump() {
 		if (GameManager.Instance.IsPaused || !CanJump) return;
+		if (animator.GetCurrentAnimatorStateInfo(0).IsName("Land")) {
+			Debug.Log("Jumping from landing state");
+			return;
+		}
 
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
+		animator.SetInteger("JumpState", 1);
+
+
+		/**
+
+		TODO:
+		- Fix jump immediately after land
+		- Custom run from jump state?
+
+		*/
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
@@ -146,10 +161,13 @@ public class PlayerController : MonoBehaviour {
 	/* -------------------------------------------------------------------------- */
 	void Start() {
 		uiController = GetComponent<PlayerUIController>();
+		healthController = GetComponent<PlayerHealthController>();
 
 		rb = GetComponent<Rigidbody>();
 		rb.useGravity = false;
 		capsuleCollider = GetComponent<CapsuleCollider>();
+
+		animator = transform.GetChild(0).GetComponent<Animator>();
 
 		originalScale = transform.localScale;
 		var h = 2 * originalScale.y;
@@ -166,67 +184,17 @@ public class PlayerController : MonoBehaviour {
 	void Update() {
 		UpdateGrounded();
 
-		// Vector3 forward = cameraController.TransformMovement(Vector3.forward);
-		// Debug.DrawLine(transform.position, transform.position + forward, Color.red);
-	}
+		if (healthController.isDead) return;
 
-	[Header("Ledge Settings")]
-	[DefaultValue(10f)] public float climbDuration;
-	public LayerMask ledgeLayerMask;
-
-	private bool onLedge = false;
-	private Vector3 climbStartPos;
-	private Vector3 climbEndPos;
-
-	private void CheckLedges(Vector3 tmv) {
-		if (rb.linearVelocity.y >= 0f || onLedge) return;
-
-		float step = capsuleCollider.radius * 2f / 5f;
-		for (int i = 0; i < 5; i++) {
-			float offset = -capsuleCollider.radius + (i * step);
-			Vector3 perp = new(tmv.z, tmv.y, -tmv.x);
-			Vector3 start = transform.position + Vector3.up * (capsuleCollider.height * 0.5f) + perp.normalized * offset;
-
-			if (Physics.Raycast(start, tmv, out RaycastHit hit, capsuleCollider.radius + 0.1f, ledgeLayerMask)) {
-				onLedge = true;
-
-				// Compute an end‑position that puts the character standing on top of the ledge.
-				Vector3 ledgeUp = hit.transform.up; // Assumes the ledge top faces its +Y.
-				float standHeight = capsuleCollider.height * 0.5f + 0.05f; // Small extra so feet clear the edge.
-				climbEndPos = hit.point + ledgeUp * standHeight;
-
-				// Start the automatic climb.
-				StartCoroutine(ClimbRoutine());
-				return;
-			}
-		}
-	}
-
-	private IEnumerator ClimbRoutine() {
-		onLedge = true;
-		climbStartPos = transform.position;
-
-		rb.linearVelocity = Vector3.zero;
-		rb.isKinematic = true;
-
-		float elapsed = 0f;
-		while (elapsed < climbDuration) {
-			float t = elapsed / climbDuration;
-			transform.position = Vector3.Lerp(climbStartPos, climbEndPos, t);
-			elapsed += Time.deltaTime;
-			yield return null;
-		}
-
-		transform.position = climbEndPos;
-		rb.isKinematic = false;
-
-		onLedge = false;
+		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
+		transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
 	}
 
 	void FixedUpdate() {
 		ApplyGravity();
 
 		/* --------------------------------- Falling -------------------------------- */
+		animator.SetBool("IsFalling", !isGrounded);
 		if (!onSlope && rb.linearVelocity.y < 0) {
 			rb.AddForce(fallMultiplier * Physics.gravity, ForceMode.Acceleration);
 		}
@@ -240,7 +208,7 @@ public class PlayerController : MonoBehaviour {
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
 		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
-		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
+		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero && mv.x == 0f && mv.z > 0f) {
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
 			sprinting = true;
@@ -254,13 +222,19 @@ public class PlayerController : MonoBehaviour {
 		/* ---------------------------- General movement ---------------------------- */
 		maxSpeed *= groundHitSpeedMultiplier;
 		if (!isGrounded) maxSpeed *= airControl;
+
+		animator.SetFloat("Horizontal", -mv.normalized.x, 0.1f, Time.deltaTime);
+		animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
+
+		// Animator speed: 0-0.5: idle | 0.5-1.5: walk | 1.5+: run
+		float animatorSpeed = sprinting ? 2f : (mv.magnitude > 0.5f ? 1f : 0f);
+		animator.SetFloat("Speed", mv.normalized.magnitude * animatorSpeed);
+
 		if (mv == Vector3.zero) return;
 
 		Vector3 v1 = rb.linearVelocity;
 		v1.y = 0;
 		Vector3 v2 = cameraController.TransformMovement(mv * speed);
-
-		CheckLedges(v2);
 
 		if (Mathf.Abs(v1.magnitude - maxSpeed) < 0.1f) {
 			Vector3 maxV1 = v1.normalized * maxSpeed;
@@ -312,6 +286,10 @@ public class PlayerController : MonoBehaviour {
 			// Hit the ground
 			groundHitSpeedMultiplier = Mathf.Clamp01(1f - airTime);
 			airTime = 0f;
+
+			if (animator.GetInteger("JumpState") == 1) {
+				animator.SetInteger("JumpState", -1);
+			}
 		}
 		if (!isGrounded) airTime += Time.deltaTime;
 
