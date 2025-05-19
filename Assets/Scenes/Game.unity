@@ -2679,7 +2679,7 @@ MonoBehaviour:
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 10.5
+  jumpForce: 20
   jumpStaminaCost: 0.25
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
@@ -2691,7 +2691,40 @@ MonoBehaviour:
   sprintStaminaCost: 1
   dashCooldown: 1
   dashDuration: 1.1
-  dashSpeed: 15
+  dashCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.0009765625
+      value: 0.2960205
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.21183771
+      value: 1.0019822
+      inSlope: -0.08746581
+      outSlope: -0.08746581
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.0000494
+      value: -0.0000040195882
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  dashSpeed: 8
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
 --- !u!54 &1573727681
@@ -2703,7 +2736,7 @@ Rigidbody:
   m_GameObject: {fileID: 1573727678}
   serializedVersion: 4
   m_Mass: 1
-  m_Drag: 5
+  m_Drag: 8
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}

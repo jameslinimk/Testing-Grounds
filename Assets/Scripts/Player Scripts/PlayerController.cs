@@ -81,7 +81,8 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
-	[DefaultValue(1.1f)] public float dashDuration; // Match animation length
+	[DefaultValue(1.1f)] public float dashDuration;
+	public AnimationCurve dashCurve;
 	[DefaultValue(15f)] public float dashSpeed;
 	[DefaultValue(0.5f)] public float dashStaminaCost;
 
@@ -142,7 +143,7 @@ public class PlayerController : MonoBehaviour {
 
 		TODO:
 		- Fix jump immediately after land
-		- Custom run from jump state?
+		- Fix dash immediately after land
 
 		*/
 	}
@@ -211,7 +212,8 @@ public class PlayerController : MonoBehaviour {
 
 		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) {
-			Vector3 targetLV = dashDirection * dashSpeed;
+			float t = (Time.time - dashStart) / dashDuration;
+			Vector3 targetLV = dashCurve.Evaluate(t) * dashSpeed * dashDirection;
 			rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
 
 			return;
