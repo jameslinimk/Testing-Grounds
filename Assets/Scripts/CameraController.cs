@@ -24,7 +24,7 @@ public class CameraController : MonoBehaviour {
 	[DefaultValue(60f)] public float maxPitch;
 
 	[Header("FOV Settings")]
-	[DefaultValue(75f)] public float maxFOV;
+	[DefaultValue(66f)] public float maxFOV;
 	[DefaultValue(60f)] public float minFOV;
 	[DefaultValue(5f)] public float fovSpeed;
 

@@ -1805,7 +1805,7 @@ MonoBehaviour:
   sensitivity: 0.15
   minPitch: -100
   maxPitch: 60
-  maxFOV: 75
+  maxFOV: 66
   minFOV: 60
   fovSpeed: 5
 --- !u!4 &1011901305 stripped
@@ -2645,9 +2645,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraController: {fileID: 961739754}
-  speed: 50
-  maxWalkSpeed: 7
-  frictionSpeed: 4
+  walkAccel: 0
+  maxWalkSpeed: 5.5
   airControl: 0.7
   groundHitRecoverSpeed: 0.75
   groundHitCurveMaxTime: 2
@@ -2679,14 +2678,16 @@ MonoBehaviour:
   maxStamina: 5
   staminaRegen: 1
   standingStaminaRegen: 2
-  jumpForce: 20
+  jumpForce: 10.5
   jumpStaminaCost: 0.25
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
   crouchHeightMultiplier: 2
+  crouchAccel: 0
   maxCrouchSpeed: 4
   crouchJumpForce: 10
-  maxSprintSpeed: 12
+  sprintAccel: 0
+  maxSprintSpeed: 7
   sprintCooldown: 0.25
   sprintStaminaCost: 1
   dashCooldown: 1
@@ -2704,8 +2705,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.21183771
-      value: 1.0019822
+      time: 0.2942962
+      value: 1.0043473
       inSlope: -0.08746581
       outSlope: -0.08746581
       tangentMode: 0
@@ -2724,7 +2725,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  dashSpeed: 8
+  dashSpeed: 15
   dashStaminaCost: 0.5
   maxSlopeAngle: 45
 --- !u!54 &1573727681
@@ -3105,6 +3106,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1573727679}
     m_Modifications:
+    - target: {fileID: 185160433139728343, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 823363123343470262, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1438546959266459337, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -3161,12 +3170,44 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerModel
       objectReference: {fileID: 0}
+    - target: {fileID: 3388840107371486329, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3671890786779363153, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3705146677043592845, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3716317115370018060, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4108629495336714649, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4116401870129570769, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4540229000190281644, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 2955426045e168940ad511eef308a25b, type: 2}
     - target: {fileID: 4540229000190281644, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
       propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7110436774692112344, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7945953894594096990, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

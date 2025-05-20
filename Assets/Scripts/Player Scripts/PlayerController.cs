@@ -24,9 +24,8 @@ public class PlayerController : MonoBehaviour {
 	private float CenterToEdgeDistance => capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius;
 
 	[Header("Movement Settings")]
-	[DefaultValue(50f)] public float speed;
-	[DefaultValue(7f)] public float maxWalkSpeed;
-	[DefaultValue(4f)] public float frictionSpeed;
+	[DefaultValue(55f)] public float walkAccel;
+	[DefaultValue(5.5f)] public float maxWalkSpeed;
 
 	[DefaultValue(0.7f)] public float airControl;
 	[DefaultValue(0.75f)] public float groundHitRecoverSpeed;
@@ -63,6 +62,7 @@ public class PlayerController : MonoBehaviour {
 
 	[Header("Crouch Settings")]
 	[DefaultValue(2f)] public float crouchHeightMultiplier;
+	[DefaultValue(45f)] public float crouchAccel;
 	[DefaultValue(4f)] public float maxCrouchSpeed;
 	[DefaultValue(10f)] public float crouchJumpForce;
 	private Vector3 originalScale;
@@ -70,7 +70,8 @@ public class PlayerController : MonoBehaviour {
 	private bool isCrouching = false;
 
 	[Header("Sprint Settings")]
-	[DefaultValue(12f)] public float maxSprintSpeed;
+	[DefaultValue(77f)] public float sprintAccel;
+	[DefaultValue(7f)] public float maxSprintSpeed;
 	[DefaultValue(0.25f)] public float sprintCooldown;
 	[DefaultValue(1f)] public float sprintStaminaCost;
 
@@ -138,7 +139,6 @@ public class PlayerController : MonoBehaviour {
 		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
 		animator.SetTrigger("Jump");
 
-
 		/**
 
 		TODO:
@@ -193,7 +193,7 @@ public class PlayerController : MonoBehaviour {
 		UpdateGrounded();
 
 		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
-		transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
+		transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
 	}
 
 	void FixedUpdate() {
@@ -220,8 +220,10 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
+		float accel = isCrouching ? crouchAccel : walkAccel;
 		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero && mv.x == 0f && mv.z > 0f) {
+			accel = sprintAccel;
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
 			sprinting = true;
@@ -247,7 +249,7 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 v1 = rb.linearVelocity;
 		v1.y = 0;
-		Vector3 v2 = cameraController.TransformMovement(mv * speed);
+		Vector3 v2 = cameraController.TransformMovement(mv * accel);
 
 		if (Mathf.Abs(v1.magnitude - maxSpeed) < 0.1f) {
 			Vector3 maxV1 = v1.normalized * maxSpeed;
@@ -271,7 +273,6 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		AddForceSlope(vPerp, ForceMode.Force);
-		// Debug.Log(v1.magnitude);
 	}
 
 	void OnTriggerEnter(Collider other) {
