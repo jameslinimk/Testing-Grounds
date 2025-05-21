@@ -78,7 +78,8 @@ public class PlayerController : MonoBehaviour {
 	private bool sprinting = false;
 	private float sprintEnd = -Mathf.Infinity;
 
-	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing;
+	private bool IsLanding => animator.GetCurrentAnimatorStateInfo(0).IsName("Land");
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing && !IsLanding;
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
@@ -91,7 +92,7 @@ public class PlayerController : MonoBehaviour {
 	public float dashStart { get; private set; } = -Mathf.Infinity;
 
 	private bool IsDashing => Time.time - dashStart < dashDuration;
-	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded;
+	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding;
 
 	[Header("Slope Settings")]
 	[DefaultValue(45f)] public float maxSlopeAngle;
@@ -130,10 +131,6 @@ public class PlayerController : MonoBehaviour {
 
 	void OnJump() {
 		if (GameManager.Instance.IsPaused || healthController.isDead || !CanJump) return;
-		if (animator.GetCurrentAnimatorStateInfo(0).IsName("Land")) {
-			Debug.Log("Jumping from landing state");
-			return;
-		}
 
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
@@ -194,6 +191,8 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
 		transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
+
+		Debug.Log(animator.GetCurrentAnimatorStateInfo(0).IsName("Land"));
 	}
 
 	void FixedUpdate() {

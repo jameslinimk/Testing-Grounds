@@ -1,4 +1,3 @@
-# Ideas
+# Main idea
 
-- Roguelike shooter
-- Doom/Ultrakill style movement
+- Roguelike
