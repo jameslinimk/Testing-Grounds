@@ -10,13 +10,19 @@ public enum ArmorSlot {
 	Helmet,
 }
 
+public enum ArmorSetModels {
+	None,
+	StarterClothes,
+	PlateSet1,
+}
+
 public class ArmorSetSlotInfo {
 	public List<string> modelNames;
 	public bool enableUnderwear = false;
 }
 
 public class ArmorSet {
-	public string name;
+	public ArmorSetModels name;
 	public Dictionary<ArmorSlot, ArmorSetSlotInfo> slotInfo = new();
 
 	public bool Equals(ArmorSet other) {
@@ -24,9 +30,9 @@ public class ArmorSet {
 		return name == other.name;
 	}
 
-	public static Dictionary<string, ArmorSet> ArmorSets = new() {
-		{ "None", new ArmorSet {
-			name = "None",
+	public static Dictionary<ArmorSetModels, ArmorSet> ArmorSets = new() {
+		{ ArmorSetModels.None, new ArmorSet {
+			name = ArmorSetModels.None,
 			slotInfo = new() {
 				{ ArmorSlot.Boots, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Feet" } } },
 				{ ArmorSlot.Chest, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Chest" } } },
@@ -35,16 +41,16 @@ public class ArmorSet {
 				{ ArmorSlot.Helmet, new ArmorSetSlotInfo { modelNames = new() {} } },
 			}
 		} },
-		{ "StarterClothes", new ArmorSet {
-			name = "StarterClothes",
+		{ ArmorSetModels.StarterClothes, new ArmorSet {
+			name = ArmorSetModels.StarterClothes,
 			slotInfo = new() {
 				{ ArmorSlot.Boots, new ArmorSetSlotInfo { modelNames = new() { "Armors/StarterClothes/Starter_Boots" } } },
 				{ ArmorSlot.Chest, new ArmorSetSlotInfo { modelNames = new() { "Armors/StarterClothes/Starter_Chest" } } },
 				{ ArmorSlot.Pants, new ArmorSetSlotInfo { modelNames = new() { "Armors/StarterClothes/Starter_Pants" } } },
 			}
 		} },
-		{"PlateSet1", new ArmorSet {
-			name = "PlateSet1",
+		{ArmorSetModels.PlateSet1, new ArmorSet {
+			name = ArmorSetModels.PlateSet1,
 			slotInfo = new() {
 				{ ArmorSlot.Boots, new ArmorSetSlotInfo { modelNames = new() { "Armors/PlateSet1/PlateSet1_Boots" } } },
 				{ ArmorSlot.Chest, new ArmorSetSlotInfo { modelNames = new() { "Armors/PlateSet1/PlateSet1_Chest", "Armors/PlateSet1/PlateSet1_Shoulders" } } },
@@ -59,7 +65,7 @@ public class ArmorSet {
 [CreateAssetMenu(fileName = "NewArmor", menuName = "Inventory/Armor")]
 public class ArmorConfig : ScriptableObject {
 	public Rarity rarity;
-	public ArmorSet set;
+	public ArmorSetModels set;
 	public ArmorSlot[] slotsOfSet;
 }
 
@@ -76,7 +82,11 @@ public class PlayerArmorController : MonoBehaviour {
 
 	void Update() {
 		if (Keyboard.current.tKey.wasReleasedThisFrame) {
-			RawEquipSlot(ArmorSlot.Chest, ArmorSet.ArmorSets["PlateSet1"]);
+			RawEquipSlot(ArmorSlot.Chest, ArmorSet.ArmorSets[ArmorSetModels.PlateSet1]);
+		}
+
+		if (Keyboard.current.yKey.wasReleasedThisFrame) {
+			RawEquipSlot(ArmorSlot.Chest, ArmorSet.ArmorSets[ArmorSetModels.None]);
 		}
 	}
 
@@ -84,9 +94,9 @@ public class PlayerArmorController : MonoBehaviour {
 	/// Doesn't change `this.slots`
 	/// </summary>
 	public void RawEquipSlot(ArmorSlot slot, ArmorSet targetSet) {
-		var currentSet = slots.ContainsKey(slot) ? slots[slot].set : ArmorSet.ArmorSets["None"];
+		var currentSet = ArmorSet.ArmorSets[slots.ContainsKey(slot) ? slots[slot].set : ArmorSetModels.None];
 		if (currentSet.Equals(targetSet)) {
-			Debug.LogWarning($"Armor slot {slot} already has armor set {targetSet} equipped!");
+			Debug.LogWarning($"Armor slot {slot} already has armor set {targetSet.name} equipped!");
 			return;
 		}
 
