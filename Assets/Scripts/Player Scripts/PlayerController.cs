@@ -191,8 +191,6 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
 		transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
-
-		Debug.Log(animator.GetCurrentAnimatorStateInfo(0).IsName("Land"));
 	}
 
 	void FixedUpdate() {

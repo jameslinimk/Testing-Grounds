@@ -2721,6 +2721,7 @@ GameObject:
   - component: {fileID: 1573727686}
   - component: {fileID: 1573727687}
   - component: {fileID: 1573727688}
+  - component: {fileID: 1573727689}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2758,7 +2759,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraController: {fileID: 961739754}
-  walkAccel: 0
+  walkAccel: 55
   maxWalkSpeed: 5.5
   airControl: 0.7
   groundHitRecoverSpeed: 0.75
@@ -2796,10 +2797,10 @@ MonoBehaviour:
   fallMultiplier: 1.5
   lowJumpMultiplier: 0.75
   crouchHeightMultiplier: 2
-  crouchAccel: 0
+  crouchAccel: 45
   maxCrouchSpeed: 4
   crouchJumpForce: 10
-  sprintAccel: 0
+  sprintAccel: 77
   maxSprintSpeed: 7
   sprintCooldown: 0.25
   sprintStaminaCost: 1
@@ -3032,6 +3033,18 @@ MonoBehaviour:
   - config: {fileID: 0}
     currentAmmo: 0
     putAwayTime: Infinity
+--- !u!114 &1573727689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573727678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3ef9ae60943a4d49bf8bec68e676e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1632061511
 GameObject:
   m_ObjectHideFlags: 0
