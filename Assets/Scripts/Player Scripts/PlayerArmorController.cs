@@ -35,7 +35,7 @@ public class ArmorSet {
 			name = ArmorSetModels.None,
 			slotInfo = new() {
 				{ ArmorSlot.Boots, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Feet" } } },
-				{ ArmorSlot.Chest, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Chest" } } },
+				{ ArmorSlot.Chest, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Chest", "Mesh/Body/Arms" } } },
 				{ ArmorSlot.Gloves, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Hands" } } },
 				{ ArmorSlot.Pants, new ArmorSetSlotInfo { modelNames = new() { "Mesh/Body/Legs" }, enableUnderwear = true } },
 				{ ArmorSlot.Helmet, new ArmorSetSlotInfo { modelNames = new() {} } },
@@ -64,9 +64,11 @@ public class ArmorSet {
 
 [CreateAssetMenu(fileName = "NewArmor", menuName = "Inventory/Armor")]
 public class ArmorConfig : ScriptableObject {
+	public string armorName;
+	public string description;
 	public Rarity rarity;
 	public ArmorSetModels set;
-	public ArmorSlot[] slotsOfSet;
+	public ArmorSlot slot;
 }
 
 public class PlayerArmorController : MonoBehaviour {
@@ -80,28 +82,52 @@ public class PlayerArmorController : MonoBehaviour {
 		underwear = playerModel.Find("Mesh").Find("Accessories").Find("Underwear").gameObject;
 	}
 
+	public ArmorConfig test1;
+	public ArmorConfig test2;
+
 	void Update() {
 		if (Keyboard.current.tKey.wasReleasedThisFrame) {
-			RawEquipSlot(ArmorSlot.Chest, ArmorSet.ArmorSets[ArmorSetModels.PlateSet1]);
+			EquipArmor(test1);
 		}
 
 		if (Keyboard.current.yKey.wasReleasedThisFrame) {
-			RawEquipSlot(ArmorSlot.Chest, ArmorSet.ArmorSets[ArmorSetModels.None]);
+			EquipArmor(test2);
 		}
 	}
 
-	/// <summary>
-	/// Doesn't change `this.slots`
-	/// </summary>
-	public void RawEquipSlot(ArmorSlot slot, ArmorSet targetSet) {
+	public bool EquipArmor(ArmorConfig armor) {
+		var model = ArmorSet.ArmorSets[armor.set];
+		model.slotInfo.TryGetValue(armor.slot, out var slotInfo);
+		if (slotInfo == null) {
+			Debug.LogWarning($"Armor slot {armor.slot} not found in armor set {armor.set}");
+			return false;
+		}
+
+		if (slots.ContainsKey(armor.slot) && slots[armor.slot].armorName == armor.armorName) {
+			Debug.LogWarning($"Armor {armor.armorName} already equipped in slot {armor.slot}");
+			return false;
+		}
+
+		var ret = RawEquipSlot(armor.slot, model);
+		slots[armor.slot] = armor;
+
+		return ret;
+	}
+
+	private bool RawEquipSlot(ArmorSlot slot, ArmorSet targetSet) {
 		var currentSet = ArmorSet.ArmorSets[slots.ContainsKey(slot) ? slots[slot].set : ArmorSetModels.None];
 		if (currentSet.Equals(targetSet)) {
 			Debug.LogWarning($"Armor slot {slot} already has armor set {targetSet.name} equipped!");
-			return;
+			return false;
 		}
 
 		var currentSlotInfo = currentSet.slotInfo[slot];
 		var targetSlotInfo = targetSet.slotInfo[slot];
+
+		if (targetSlotInfo == null) {
+			Debug.LogWarning($"Target slot {slot} not found in target set {targetSet.name}");
+			return false;
+		}
 
 		underwear.SetActive(targetSlotInfo.enableUnderwear);
 
@@ -122,5 +148,7 @@ public class PlayerArmorController : MonoBehaviour {
 				model.gameObject.SetActive(true);
 			}
 		}
+
+		return true;
 	}
 }

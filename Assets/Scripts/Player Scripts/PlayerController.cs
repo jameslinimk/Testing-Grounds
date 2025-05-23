@@ -28,6 +28,10 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(5.5f)] public float maxWalkSpeed;
 
 	[DefaultValue(0.7f)] public float airControl;
+	[DefaultValue(0.2f)] public float groundHitJumpDashDelay;
+	private float landedTime = -Mathf.Infinity;
+	private bool IsLanding => Time.time - landedTime < groundHitJumpDashDelay;
+
 	[DefaultValue(0.75f)] public float groundHitRecoverSpeed;
 	[Tooltip("Changes max seconds in air scale")][DefaultValue(2f)] public float groundHitCurveMaxTime;
 	[Tooltip("F(seconds in air)=% of movement lost")] public AnimationCurve groundHitCurve;
@@ -54,11 +58,11 @@ public class PlayerController : MonoBehaviour {
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
 	[Header("Jump Settings")]
-	[DefaultValue(10.5f)] public float jumpForce;
+	[DefaultValue(25f)] public float jumpForce;
 	[DefaultValue(0.25f)] public float jumpStaminaCost;
 	[DefaultValue(1.5f)] public float fallMultiplier;
 	[DefaultValue(0.75f)] public float lowJumpMultiplier;
-	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost;
+	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost && !IsLanding;
 
 	[Header("Crouch Settings")]
 	[DefaultValue(2f)] public float crouchHeightMultiplier;
@@ -78,14 +82,13 @@ public class PlayerController : MonoBehaviour {
 	private bool sprinting = false;
 	private float sprintEnd = -Mathf.Infinity;
 
-	private bool IsLanding => animator.GetCurrentAnimatorStateInfo(0).IsName("Land");
-	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing && !IsLanding;
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing;
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
 	[DefaultValue(1.1f)] public float dashDuration;
 	public AnimationCurve dashCurve;
-	[DefaultValue(15f)] public float dashSpeed;
+	[DefaultValue(10f)] public float dashSpeed;
 	[DefaultValue(0.5f)] public float dashStaminaCost;
 
 	private Vector3 dashDirection;
@@ -191,6 +194,8 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
 		transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
+
+		if (IsLanding) Debug.Log("Landing");
 	}
 
 	void FixedUpdate() {
@@ -296,8 +301,8 @@ public class PlayerController : MonoBehaviour {
 		if (!old && isGrounded) {
 			// Hit the ground
 			groundHitSpeedMultiplier = Mathf.Clamp01(1f - groundHitCurve.Evaluate(airTime / groundHitCurveMaxTime));
-			Debug.Log($"Hit the ground! {airTime} -> {groundHitSpeedMultiplier}");
 			airTime = 0f;
+			landedTime = Time.time;
 		}
 		if (!isGrounded) airTime += Time.deltaTime;
 
