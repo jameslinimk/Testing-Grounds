@@ -4,8 +4,8 @@ using UnityEditor;
 using UnityEngine;
 
 public class GunsManager : Singleton<GunsManager> {
-	[SerializeField] private GunConfig[] gunConfigs;
-	private readonly IGunMod[] gunMods = new IGunMod[] {
+	[SerializeField] private List<GunConfig> gunConfigs;
+	private readonly List<IGunMod> gunMods = new() {
 		new FireRateMod(),
 		new DoubleBulletMod(),
 	};
@@ -41,7 +41,7 @@ public class GunsManager : Singleton<GunsManager> {
 		gunConfigs = guids.Select(guid => {
 			string path = AssetDatabase.GUIDToAssetPath(guid);
 			return AssetDatabase.LoadAssetAtPath<GunConfig>(path);
-		}).ToArray();
+		}).ToList();
 	}
 
 	public GunConfig TestConfig() {

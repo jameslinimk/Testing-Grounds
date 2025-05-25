@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour {
 
 	public CameraController cameraController;
 
-	public int score { get; private set; } = 0;
+	public int Score { get; private set; } = 0;
 	private float CenterToEdgeDistance => capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius;
 
 	[Header("Movement Settings")]
@@ -92,10 +92,10 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(0.5f)] public float dashStaminaCost;
 
 	private Vector3 dashDirection;
-	public float dashStart { get; private set; } = -Mathf.Infinity;
+	public float DashStart { get; private set; } = -Mathf.Infinity;
 
-	private bool IsDashing => Time.time - dashStart < dashDuration;
-	private bool CanDash => Time.time - (dashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding;
+	private bool IsDashing => Time.time - DashStart < dashDuration;
+	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding;
 
 	[Header("Slope Settings")]
 	[DefaultValue(45f)] public float maxSlopeAngle;
@@ -123,7 +123,7 @@ public class PlayerController : MonoBehaviour {
 		uiController.SetAlphaTarget(1f);
 
 		Stamina -= dashStaminaCost;
-		dashStart = Time.time;
+		DashStart = Time.time;
 		Vector3 rawDir = mv == Vector3.zero ? lastMV : mv;
 		dashDirection = cameraController.TransformMovement(rawDir);
 
@@ -138,14 +138,6 @@ public class PlayerController : MonoBehaviour {
 		Stamina -= jumpStaminaCost;
 		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
 		animator.SetTrigger("Jump");
-
-		/**
-
-		TODO:
-		- Fix jump immediately after land
-		- Fix dash immediately after land
-
-		*/
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
@@ -214,7 +206,7 @@ public class PlayerController : MonoBehaviour {
 
 		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) {
-			float t = (Time.time - dashStart) / dashDuration;
+			float t = (Time.time - DashStart) / dashDuration;
 			Vector3 targetLV = dashCurve.Evaluate(t) * dashSpeed * dashDirection;
 			rb.linearVelocity = new Vector3(targetLV.x, rb.linearVelocity.y, targetLV.z);
 
@@ -279,7 +271,7 @@ public class PlayerController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
-			score += 1;
+			Score += 1;
 			uiController.RefreshScoreText();
 			Destroy(other.gameObject);
 		}

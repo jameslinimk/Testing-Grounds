@@ -36,7 +36,7 @@ public class PlayerHealthController : MonoBehaviour {
 		animator.SetTrigger("Die");
 		rb.isKinematic = true;
 
-		endText.text = $"You died with a score of {pc.score}!";
+		endText.text = $"You died with a score of {pc.Score}!";
 		endText.gameObject.SetActive(true);
 		// GameManager.Instance.SetPause(true, false);
 	}

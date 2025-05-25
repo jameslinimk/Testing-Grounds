@@ -58,10 +58,10 @@ public class PlayerUIController : MonoBehaviour {
 	}
 
 	private void UpdateDashUI() {
-		float ratio = Mathf.Clamp01(1 - (Time.time - pc.dashStart - pc.dashDuration) / pc.dashCooldown);
+		float ratio = Mathf.Clamp01(1 - (Time.time - pc.DashStart - pc.dashDuration) / pc.dashCooldown);
 		dashIconOverlay.fillAmount = ratio;
 
-		float secondsLeft = Mathf.Clamp(pc.dashCooldown - (Time.time - pc.dashStart - pc.dashDuration), 0f, pc.dashCooldown);
+		float secondsLeft = Mathf.Clamp(pc.dashCooldown - (Time.time - pc.DashStart - pc.dashDuration), 0f, pc.dashCooldown);
 		if (secondsLeft == 0f) {
 			dashCDImageAlphaTarget = 0f;
 		} else {
@@ -94,6 +94,6 @@ public class PlayerUIController : MonoBehaviour {
 	}
 
 	public void RefreshScoreText() {
-		scoreText.text = $"Score: {pc.score}";
+		scoreText.text = $"Score: {pc.Score}";
 	}
 }
