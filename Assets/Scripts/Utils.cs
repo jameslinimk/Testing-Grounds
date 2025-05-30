@@ -41,6 +41,11 @@ public static class Utils {
 		return source[UnityEngine.Random.Range(0, source.Count)];
 	}
 
+	public static T Rand<T>(this T[] source) {
+		if (source == null || source.Length == 0) throw new ArgumentException("Source array cannot be null or empty.", nameof(source));
+		return source[UnityEngine.Random.Range(0, source.Length)];
+	}
+
 	public static T Rand<T>(this Dictionary<T, float> source) {
 		if (source == null || source.Count == 0) throw new ArgumentException("Source dictionary cannot be null or empty.", nameof(source));
 
