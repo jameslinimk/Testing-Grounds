@@ -6,10 +6,11 @@ using System.ComponentModel;
 public class PlayerController : MonoBehaviour {
 	private PlayerUIController uiController;
 	private PlayerHealthController healthController;
+	private SpellController spellController;
 
 	private CapsuleCollider capsuleCollider;
 	private Rigidbody rb;
-	private Animator animator;
+	public Animator Animator { get; private set; }
 
 	private Vector3 mv;
 	private Vector3 lastMV = Vector3.forward;
@@ -69,10 +70,10 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(0.25f)] public float sprintCooldown;
 	[DefaultValue(1f)] public float sprintStaminaCost;
 
-	private bool sprinting = false;
+	public bool Sprinting { private set; get; } = false;
 	private float sprintEnd = -Mathf.Infinity;
 
-	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing;
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing && !spellController.IsCasting;
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
@@ -85,7 +86,7 @@ public class PlayerController : MonoBehaviour {
 	public float DashStart { get; private set; } = -Mathf.Infinity;
 
 	[HideInInspector] public bool IsDashing => Time.time - DashStart < dashDuration;
-	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding;
+	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding && !spellController.IsCasting;
 
 	[Header("Slope Settings")]
 	[DefaultValue(45f)] public float maxSlopeAngle;
@@ -109,7 +110,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnDash() {
-		if (GameManager.Instance.IsPaused || healthController.isDead || !CanDash) return;
+		if (GameManager.Instance.IsPaused || healthController.IsDead || !CanDash) return;
 		uiController.SetAlphaTarget(1f);
 
 		Stamina -= dashStaminaCost;
@@ -117,19 +118,20 @@ public class PlayerController : MonoBehaviour {
 		Vector3 rawDir = mv == Vector3.zero ? lastMV : mv;
 		dashDirection = cameraController.TransformMovement(rawDir);
 
-		transform.forward = dashDirection;
-		animator.SetTrigger("Dash");
+		Animator.SetFloat("DashHorizontal", rawDir.x);
+		Animator.SetFloat("DashVertical", rawDir.z);
+		Animator.SetTrigger("Dash");
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || healthController.isDead || isCrouching) return;
+		if (GameManager.Instance.IsPaused || healthController.IsDead || isCrouching) return;
 		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
 		transform.position -= new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = true;
 	}
 
 	void OnCrouchRelease(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || healthController.isDead || !isCrouching) return;
+		if (GameManager.Instance.IsPaused || healthController.IsDead || !isCrouching) return;
 		transform.localScale = originalScale;
 		transform.position += new Vector3(0, crouchHeightDifference, 0);
 		isCrouching = false;
@@ -141,12 +143,13 @@ public class PlayerController : MonoBehaviour {
 	void Start() {
 		uiController = GetComponent<PlayerUIController>();
 		healthController = GetComponent<PlayerHealthController>();
+		spellController = GetComponent<SpellController>();
 
 		rb = GetComponent<Rigidbody>();
 		rb.useGravity = false;
 		capsuleCollider = GetComponent<CapsuleCollider>();
 
-		animator = transform.GetChild(0).GetComponent<Animator>();
+		Animator = transform.GetChild(0).GetComponent<Animator>();
 
 		originalScale = transform.localScale;
 		var h = 2 * originalScale.y;
@@ -160,7 +163,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void Update() {
-		if (healthController.isDead) return;
+		if (healthController.IsDead) return;
 
 		UpdateGrounded();
 
@@ -169,11 +172,11 @@ public class PlayerController : MonoBehaviour {
 			transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
 		}
 
-		animator.SetBool("IsCrouching", isCrouching);
+		Animator.SetBool("IsCrouching", isCrouching);
 	}
 
 	void FixedUpdate() {
-		if (healthController.isDead) return;
+		if (healthController.IsDead) return;
 
 		ApplyGravity();
 
@@ -193,23 +196,24 @@ public class PlayerController : MonoBehaviour {
 			accel = sprintAccel;
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
-			sprinting = true;
-		} else if (sprinting) {
-			sprinting = false;
+			Sprinting = true;
+		} else if (Sprinting) {
+			Sprinting = false;
 			sprintEnd = Time.time;
 		} else if (CanRegen) {
 			Stamina += (rb.linearVelocity == Vector3.zero ? standingStaminaRegen : staminaRegen) * Time.deltaTime;
 		}
 
 		/* ---------------------------- General movement ---------------------------- */
+		if (spellController.IsCasting) maxSpeed = spellController.Config.castingMaxMoveSpeed;
 		maxSpeed *= groundHitSpeedMultiplier;
 		if (!isGrounded) maxSpeed *= airControl;
 
-		animator.SetFloat("Horizontal", mv.normalized.x, 0.1f, Time.deltaTime);
-		animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
+		Animator.SetFloat("Horizontal", mv.normalized.x, 0.1f, Time.deltaTime);
+		Animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
 
-		// Animator speed: 0 = idle, 1 = walking, 2 = sprinting
-		animator.SetInteger("MovementState", sprinting ? 2 : (mv.magnitude > 0.2f ? 1 : 0));
+		// Movement state: 0 = idle, 1 = walking, 2 = sprinting
+		Animator.SetInteger("MovementState", Sprinting ? 2 : (mv.magnitude > 0.2f ? 1 : 0));
 
 		if (mv == Vector3.zero) return;
 

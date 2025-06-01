@@ -27,22 +27,26 @@ public struct ProjectileInfo {
 [CreateAssetMenu(fileName = "NewWeapon", menuName = "Inventory/Weapon")]
 public class GunConfig : ScriptableObject {
 	[Header("Basic Info")]
-	public string weaponName;
+	public string spellName;
 	public string description;
 	public Rarity rarity;
+	public float castingMaxMoveSpeed;
 
 	[Header("Visuals")]
 	public Sprite icon;
-	public GameObject weaponPrefab;
+	public GameObject projectilePrefab;
+	public GameObject droppedPrefab;
+	public float speed;
+	public float lifetime;
 
 	[Header("Other Info")]
+	public int animationAttackVariant;
+	public bool IsTwoHanded => animationAttackVariant > 0;
+	public int animationAttackType;
 	public float drawSpeed;
-	public bool isProjectile;
-	public ProjectileInfo projectileInfo;
 
 	[Header("Fire Behavior")]
 	public FireType fireType;
-	public float range;
 	public int burstCount = 0;
 	public float burstDelay = 0f;
 	public float fireCooldown;

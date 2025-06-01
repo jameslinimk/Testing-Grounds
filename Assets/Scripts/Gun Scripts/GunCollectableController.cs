@@ -42,7 +42,6 @@ public class GunCollectableController : MonoBehaviour {
 
 	void Start() {
 		if (settings == null) settings = Resources.Load<GunCollectableSettings>("Settings/GunCollectableSettings");
-		transform.localScale = Vector3.one * GunController.GunPrefabScale;
 
 		gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 

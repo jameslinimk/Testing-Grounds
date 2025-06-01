@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using TMPro;
 using UnityEngine;
 
 public class PlayerHealthController : MonoBehaviour {
@@ -10,7 +9,7 @@ public class PlayerHealthController : MonoBehaviour {
 	[Header("Health Settings")]
 	[DefaultValue(100f)] public float maxHealth;
 	[DefaultValue(100f)] public float health;
-	public bool isDead => health <= 0;
+	public bool IsDead => health <= 0;
 
 	public AnimationCurve hitKnockbackCurve;
 	[DefaultValue(10f)] public float hitKnockbackCurveScale;

@@ -23,7 +23,7 @@ public class PlayerUIController : MonoBehaviour {
 	public Color barDamagedColor;
 
 	[Header("Gun UI")]
-	public GunController gunController;
+	public SpellController gunController;
 	public TextMeshProUGUI ammoCounterText;
 
 	[ContextMenu("Default Values")]
@@ -84,7 +84,7 @@ public class PlayerUIController : MonoBehaviour {
 	}
 
 	private void UpdateGunUI() {
-		GunConfig gun = gunController.config;
-		ammoCounterText.text = $"{gun.weaponName} {gunController.ammo}/{gun.maxAmmo}";
+		GunConfig gun = gunController.Config;
+		ammoCounterText.text = $"{gun.spellName} {gunController.ammo}/{gun.maxAmmo}";
 	}
 }

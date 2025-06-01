@@ -46,7 +46,7 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
-	public GunController gunController;
+	public SpellController gunController;
 	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
 
@@ -98,7 +98,7 @@ public class PlayerGunManager : MonoBehaviour {
 		for (int i = Utils.WrapAround(gunIndex - 1, gunSlots.Length); i != gunIndex; i = Utils.WrapAround(i - 1, gunSlots.Length)) {
 			if (i == gunIndex) break;
 			if (!gunSlots[i].Empty) {
-				GameObject gun = Instantiate(gunSlot.config.weaponPrefab, gunController.transform.position, gunController.transform.rotation);
+				GameObject gun = Instantiate(gunSlot.config.droppedPrefab, gunController.transform.position, gunController.transform.rotation);
 				gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookDirection(), GetComponent<Collider>());
 
 				SwitchGun(i);

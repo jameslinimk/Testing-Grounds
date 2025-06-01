@@ -34,7 +34,7 @@ public class PopupController : MonoBehaviour {
 
 		panelGroup.alpha = 0f;
 
-		nameText.text = gunSlot.config.weaponName;
+		nameText.text = gunSlot.config.spellName;
 		modsText.text = "";
 		foreach (IGunMod mod in gunSlot.config.mods) {
 			modsText.text += $"{mod.name}\n";
@@ -70,7 +70,7 @@ public class PopupController : MonoBehaviour {
 		}
 
 		Vector3 cameraLook = player.gunController.CalculateLookDirection(false);
-		if (!Physics.Raycast(player.gunController.FirePointWithFallback, cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
+		if (!Physics.Raycast(player.gunController.CalculateFirePoint(), cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
 			targetAlpha = 0f;
 			return;
 		}
