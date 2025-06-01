@@ -11,7 +11,9 @@ public class PlayerHealthController : MonoBehaviour {
 	[DefaultValue(100f)] public float maxHealth;
 	[DefaultValue(100f)] public float health;
 	public bool isDead => health <= 0;
-	public TextMeshProUGUI endText;
+
+	public AnimationCurve hitKnockbackCurve;
+	[DefaultValue(10f)] public float hitKnockbackCurveScale;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
@@ -20,47 +22,42 @@ public class PlayerHealthController : MonoBehaviour {
 
 	void Start() {
 		animator = transform.GetChild(0).GetComponent<Animator>();
-		endText.gameObject.SetActive(false);
 		pc = GetComponent<PlayerController>();
 		rb = GetComponent<Rigidbody>();
 	}
 
 	public void TakeDamage(float damage, Vector3 hitOrigin) {
 		health -= damage;
-		rb.AddForce((transform.position - hitOrigin).normalized * 10, ForceMode.Impulse);
+
+		if (!pc.IsDashing) {
+			Vector3 directionAwayFromHit = (transform.position - hitOrigin).normalized;
+
+			float intensity = hitKnockbackCurve.Evaluate(damage / hitKnockbackCurveScale);
+			rb.AddForce(directionAwayFromHit * intensity, ForceMode.Impulse);
+
+			Vector3 localHitDirection = transform.InverseTransformDirection(directionAwayFromHit);
+
+			animator.SetFloat("HitHorizontal", localHitDirection.x);
+			animator.SetFloat("HitVertical", localHitDirection.z);
+			animator.SetTrigger("Hit");
+		}
 
 		if (health <= 0) Die(hitOrigin);
 	}
 
 	public void Die(Vector3? hitOrigin = null) {
-		if (hitOrigin == null) hitOrigin = Vector3.forward;
+		Vector3 directionAwayFromHit = (hitOrigin == null) ? transform.forward : (transform.position - (Vector3)hitOrigin).normalized;
 
-		Vector3 opposite = -hitOrigin.Value;
-		opposite.y = 0f;
-		opposite.Normalize();
+		Vector3 localDeathDirection = transform.InverseTransformDirection(directionAwayFromHit);
+		Vector2 closestDir = Utils.GetClosestCardinalDirection(new Vector2(localDeathDirection.x, localDeathDirection.z));
 
-		var directions = new Vector2[] { new(0, 1), new(0, -1), new(-1, 0), new(1, 0) };
+		Debug.Log($"closestDir: {closestDir}");
 
-		Vector2 inputDir = new(opposite.x, opposite.z);
-		Vector2 bestDir = directions[0];
-		float maxDot = Vector2.Dot(inputDir, directions[0]);
-
-		for (int i = 1; i < directions.Length; i++) {
-			float dot = Vector2.Dot(inputDir, directions[i]);
-			if (dot > maxDot) {
-				maxDot = dot;
-				bestDir = directions[i];
-			}
-		}
-
-		animator.SetFloat("DeathHorizontal", bestDir.x);
-		animator.SetFloat("DeathVertical", bestDir.y);
+		animator.SetFloat("DeathHorizontal", closestDir.x);
+		animator.SetFloat("DeathVertical", closestDir.y);
 		animator.SetTrigger("Die");
 
 		rb.isKinematic = true;
-
-		endText.text = $"You died with a score of {pc.Score}!";
-		endText.gameObject.SetActive(true);
-		// GameManager.Instance.SetPause(true, false);
+		GameManager.Instance.EndGame();
 	}
 }

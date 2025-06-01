@@ -30,6 +30,8 @@ public class GameManager : Singleton<GameManager> {
 	[HideInInspector] public bool CanUnpause = true;
 	private InputAction pauseAction;
 
+	public static event Action OnPauseChange;
+
 	public Transform player;
 
 	public Level levels = new() {
@@ -64,6 +66,8 @@ public class GameManager : Singleton<GameManager> {
 	public TextMeshProUGUI scoreText;
 	public Image levelProgressBar;
 
+	public TextMeshProUGUI endText;
+
 	public int score = 0;
 
 	void Start() {
@@ -91,10 +95,16 @@ public class GameManager : Singleton<GameManager> {
 		// TODO
 	}
 
+	public void EndGame() {
+		endText.text = $"You died with a score of {score}!";
+		endText.gameObject.SetActive(true);
+
+		SetPause(true, false);
+	}
+
 	public void SetPause(bool pause, bool canUnpause = true) {
 		CanUnpause = canUnpause;
 		IsPaused = pause;
-		Time.timeScale = pause ? 0 : 1;
 
 		if (pause) {
 			Cursor.lockState = CursorLockMode.None;
@@ -103,6 +113,8 @@ public class GameManager : Singleton<GameManager> {
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 		}
+
+		OnPauseChange?.Invoke();
 	}
 
 	[ContextMenu("Check All Script's Default Values")]

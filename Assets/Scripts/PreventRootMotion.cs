@@ -7,8 +7,8 @@ public class PreventRootMotion : MonoBehaviour {
 		animator = GetComponent<Animator>();
 	}
 
-	// void OnAnimatorMove() {
-	// 	// Prevent root motion application
-	// 	// Do NOT set transform.position = animator.rootPosition
-	// }
+	void OnAnimatorMove() {
+		// Prevent root motion application
+		// Do NOT set transform.position = animator.rootPosition
+	}
 }

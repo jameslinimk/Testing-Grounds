@@ -159,6 +159,27 @@ public static class Utils {
 		}
 	}
 
+	public static Vector2 GetClosestCardinalDirection(Vector2 input) {
+		if (input == Vector2.zero) return Vector2.zero;
+
+		Vector2 normalizedInput = input.normalized;
+
+		var cardinalDirections = new Vector2[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+
+		Vector2 closest = Vector2.zero;
+		float maxDot = -Mathf.Infinity;
+
+		foreach (Vector2 dir in cardinalDirections) {
+			float dot = Vector2.Dot(normalizedInput, dir);
+			if (dot > maxDot) {
+				maxDot = dot;
+				closest = dir;
+			}
+		}
+
+		return closest;
+	}
+
 	public static void SetDefaultValues(object obj) {
 		FieldInfo[] props = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		foreach (FieldInfo prop in props) {
@@ -215,6 +236,8 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour {
 		}
 
 		_instance = this as T;
-		DontDestroyOnLoad(gameObject);
+		if (gameObject.transform.parent == null) {
+			DontDestroyOnLoad(gameObject);
+		}
 	}
 }

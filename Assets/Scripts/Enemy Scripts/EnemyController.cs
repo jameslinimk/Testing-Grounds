@@ -29,6 +29,7 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		rb = GetComponent<Rigidbody>();
 
 		ToggleAgent(true);
+		GameManager.OnPauseChange += OnPauseChange;
 	}
 
 	private void ToggleAgent(bool on) {
@@ -37,11 +38,24 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	}
 
 	void FixedUpdate() {
+		if (GameManager.Instance.IsPaused) return;
+
 		if (agent.enabled) return;
 		if (rb.linearVelocity.magnitude < 0.05f && !GracePeriodActive) {
 			rb.linearVelocity = Vector3.zero;
 			ToggleAgent(true);
 			if (dead) Destroy(gameObject);
+		}
+	}
+
+	void OnPauseChange() {
+		agent.enabled = !GameManager.Instance.IsPaused;
+		if (agent.enabled) {
+			rb.isKinematic = false;
+			knockbackStart = Time.time;
+		} else {
+			rb.linearVelocity = Vector3.zero;
+			rb.isKinematic = true;
 		}
 	}
 

@@ -2053,8 +2053,9 @@ MonoBehaviour:
   enemyPrefabValues: []
   enemySpawnPoints: []
   levelText: {fileID: 0}
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 1383407305}
   levelProgressBar: {fileID: 0}
+  endText: {fileID: 60392604}
   score: 0
 --- !u!114 &1290750464
 MonoBehaviour:
@@ -2091,7 +2092,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1364666732
 Transform:
   m_ObjectHideFlags: 0
@@ -2876,7 +2877,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   health: 100
-  endText: {fileID: 60392604}
+  hitKnockbackCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  hitKnockbackCurveScale: 0
 --- !u!114 &1573727687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2889,7 +2896,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c957c8ab1920f004e86fbc8169cac24f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreText: {fileID: 1383407305}
   dashIconText: {fileID: 245196183}
   dashIconOverlay: {fileID: 234113049}
   staminaBarOverlay: {fileID: 1844984371}
@@ -3695,9 +3701,17 @@ PrefabInstance:
       value: PlayerModel
       objectReference: {fileID: 0}
     - target: {fileID: 4540229000190281644, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: de13a7420582ded45a8d7d3f96889aca, type: 3}
+    - target: {fileID: 4540229000190281644, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 2955426045e168940ad511eef308a25b, type: 2}
+    - target: {fileID: 4540229000190281644, guid: 60770bdb4dc667c45bea53db0339dc05, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3794,7 +3808,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8121795006567385282, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: damage
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8121795006567385282, guid: 13a312af429482547b7764547f6b69c8, type: 3}
       propertyPath: player

@@ -7,9 +7,6 @@ public class PlayerUIController : MonoBehaviour {
 	private PlayerHealthController healthController;
 	private PlayerGunManager gunManager;
 
-	[Header("Score UI")]
-	public TextMeshProUGUI scoreText;
-
 	[Header("Dash UI")]
 	public TextMeshProUGUI dashIconText;
 	public Image dashIconOverlay;
@@ -49,8 +46,6 @@ public class PlayerUIController : MonoBehaviour {
 		barHealthyColor = healthBarOverlay.color;
 		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;
 		healthBarWidth = healthBarOverlay.rectTransform.rect.width;
-
-		RefreshScoreText();
 	}
 
 	public void SetAlphaTarget(float alpha) {
@@ -91,9 +86,5 @@ public class PlayerUIController : MonoBehaviour {
 	private void UpdateGunUI() {
 		GunConfig gun = gunController.config;
 		ammoCounterText.text = $"{gun.weaponName} {gunController.ammo}/{gun.maxAmmo}";
-	}
-
-	public void RefreshScoreText() {
-		scoreText.text = $"Score: {pc.Score}";
 	}
 }

@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour {
 
 	public CameraController cameraController;
 
-	public int Score { get; private set; } = 0;
 	private float CenterToEdgeDistance => capsuleCollider.height / 2 * transform.localScale.y - capsuleCollider.radius;
 
 	[Header("Movement Settings")]
@@ -85,7 +84,7 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 dashDirection;
 	public float DashStart { get; private set; } = -Mathf.Infinity;
 
-	private bool IsDashing => Time.time - DashStart < dashDuration;
+	[HideInInspector] public bool IsDashing => Time.time - DashStart < dashDuration;
 	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding;
 
 	[Header("Slope Settings")]
@@ -190,7 +189,7 @@ public class PlayerController : MonoBehaviour {
 		/* --------------------------- Sprinting + Stamina -------------------------- */
 		float accel = isCrouching ? crouchAccel : walkAccel;
 		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
-		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero && mv.x == 0f && mv.z > 0f) {
+		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			accel = sprintAccel;
 			maxSpeed = maxSprintSpeed;
 			Stamina -= sprintStaminaCost * Time.deltaTime;
@@ -244,8 +243,6 @@ public class PlayerController : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.CompareTag("Pickup")) {
-			Score += 1;
-			uiController.RefreshScoreText();
 			Destroy(other.gameObject);
 		}
 	}
@@ -277,8 +274,6 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			onSlope = false;
 		}
-
-		animator.SetBool("IsFalling", !isGrounded);
 	}
 
 	private void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {
