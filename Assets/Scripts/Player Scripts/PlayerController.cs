@@ -15,7 +15,6 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 lastMV = Vector3.forward;
 
 	private InputAction sprintAction;
-	private InputAction jumpAction;
 	private InputAction crouchAction;
 
 	public CameraController cameraController;
@@ -28,9 +27,9 @@ public class PlayerController : MonoBehaviour {
 	[DefaultValue(5.5f)] public float maxWalkSpeed;
 
 	[DefaultValue(0.7f)] public float airControl;
-	[DefaultValue(0.2f)] public float groundHitJumpDashDelay;
+	[DefaultValue(0.2f)] public float groundHitDashDelay;
 	private float landedTime = -Mathf.Infinity;
-	private bool IsLanding => Time.time - landedTime < groundHitJumpDashDelay;
+	private bool IsLanding => Time.time - landedTime < groundHitDashDelay;
 
 	[DefaultValue(0.75f)] public float groundHitRecoverSpeed;
 	[Tooltip("Changes max seconds in air scale")][DefaultValue(2f)] public float groundHitCurveMaxTime;
@@ -57,18 +56,10 @@ public class PlayerController : MonoBehaviour {
 
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
-	[Header("Jump Settings")]
-	[DefaultValue(25f)] public float jumpForce;
-	[DefaultValue(0.25f)] public float jumpStaminaCost;
-	[DefaultValue(1.5f)] public float fallMultiplier;
-	[DefaultValue(0.75f)] public float lowJumpMultiplier;
-	private bool CanJump => isGrounded && !IsDashing && Stamina >= jumpStaminaCost && !IsLanding;
-
 	[Header("Crouch Settings")]
 	[DefaultValue(2f)] public float crouchHeightMultiplier;
 	[DefaultValue(45f)] public float crouchAccel;
 	[DefaultValue(4f)] public float maxCrouchSpeed;
-	[DefaultValue(10f)] public float crouchJumpForce;
 	private Vector3 originalScale;
 	private float crouchHeightDifference;
 	private bool isCrouching = false;
@@ -127,17 +118,8 @@ public class PlayerController : MonoBehaviour {
 		Vector3 rawDir = mv == Vector3.zero ? lastMV : mv;
 		dashDirection = cameraController.TransformMovement(rawDir);
 
-		animator.SetFloat("DashHorizontal", rawDir.x);
-		animator.SetFloat("DashVertical", rawDir.z);
+		transform.forward = dashDirection;
 		animator.SetTrigger("Dash");
-	}
-
-	void OnJump() {
-		if (GameManager.Instance.IsPaused || healthController.isDead || !CanJump) return;
-
-		Stamina -= jumpStaminaCost;
-		rb.AddForce(Vector3.up * (isCrouching ? crouchJumpForce : jumpForce), ForceMode.Impulse);
-		animator.SetTrigger("Jump");
 	}
 
 	void OnCrouchPress(InputAction.CallbackContext context) {
@@ -171,7 +153,6 @@ public class PlayerController : MonoBehaviour {
 		var h = 2 * originalScale.y;
 		crouchHeightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
 
-		jumpAction = InputSystem.actions.FindAction("Jump");
 		crouchAction = InputSystem.actions.FindAction("Crouch");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
 
@@ -184,25 +165,18 @@ public class PlayerController : MonoBehaviour {
 
 		UpdateGrounded();
 
-		Vector3 forward = cameraController.TransformMovement(Vector3.forward);
-		transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
+		if (!IsDashing) {
+			Vector3 forward = cameraController.TransformMovement(Vector3.forward);
+			transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
+		}
 
-		if (IsLanding) Debug.Log("Landing");
+		animator.SetBool("IsCrouching", isCrouching);
 	}
 
 	void FixedUpdate() {
 		if (healthController.isDead) return;
 
 		ApplyGravity();
-
-		/* --------------------------------- Falling -------------------------------- */
-		if (!onSlope && rb.linearVelocity.y < 0) {
-			rb.AddForce(fallMultiplier * Physics.gravity, ForceMode.Acceleration);
-		}
-
-		if (!onSlope && rb.linearVelocity.y > 0 && !jumpAction.IsPressed()) {
-			rb.AddForce(lowJumpMultiplier * Physics.gravity, ForceMode.Acceleration);
-		}
 
 		/* --------------------------------- Dashing -------------------------------- */
 		if (IsDashing) {
@@ -235,9 +209,8 @@ public class PlayerController : MonoBehaviour {
 		animator.SetFloat("Horizontal", mv.normalized.x, 0.1f, Time.deltaTime);
 		animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
 
-		// Animator speed: 0-0.5: idle | 0.5-1.5: walk | 1.5+: run
-		float animatorSpeed = sprinting ? 2f : (mv.magnitude > 0.5f ? 1f : 0f);
-		animator.SetFloat("Speed", mv.normalized.magnitude * animatorSpeed);
+		// Animator speed: 0 = idle, 1 = walking, 2 = sprinting
+		animator.SetInteger("MovementState", sprinting ? 2 : (mv.magnitude > 0.2f ? 1 : 0));
 
 		if (mv == Vector3.zero) return;
 
