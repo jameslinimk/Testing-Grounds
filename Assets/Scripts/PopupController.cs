@@ -10,7 +10,8 @@ public class PopupController : MonoBehaviour {
 	private float targetAlpha = 0f;
 
 	public Transform collectableTransform;
-	public PlayerGunManager player;
+	public PlayerGunManager gunManager;
+	private SpellController spellController;
 	public new Transform camera;
 	public GunSlot gunSlot;
 
@@ -45,7 +46,8 @@ public class PopupController : MonoBehaviour {
 	public void Initialize(GunSlot gunSlot, Transform collectableTransform, PlayerGunManager player, Transform camera) {
 		this.gunSlot = gunSlot;
 		this.collectableTransform = collectableTransform;
-		this.player = player;
+		gunManager = player;
+		spellController = player.GetComponent<SpellController>();
 		this.camera = camera;
 	}
 
@@ -63,14 +65,14 @@ public class PopupController : MonoBehaviour {
 			return;
 		}
 
-		bool inDistance = Vector3.Distance(player.transform.position, transform.position) <= displayDistance;
+		bool inDistance = Vector3.Distance(gunManager.transform.position, transform.position) <= displayDistance;
 		if (!inDistance) {
 			targetAlpha = 0f;
 			return;
 		}
 
-		Vector3 cameraLook = player.gunController.CalculateLookDirection(false);
-		if (!Physics.Raycast(player.gunController.CalculateFirePoint(), cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
+		Vector3 cameraLook = spellController.CalculateLookDirection(false);
+		if (!Physics.Raycast(spellController.CalculateFirePoint(), cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
 			targetAlpha = 0f;
 			return;
 		}

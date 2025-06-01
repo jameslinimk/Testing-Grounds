@@ -12,22 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81262f004b3a8954ba5c33c872529097, type: 3}
   m_Name: StartingPistol
   m_EditorClassIdentifier: 
-  weaponName: Basic Pistol
-  description: Your basic starter pistol. Not shiny, but will do the job
+  spellName: Basic Spell
+  description: Your basic spell. You learned this in elemetry school
   rarity: 0
+  castingMaxMoveSpeed: 2.5
   icon: {fileID: 0}
-  weaponPrefab: {fileID: 1694449805434718, guid: 6f1a7354265853f44b0ed5e2e43676ad, type: 3}
+  projectilePrefab: {fileID: 1990380580032880, guid: 46b312e00ed9c1f459ea9f0e55bfac77, type: 3}
+  droppedPrefab: {fileID: 0}
+  speed: 15
+  lifetime: 10
+  animationAttackVariant: 1
+  animationAttackType: 0
   drawSpeed: 0.3
-  isProjectile: 1
-  projectileInfo:
-    projectilePrefab: {fileID: 9030307562142581533, guid: 86580a53a2c10c54c94cec9672d3c530, type: 3}
-    speed: 20
-    lifetime: 10
   fireType: 0
-  range: 100
   burstCount: 0
   burstDelay: 0
-  fireCooldown: 0.1
+  fireCooldown: 0.5
   kickback: 3
   damage: 10
   headshotMultiplier: 2

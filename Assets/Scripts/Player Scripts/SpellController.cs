@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class SpellController : MonoBehaviour {
 	public LayerMask hitLayers;
 	private PlayerController pc;
+	private new Collider collider;
 	public CameraController cameraController;
 	public PlayerUIController playerUIController;
 	[DefaultValue(17f)] public float rotationSpeed;
@@ -42,6 +43,7 @@ public class SpellController : MonoBehaviour {
 
 		rb = GetComponent<Rigidbody>();
 		pc = GetComponent<PlayerController>();
+		collider = GetComponent<Collider>();
 	}
 
 	private bool switchingGuns;
@@ -177,6 +179,11 @@ public class SpellController : MonoBehaviour {
 			Vector3 newDir = ApplySpread(directionFromGun, currentSpread);
 
 			GameObject projectile = Instantiate(Config.projectilePrefab, CalculateFirePoint(), Quaternion.LookRotation(newDir));
+			projectile.transform.localScale = Vector3.one * Config.projectilePrefabScale;
+
+			// Ignore collision to player
+			Physics.IgnoreCollision(projectile.GetComponent<Collider>(), collider);
+
 			var mover = projectile.GetComponent<ProjectileMover>();
 			mover.lifetime = Config.lifetime;
 			mover.speed = Config.speed;

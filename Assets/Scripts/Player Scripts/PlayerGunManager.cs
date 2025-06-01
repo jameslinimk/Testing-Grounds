@@ -46,13 +46,15 @@ public class GunSlot {
 }
 
 public class PlayerGunManager : MonoBehaviour {
-	public SpellController gunController;
+	private SpellController gunController;
 	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
 
 	public GunSlot CurrentGun => gunSlots[currentGunIndex];
 
 	void Start() {
+		gunController = GetComponent<SpellController>();
+
 		for (int i = 0; i < gunSlots.Length; i++) gunSlots[i] = new GunSlot();
 		gunSlots[0].ReConfig(GunsManager.Instance.DefaultGunConfig());
 		gunController.SwitchGun(gunSlots[0].config);

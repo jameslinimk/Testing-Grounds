@@ -23,7 +23,7 @@ public class PlayerUIController : MonoBehaviour {
 	public Color barDamagedColor;
 
 	[Header("Gun UI")]
-	public SpellController gunController;
+	private SpellController gunController;
 	public TextMeshProUGUI ammoCounterText;
 
 	[ContextMenu("Default Values")]
@@ -42,6 +42,7 @@ public class PlayerUIController : MonoBehaviour {
 		pc = GetComponent<PlayerController>();
 		healthController = GetComponent<PlayerHealthController>();
 		gunManager = GetComponent<PlayerGunManager>();
+		gunController = GetComponent<SpellController>();
 
 		barHealthyColor = healthBarOverlay.color;
 		staminaBarWidth = staminaBarOverlay.rectTransform.rect.width;

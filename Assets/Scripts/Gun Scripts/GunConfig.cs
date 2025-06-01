@@ -35,6 +35,7 @@ public class GunConfig : ScriptableObject {
 	[Header("Visuals")]
 	public Sprite icon;
 	public GameObject projectilePrefab;
+	public float projectilePrefabScale = 1f;
 	public GameObject droppedPrefab;
 	public float speed;
 	public float lifetime;
