@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 54562278206498944}
   - component: {fileID: 135998222679351976}
   - component: {fileID: -8166614325478063106}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Projectile 15
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4843,7 +4843,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605a456cfc02f6b499a64717539a27e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 0
   speed: 20
+  lifetime: 5
   hitOffset: 0.1
   UseFirePointRotation: 0
   rotationOffset: {x: 0, y: 0, z: 0}

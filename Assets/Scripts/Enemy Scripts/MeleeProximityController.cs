@@ -7,14 +7,14 @@ public class MeleeProximityController : MonoBehaviour {
 		meleeEnemyController = transform.parent.GetComponent<MeleeEnemyController>();
 	}
 
-	void OnCollisionEnter(Collision collision) {
-		if (collision.gameObject.CompareTag("Player")) {
+	void OnTriggerEnter(Collider other) {
+		if (other.CompareTag("Player")) {
 			meleeEnemyController.PlayerInProximity();
 		}
 	}
 
-	void OnCollisionExit(Collision collision) {
-		if (collision.gameObject.CompareTag("Player")) {
+	void OnTriggerExit(Collider other) {
+		if (other.CompareTag("Player")) {
 			meleeEnemyController.PlayerOutOfProximity();
 		}
 	}

@@ -1,10 +1,7 @@
 # Todo
 
-- [ ] Finish animations
-- [ ] Add attacks
-- [ ] Add attack vfx
-- [ ] Ranged enemy
+- [ ] Different spells (aura and area) and armors
 - [ ] Enemy spawning
-- [ ] Basic arena
-- [ ] Powers and armors
+- [ ] Actual level area
 - [ ] Boss
+- [ ] Ending

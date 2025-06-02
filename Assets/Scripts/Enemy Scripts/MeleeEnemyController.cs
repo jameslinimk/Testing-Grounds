@@ -1,18 +1,15 @@
-using System.Collections;
 using System.ComponentModel;
 using UnityEngine;
 
 public class MeleeEnemyController : MonoBehaviour {
 	private EnemyController ec;
 	private EnemyHealthController health;
-	public Transform player;
+	private Transform player;
 	private PlayerHealthController playerHealth;
 
 	[DefaultValue(10f)] public float damage;
-	private float lastHit = -Mathf.Infinity;
 
 	private bool touchingPlayer = false;
-	private Coroutine damageCoroutine;
 
 	[ContextMenu("Default Values")]
 	void DefaultValues() {
@@ -21,6 +18,8 @@ public class MeleeEnemyController : MonoBehaviour {
 	}
 
 	void Start() {
+		player = GameObject.FindGameObjectWithTag("Player").transform;
+
 		ec = transform.parent.GetComponent<EnemyController>();
 		health = transform.parent.GetComponent<EnemyHealthController>();
 		playerHealth = player.GetComponent<PlayerHealthController>();
@@ -37,21 +36,19 @@ public class MeleeEnemyController : MonoBehaviour {
 	}
 
 	public void ZombieAttack() {
-		Debug.Log("Zombie Attack");
-
 		if (!touchingPlayer || health.health <= 0) return;
 		Debug.Log("Zombie Attack - touching player");
 		playerHealth.TakeDamage(damage, transform.position);
 	}
 
-	void OnCollisionEnter(Collision collision) {
-		if (collision.gameObject.CompareTag("Player")) {
+	void OnTriggerEnter(Collider other) {
+		if (other.CompareTag("Player")) {
 			touchingPlayer = true;
 		}
 	}
 
-	void OnCollisionExit(Collision collision) {
-		if (collision.gameObject.CompareTag("Player")) {
+	void OnTriggerExit(Collider other) {
+		if (other.CompareTag("Player")) {
 			touchingPlayer = false;
 		}
 	}

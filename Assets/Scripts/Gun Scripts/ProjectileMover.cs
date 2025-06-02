@@ -7,6 +7,7 @@ public class ProjectileMover : MonoBehaviour {
 	public float lifetime = 5f;
 	public float hitOffset = 0f;
 	public Action<EnemyHealthController, Vector3> onEnemyHit;
+
 	public bool UseFirePointRotation;
 	public Vector3 rotationOffset = new(0, 0, 0);
 	public GameObject hit;
@@ -16,6 +17,8 @@ public class ProjectileMover : MonoBehaviour {
 
 	void Start() {
 		rb = GetComponent<Rigidbody>();
+		rb.constraints = RigidbodyConstraints.FreezeRotation;
+
 		if (flash != null) {
 			var flashInstance = Instantiate(flash, transform.position, Quaternion.identity);
 			flashInstance.transform.forward = gameObject.transform.forward;
@@ -32,12 +35,15 @@ public class ProjectileMover : MonoBehaviour {
 
 	void FixedUpdate() {
 		if (speed != 0) {
-			rb.linearVelocity = transform.forward * speed;
-			//transform.position += transform.forward * (speed * Time.deltaTime);
+			Vector3 desiredVelocity = transform.forward * speed;
+			rb.linearVelocity = desiredVelocity;
+
+			if (rb.linearVelocity.magnitude > 0.1f) {
+				transform.forward = rb.linearVelocity.normalized;
+			}
 		}
 	}
 
-	//https ://docs.unity3d.com/ScriptReference/Rigidbody.OnCollisionEnter.html
 	void OnCollisionEnter(Collision collision) {
 		if (!hitLayers.ContainsLayer(collision.gameObject.layer)) return;
 
@@ -45,7 +51,6 @@ public class ProjectileMover : MonoBehaviour {
 			onEnemyHit.Invoke(enemy, collision.contacts[0].point);
 		}
 
-		//Lock all axes movement and rotation
 		rb.constraints = RigidbodyConstraints.FreezeAll;
 		speed = 0;
 

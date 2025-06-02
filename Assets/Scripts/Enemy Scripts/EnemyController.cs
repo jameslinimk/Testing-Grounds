@@ -9,10 +9,16 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 
 	public AnimationCurve knockbackCurve;
 	[DefaultValue(25f)] public float maxKnockbackDamage;
+	[DefaultValue(5f)] public float maxKnockbackForce;
+
+	private float speed = 0f;
+	[DefaultValue(0.65f)] public float attackingSpeedModifier;
 
 	private NavMeshAgent agent;
 	private Rigidbody rb;
 	public Animator Animator { get; private set; }
+	private EnemyHealthController health;
+	private new Collider collider;
 
 	private bool paused = true;
 
@@ -26,11 +32,21 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		Utils.SetDefaultValues(this);
 	}
 
+	public void Initialize(float speed, float damage) {
+		if (TryGetComponent<MeleeEnemyController>(out var meleeController)) {
+			meleeController.damage = damage;
+		}
+
+		this.speed = speed;
+	}
+
 	void Start() {
 		agent = GetComponent<NavMeshAgent>();
 		rb = GetComponent<Rigidbody>();
+		health = GetComponent<EnemyHealthController>();
+		collider = GetComponent<Collider>();
 
-		GameObject model = transform.GetChild(1).gameObject;
+		Transform model = transform.GetChild(1);
 
 		Animator = model.GetComponent<Animator>();
 		Animator.SetFloat("RandomWalk", UnityEngine.Random.Range(1, 4));
@@ -38,22 +54,24 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		Animator.SetFloat("RandomStand", UnityEngine.Random.Range(1, 4));
 
 		// Randomly activate one of the child objects (zombie models)
-		int randomIndex = UnityEngine.Random.Range(1, transform.childCount);
-		for (int i = 1; i < transform.childCount; i++) {
-			Transform child = transform.GetChild(i);
-			child.gameObject.SetActive(i == randomIndex);
+		int randomIndex = UnityEngine.Random.Range(1, model.childCount);
+		for (int i = 1; i < model.childCount; i++) {
+			model.GetChild(i).gameObject.SetActive(i == randomIndex);
 		}
 
 		rb.isKinematic = true;
 		agent.enabled = false;
 		GameManager.OnPauseChange += OnPauseChange;
+		GameManager.EnemiesDie += EnemiesDie;
+
+		if (speed == 0f) speed = agent.speed;
 	}
 
 	// Real start
 	public void StandFinish() {
-		Debug.Log("Stand finish called");
 		ToggleAgent(true);
 		paused = false;
+		health.spawning = false;
 	}
 
 	private void ToggleAgent(bool on) {
@@ -64,7 +82,11 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	void FixedUpdate() {
 		if (GameManager.Instance.IsPaused || paused) return;
 
-		if (agent.enabled) return;
+		if (agent.enabled) {
+			bool attacking = Animator.GetBool("Attacking");
+			agent.speed = attacking ? speed * attackingSpeedModifier : speed;
+			return;
+		}
 		if (rb.linearVelocity.magnitude < 0.05f && !GracePeriodActive) {
 			rb.linearVelocity = Vector3.zero;
 			ToggleAgent(true);
@@ -95,30 +117,36 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		force.y = 0;
 		force.Normalize();
 
-		force *= knockbackCurve.Evaluate(damage / maxKnockbackDamage);
+		force *= knockbackCurve.Evaluate(damage / maxKnockbackDamage) * maxKnockbackForce;
+		Debug.Log($"{damage} -> {force.magnitude}");
 		rb.AddForce(force, ForceMode.Impulse);
 	}
 
-	public void OnDie(Vector3 hitOrigin, float damage) {
+	public void OnDie(Vector3 hitOrigin) {
+		if (dead) return;
+		collider.isTrigger = true;
+
 		dead = true;
 		ToggleAgent(false);
 		rb.isKinematic = true;
 		paused = true;
 
-		// Rotate away from hit origin
+		// Face hit origin
 		Vector3 direction = hitOrigin - transform.position;
-		direction.y = 0f;
-
-		// Only rotate if direction has magnitude
+		direction.y = 0; // Keep rotation only around Y axis
 		if (direction != Vector3.zero) {
-			Quaternion lookRotation = Quaternion.LookRotation(direction);
-			transform.rotation = lookRotation;
+			transform.rotation = Quaternion.LookRotation(direction);
 		}
 
 		Animator.SetTrigger("Die");
 	}
 
+	public void EnemiesDie() {
+		OnDie(Vector3.zero);
+	}
+
 	public void ZombieDeath() {
+		GameManager.Instance.OnEnemyDead();
 		Destroy(gameObject);
 	}
 }

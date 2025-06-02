@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 54957865487768790}
   - component: {fileID: 135200976551557654}
   - component: {fileID: 2454702744724495874}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Projectile 8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4844,7 +4844,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605a456cfc02f6b499a64717539a27e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 0
   speed: 22
+  lifetime: 5
   hitOffset: 0.1
   UseFirePointRotation: 0
   rotationOffset: {x: 0, y: 0, z: 0}
@@ -5078,7 +5082,7 @@ GameObject:
   - component: {fileID: 198650533048618258}
   - component: {fileID: 114047151944107676}
   - component: {fileID: 199118247572903540}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}

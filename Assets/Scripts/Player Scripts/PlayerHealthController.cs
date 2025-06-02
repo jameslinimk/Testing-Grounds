@@ -44,13 +44,16 @@ public class PlayerHealthController : MonoBehaviour {
 		if (health <= 0) Die(hitOrigin);
 	}
 
+	private bool alreadyDied = false;
+
 	public void Die(Vector3? hitOrigin = null) {
+		if (alreadyDied) return;
+		alreadyDied = true;
+
 		Vector3 directionAwayFromHit = (hitOrigin == null) ? transform.forward : (transform.position - (Vector3)hitOrigin).normalized;
 
 		Vector3 localDeathDirection = transform.InverseTransformDirection(directionAwayFromHit);
 		Vector2 closestDir = Utils.GetClosestCardinalDirection(new Vector2(localDeathDirection.x, localDeathDirection.z));
-
-		Debug.Log($"closestDir: {closestDir}");
 
 		animator.SetFloat("DeathHorizontal", closestDir.x);
 		animator.SetFloat("DeathVertical", closestDir.y);

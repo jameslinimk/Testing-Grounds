@@ -50,17 +50,21 @@ public class PlayerGunManager : MonoBehaviour {
 	public GunSlot[] gunSlots = new GunSlot[3];
 	private int currentGunIndex = 0;
 
+	public GunConfig gun1;
+	public GunConfig gun2;
+	public GunConfig gun3;
+
 	public GunSlot CurrentGun => gunSlots[currentGunIndex];
 
 	void Start() {
 		gunController = GetComponent<SpellController>();
 
 		for (int i = 0; i < gunSlots.Length; i++) gunSlots[i] = new GunSlot();
-		gunSlots[0].ReConfig(GunsManager.Instance.DefaultGunConfig());
+		gunSlots[0].ReConfig(gun1);
 		gunController.SwitchGun(gunSlots[0].config);
 
-		AddGun(GunsManager.Instance.TestConfig());
-		AddGun(GunsManager.Instance.TestConfig());
+		AddGun(gun2);
+		AddGun(gun3);
 
 		// Input actions
 		for (int i = 0; i < gunSlots.Length; i++) {
@@ -94,29 +98,31 @@ public class PlayerGunManager : MonoBehaviour {
 	}
 
 	public void DropGun(int gunIndex) {
-		GunSlot gunSlot = gunSlots[gunIndex];
-		if (gunSlot.Empty) return;
+		return;
 
-		for (int i = Utils.WrapAround(gunIndex - 1, gunSlots.Length); i != gunIndex; i = Utils.WrapAround(i - 1, gunSlots.Length)) {
-			if (i == gunIndex) break;
-			if (!gunSlots[i].Empty) {
-				GameObject gun = Instantiate(gunSlot.config.droppedPrefab, gunController.transform.position, gunController.transform.rotation);
-				gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookDirection(), GetComponent<Collider>());
+		// GunSlot gunSlot = gunSlots[gunIndex];
+		// if (gunSlot.Empty) return;
 
-				SwitchGun(i);
-				gunSlot.Clear();
-				return;
-			}
-		}
+		// for (int i = Utils.WrapAround(gunIndex - 1, gunSlots.Length); i != gunIndex; i = Utils.WrapAround(i - 1, gunSlots.Length)) {
+		// 	if (i == gunIndex) break;
+		// 	if (!gunSlots[i].Empty) {
+		// 		GameObject gun = Instantiate(gunSlot.config.droppedPrefab, gunController.transform.position, gunController.transform.rotation);
+		// 		gun.AddComponent<GunCollectableController>().Initialize(gunSlot, gunController.CalculateLookDirection(), GetComponent<Collider>());
 
-		ErrorTextController.Instance.SetText("No other gun to switch to");
+		// 		SwitchGun(i);
+		// 		gunSlot.Clear();
+		// 		return;
+		// 	}
+		// }
+
+		// ErrorTextController.Instance.SetText("No other gun to switch to");
 	}
 
 	private void SwitchGun(int gunIndex) {
 		GunSlot newGunSlot = gunSlots[gunIndex];
 		if (newGunSlot.Empty || gunIndex == currentGunIndex) return;
 
-		gunSlots[currentGunIndex].currentAmmo = gunController.ammo;
+		gunSlots[currentGunIndex].currentAmmo = gunController.Ammo;
 		gunSlots[currentGunIndex].putAwayTime = Time.time;
 
 		gunController.SwitchGun(newGunSlot);

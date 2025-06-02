@@ -71,7 +71,7 @@ public class PopupController : MonoBehaviour {
 			return;
 		}
 
-		Vector3 cameraLook = spellController.CalculateLookDirection(false);
+		Vector3 cameraLook = spellController.CalculateTargetPoint(false);
 		if (!Physics.Raycast(spellController.CalculateFirePoint(), cameraLook, out RaycastHit hit, displayDistance) || hit.collider.gameObject != gameObject) {
 			targetAlpha = 0f;
 			return;

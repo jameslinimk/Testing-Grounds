@@ -28,6 +28,11 @@ public class CameraController : MonoBehaviour {
 	[DefaultValue(60f)] public float minFOV;
 	[DefaultValue(5f)] public float fovSpeed;
 
+	[Header("Collision Settings")]
+	[DefaultValue(0.3f)] public float collisionRadius = 0.3f;         // Radius of the sphere‑cast used to test collisions
+	[DefaultValue(0.1f)] public float collisionBuffer = 0.1f;         // Extra distance kept from surfaces
+	public LayerMask collisionMask = ~0;                              // Layers considered solid for the camera
+
 	private InputAction lookAction;
 	private InputAction freelookAction;
 	private bool canFreelook = true;
@@ -51,7 +56,7 @@ public class CameraController : MonoBehaviour {
 	}
 
 	void Start() {
-		offset = transform.position - player.position;
+		offset = transform.localPosition; // keep local offset to allow easy scaling by collisions
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
@@ -80,13 +85,17 @@ public class CameraController : MonoBehaviour {
 		playerController = player.GetComponent<PlayerController>();
 	}
 
+	/// <summary>
+	/// Called by the shooter when the player fires while freelooking to snap back to the last aimed direction.
+	/// Returns the last camera position and forward direction before the snap.
+	/// </summary>
 	public (Vector3, Vector3) ShootReset() {
 		if (!IsFreelooking) {
 			Debug.LogWarning("Trying to reset shoot while not freelooking");
 			return (Vector3.zero, Vector3.zero);
 		}
 
-		// Aim in the last aim direction and prevent freelooking until key is re-pressed and return last position and rotation
+		// Aim in the last aim direction and prevent freelooking until key is re‑pressed and return last position and rotation
 		canFreelook = false;
 		yaw = lastYaw;
 		pitch = lastPitch;
@@ -94,26 +103,45 @@ public class CameraController : MonoBehaviour {
 	}
 
 	void LateUpdate() {
+		/* ---------------------------- Read look input --------------------------- */
 		lookInput = !GameManager.Instance.IsPaused ? lookAction.ReadValue<Vector2>() : Vector2.zero;
 
 		yaw += lookInput.x * sensitivity;
 		pitch -= lookInput.y * sensitivity;
 		pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-		Vector3 rotatedShoulder = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
-
+		/* ------------------------------ Pivot point --------------------------- */
+		Vector3 pivot = Quaternion.Euler(0, yaw, 0) * shoulderOffset + player.position;
 		rotation = Quaternion.Euler(pitch, yaw, 0);
 
-		transform.position = rotatedShoulder + rotation * offset;
-		transform.LookAt(rotatedShoulder + Vector3.up * cameraTilt);
+		/* ---------------------------- Desired camera --------------------------- */
+		Vector3 desiredLocalOffset = rotation * offset; // local space offset rotated to world
+		Vector3 desiredPosition = pivot + desiredLocalOffset;
 
-		/* -------------------------------- FOV stuff ------------------------------- */
-		var r = playerRb.linearVelocity;
-		float playerSpeed = Mathf.Sqrt(r.x * r.x + r.z * r.z);
+		/* --------------------------- Collision check --------------------------- */
+		Vector3 dirToDesired = desiredPosition - pivot;
+		float desiredDistance = dirToDesired.magnitude;
+
+		if (desiredDistance > 0.001f) {
+			if (Physics.SphereCast(pivot, collisionRadius, dirToDesired.normalized, out RaycastHit hit, desiredDistance + collisionBuffer, collisionMask, QueryTriggerInteraction.Ignore)) {
+				// Move the camera to just before the obstruction, respecting buffer
+				desiredPosition = pivot + dirToDesired.normalized * Mathf.Max(hit.distance - collisionBuffer, 0.05f);
+			}
+		}
+
+		transform.position = desiredPosition;
+		transform.LookAt(pivot + Vector3.up * cameraTilt);
+
+		/* ----------------------------- FOV adjust ------------------------------ */
+		var vel = playerRb.linearVelocity;
+		float playerSpeed = Mathf.Sqrt(vel.x * vel.x + vel.z * vel.z);
 		float targetFOV = Mathf.LerpUnclamped(minFOV, maxFOV, playerSpeed / playerController.maxSprintSpeed);
 		cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, fovSpeed * Time.deltaTime);
 	}
 
+	/// <summary>
+	/// Transforms a movement vector from local (input) space to world space relative to the camera's yaw.
+	/// </summary>
 	public Vector3 TransformMovement(Vector3 mv) {
 		return Quaternion.Euler(0, RealYaw, 0) * mv;
 	}

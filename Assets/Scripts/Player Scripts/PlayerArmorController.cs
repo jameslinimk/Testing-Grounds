@@ -86,13 +86,13 @@ public class PlayerArmorController : MonoBehaviour {
 	public ArmorConfig test2;
 
 	void Update() {
-		if (Keyboard.current.tKey.wasReleasedThisFrame) {
-			EquipArmor(test1);
-		}
+		// if (Keyboard.current.tKey.wasReleasedThisFrame) {
+		// 	EquipArmor(test1);
+		// }
 
-		if (Keyboard.current.yKey.wasReleasedThisFrame) {
-			EquipArmor(test2);
-		}
+		// if (Keyboard.current.yKey.wasReleasedThisFrame) {
+		// 	EquipArmor(test2);
+		// }
 	}
 
 	public bool EquipArmor(ArmorConfig armor) {

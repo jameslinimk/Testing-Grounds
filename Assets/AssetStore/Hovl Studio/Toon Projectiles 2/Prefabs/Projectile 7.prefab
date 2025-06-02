@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4546150717060384}
   - component: {fileID: 198279653074507688}
   - component: {fileID: 199987067447877200}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ShockWave3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4915,7 +4915,7 @@ GameObject:
   - component: {fileID: 4798680023604356}
   - component: {fileID: 198772216588664966}
   - component: {fileID: 199779993742728334}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Flare
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9833,7 +9833,7 @@ GameObject:
   - component: {fileID: 54589532502053854}
   - component: {fileID: 135880312642943706}
   - component: {fileID: -4133075345372730030}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Projectile 7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14662,7 +14662,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605a456cfc02f6b499a64717539a27e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 0
   speed: 15
+  lifetime: 5
   hitOffset: 0.05
   UseFirePointRotation: 0
   rotationOffset: {x: 0, y: 0, z: 0}

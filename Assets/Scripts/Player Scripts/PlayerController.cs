@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour {
 	[Tooltip("F(seconds in air)=% of movement lost")] public AnimationCurve groundHitCurve;
 	private float groundHitSpeedMultiplier = 1f;
 	private float airTime = 0f;
-	private bool isGrounded = true;
+	public bool IsGrounded { private set; get; } = true;
 
 	[Header("Stamina Settings")]
 	[DefaultValue(1f)] public float staminaRegenCooldown;
@@ -77,7 +77,7 @@ public class PlayerController : MonoBehaviour {
 	public float DashStart { get; private set; } = -Mathf.Infinity;
 
 	[HideInInspector] public bool IsDashing => Time.time - DashStart < dashDuration;
-	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && isGrounded && !IsLanding && !spellController.IsCasting;
+	private bool CanDash => Time.time - (DashStart + dashDuration) >= dashCooldown && Stamina >= dashStaminaCost && IsGrounded && !IsLanding && !spellController.IsCasting;
 
 	[Header("Slope Settings")]
 	[DefaultValue(45f)] public float maxSlopeAngle;
@@ -173,8 +173,10 @@ public class PlayerController : MonoBehaviour {
 
 		/* ---------------------------- General movement ---------------------------- */
 		if (spellController.IsCasting) maxSpeed = spellController.Config.castingMaxMoveSpeed;
+		if (spellController.Reloading) maxSpeed = spellController.Config.reloadingMaxMoveSpeed;
+
 		maxSpeed *= groundHitSpeedMultiplier;
-		if (!isGrounded) maxSpeed *= airControl;
+		if (!IsGrounded) maxSpeed *= airControl;
 
 		Animator.SetFloat("Horizontal", mv.normalized.x, 0.1f, Time.deltaTime);
 		Animator.SetFloat("Vertical", mv.normalized.z, 0.1f, Time.deltaTime);
@@ -227,24 +229,26 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	private void UpdateGrounded() {
-		bool old = isGrounded;
-		isGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, CenterToEdgeDistance + 0.1f);
+		bool old = IsGrounded;
+		IsGrounded = Physics.SphereCast(transform.position, capsuleCollider.radius, Vector3.down, out slopeHit, CenterToEdgeDistance + 0.1f);
 
 		groundHitSpeedMultiplier = Mathf.MoveTowards(groundHitSpeedMultiplier, 1f, Time.deltaTime * groundHitRecoverSpeed);
-		if (!old && isGrounded) {
+		if (!old && IsGrounded) {
 			// Hit the ground
 			groundHitSpeedMultiplier = Mathf.Clamp01(1f - groundHitCurve.Evaluate(airTime / groundHitCurveMaxTime));
 			airTime = 0f;
 			landedTime = Time.time;
 		}
-		if (!isGrounded) airTime += Time.deltaTime;
+		if (!IsGrounded) airTime += Time.deltaTime;
 
-		if (isGrounded) {
+		if (IsGrounded) {
 			float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
 			onSlope = angle > 0 && angle < maxSlopeAngle;
 		} else {
 			onSlope = false;
 		}
+
+		Animator.SetBool("IsFalling", !IsGrounded);
 	}
 
 	private void AddForceSlope(Vector3 force, ForceMode forceMode = ForceMode.Force) {

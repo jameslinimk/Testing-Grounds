@@ -13,8 +13,8 @@ TagManager:
   - Water
   - UI
   - Collectable
-  - 
-  - 
+  - NonHittable
+  - Projectile
   - 
   - 
   - 

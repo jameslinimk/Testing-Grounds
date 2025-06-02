@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4761509187481228}
   - component: {fileID: 198818419059140704}
   - component: {fileID: 199145244871356446}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cubes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4866,7 +4866,7 @@ GameObject:
   - component: {fileID: 198819491005447586}
   - component: {fileID: 199738349537671464}
   - component: {fileID: 114909474190687334}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Triangles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9738,7 +9738,7 @@ GameObject:
   - component: {fileID: 54351105455091520}
   - component: {fileID: 135893854351048510}
   - component: {fileID: 4869198037014090665}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Projectile 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14566,7 +14566,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605a456cfc02f6b499a64717539a27e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 0
   speed: 25
+  lifetime: 5
   hitOffset: 0.05
   UseFirePointRotation: 0
   rotationOffset: {x: 0, y: 0, z: 0}
