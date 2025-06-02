@@ -64,6 +64,7 @@
         "Firepoint",
         "freelook",
         "freelooking",
+        "Gridbox",
         "headshot",
         "Knockback",
         "Knockbackable",
@@ -78,7 +79,9 @@
         "Roguelike",
         "Scriptable",
         "Slerp",
+        "Toon",
         "UGUI",
-        "Ultrakill"
+        "Ultrakill",
+        "WASD"
     ]
 }

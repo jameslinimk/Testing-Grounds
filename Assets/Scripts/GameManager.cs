@@ -192,9 +192,9 @@ public class GameManager : Singleton<GameManager> {
 
 		progressText.text = $"Level: {currentLevel + 1}, Wave: {currentStage + 1}";
 
-		if (Keyboard.current.tKey.wasReleasedThisFrame) {
-			StartCoroutine(NextStageCoroutine(0f));
-		}
+		// if (Keyboard.current.tKey.wasReleasedThisFrame) {
+		// 	StartCoroutine(NextStageCoroutine(0f));
+		// }
 	}
 
 	public void EndGame() {
