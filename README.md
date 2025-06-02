@@ -1,6 +1,6 @@
 # Testing Grounds
 
-[Gameplay footage](gameplay.mp4)
+[Gameplay footage](https://drive.google.com/file/d/1hKGrh_CQG6XxHdIXn6ju7mAZ7FJaHhGo/view?usp=sharing)
 
 A game made for CS Seminar class. You play as a third-person wizard stuck in a zombie arena. You have 3 spells, a snipe-like spell, a rapid-fire spell and a shotgun-like spell. Increasingly faster and stronger zombies will spawn in waves and levels forever until you die. The goal is to survive as long as possible.
 
