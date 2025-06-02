@@ -8,6 +8,8 @@ I first started with a simple prototype with a moveable cylinder and movement sy
 
 I then browsed for assets and animations, and used animation state-machines to implement animations. In addition, I learned how fbx animations work and how to manually keyframe tweak movements in blender. I also learned how the particle system worked for the spell projectiles. I then implemented the level and spawn system, end screen, and a simple UI. I tried to implement everything without the use of tutorials or packages, to fully learn the Unity engine, and I will continue to work on the project over the summer.
 
+I made sure to make every system modular, so that I can easily add new spells, enemies, and levels. The code is structured in a way that allows for easy expansion, and some items on the roadmap are already implemented but not yet activated in the game.
+
 ## Controls
 
 - **WASD** - Move
