@@ -21,13 +21,13 @@ I made sure to make every system modular, so that I can easily add new spells, e
 
 ## Assets used
 
-- [Toon projectiles 2](https://assetstore.unity.com/packages/vfx/particles/spells/toon-projectiles-2-184946)
+- [Toon Projectiles 2](https://assetstore.unity.com/packages/vfx/particles/spells/toon-projectiles-2-184946)
 - [Polygon City Zombies](https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/polygon-city-zombies-low-poly-3d-art-by-synty-131930)
 - [Low Poly Human](https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/free-low-poly-human-rpg-character-219979)
 - [Gridbox Prototype Materials](https://assetstore.unity.com/packages/2d/textures-materials/gridbox-prototype-materials-129127)
 - [Mixamo Animations](https://www.mixamo.com/)
 
-## Roadmap
+## Future roadmap
 
 - [ ] Pick up different spells (aura and area) and armors
   - Most of everything is half-implemented/in-code
