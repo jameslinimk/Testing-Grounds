@@ -108,7 +108,7 @@ public class SpellController : MonoBehaviour {
 	private float lastShot = -Mathf.Infinity;
 	private bool waitingForShot = false;
 	public bool IsCasting => waitingForShot;
-	private bool CanShoot => ammo > 0 && Time.time - lastShot >= Config.fireCooldown && !switchingGuns && !bursting && !reloading && !pc.IsDashing && !pc.Sprinting && !waitingForShot;
+	private bool CanShoot => ammo > 0 && Time.time - lastShot >= Config.fireCooldown && !switchingGuns && !bursting && !reloading && !pc.IsDashing && !waitingForShot;
 
 	public void FireProjectile() {
 		if (!waitingForShot) return;

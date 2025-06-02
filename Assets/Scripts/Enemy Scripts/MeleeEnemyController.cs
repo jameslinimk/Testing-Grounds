@@ -1,16 +1,14 @@
 using System.Collections;
 using System.ComponentModel;
 using UnityEngine;
-using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
 public class MeleeEnemyController : MonoBehaviour {
-	private EnemyController enemyController;
+	private EnemyController ec;
 	private EnemyHealthController health;
 	public Transform player;
+	private PlayerHealthController playerHealth;
 
 	[DefaultValue(10f)] public float damage;
-	[DefaultValue(1f)] public float hitCooldown;
 	private float lastHit = -Mathf.Infinity;
 
 	private bool touchingPlayer = false;
@@ -23,33 +21,38 @@ public class MeleeEnemyController : MonoBehaviour {
 	}
 
 	void Start() {
-		enemyController = GetComponent<EnemyController>();
-		enemyController.GetTarget = () => player.position;
-		health = GetComponent<EnemyHealthController>();
+		ec = transform.parent.GetComponent<EnemyController>();
+		health = transform.parent.GetComponent<EnemyHealthController>();
+		playerHealth = player.GetComponent<PlayerHealthController>();
+
+		ec.GetTarget = () => player.position;
 	}
 
-	private IEnumerator DamageOverTime(PlayerHealthController player) {
-		while (touchingPlayer) {
-			if (Time.time - lastHit < hitCooldown)
-				yield return new WaitForSeconds(hitCooldown - (Time.time - lastHit));
+	public void PlayerInProximity() {
+		ec.Animator.SetBool("Attacking", true);
+	}
 
-			lastHit = Time.time;
-			if (health.health > 0) player.TakeDamage(damage, transform.position);
-			yield return new WaitForSeconds(hitCooldown);
-		}
+	public void PlayerOutOfProximity() {
+		ec.Animator.SetBool("Attacking", false);
+	}
+
+	public void ZombieAttack() {
+		Debug.Log("Zombie Attack");
+
+		if (!touchingPlayer || health.health <= 0) return;
+		Debug.Log("Zombie Attack - touching player");
+		playerHealth.TakeDamage(damage, transform.position);
 	}
 
 	void OnCollisionEnter(Collision collision) {
 		if (collision.gameObject.CompareTag("Player")) {
 			touchingPlayer = true;
-			damageCoroutine = StartCoroutine(DamageOverTime(collision.gameObject.GetComponent<PlayerHealthController>()));
 		}
 	}
 
 	void OnCollisionExit(Collision collision) {
 		if (collision.gameObject.CompareTag("Player")) {
 			touchingPlayer = false;
-			StopCoroutine(damageCoroutine);
 		}
 	}
 }

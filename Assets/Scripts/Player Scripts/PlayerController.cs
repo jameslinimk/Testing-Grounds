@@ -16,7 +16,6 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 lastMV = Vector3.forward;
 
 	private InputAction sprintAction;
-	private InputAction crouchAction;
 
 	public CameraController cameraController;
 
@@ -56,14 +55,6 @@ public class PlayerController : MonoBehaviour {
 
 	private bool CanRegen => Time.time - lastStaminaDrain >= staminaRegenCooldown && Stamina < maxStamina;
 
-	[Header("Crouch Settings")]
-	[DefaultValue(2f)] public float crouchHeightMultiplier;
-	[DefaultValue(45f)] public float crouchAccel;
-	[DefaultValue(4f)] public float maxCrouchSpeed;
-	private Vector3 originalScale;
-	private float crouchHeightDifference;
-	private bool isCrouching = false;
-
 	[Header("Sprint Settings")]
 	[DefaultValue(77f)] public float sprintAccel;
 	[DefaultValue(7f)] public float maxSprintSpeed;
@@ -73,7 +64,7 @@ public class PlayerController : MonoBehaviour {
 	public bool Sprinting { private set; get; } = false;
 	private float sprintEnd = -Mathf.Infinity;
 
-	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !isCrouching && !IsDashing && !spellController.IsCasting;
+	private bool CanSprint => Time.time - sprintEnd >= sprintCooldown && Stamina > 0 && !IsDashing && !spellController.IsCasting;
 
 	[Header("Dash Settings")]
 	[DefaultValue(1f)] public float dashCooldown;
@@ -123,20 +114,6 @@ public class PlayerController : MonoBehaviour {
 		Animator.SetTrigger("Dash");
 	}
 
-	void OnCrouchPress(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || healthController.IsDead || isCrouching) return;
-		transform.localScale = new Vector3(originalScale.x, originalScale.y / crouchHeightMultiplier, originalScale.z);
-		transform.position -= new Vector3(0, crouchHeightDifference, 0);
-		isCrouching = true;
-	}
-
-	void OnCrouchRelease(InputAction.CallbackContext context) {
-		if (GameManager.Instance.IsPaused || healthController.IsDead || !isCrouching) return;
-		transform.localScale = originalScale;
-		transform.position += new Vector3(0, crouchHeightDifference, 0);
-		isCrouching = false;
-	}
-
 	/* -------------------------------------------------------------------------- */
 	/*                                Unity events                                */
 	/* -------------------------------------------------------------------------- */
@@ -151,15 +128,7 @@ public class PlayerController : MonoBehaviour {
 
 		Animator = transform.GetChild(0).GetComponent<Animator>();
 
-		originalScale = transform.localScale;
-		var h = 2 * originalScale.y;
-		crouchHeightDifference = (h - (h / crouchHeightMultiplier)) / 2f;
-
-		crouchAction = InputSystem.actions.FindAction("Crouch");
 		sprintAction = InputSystem.actions.FindAction("Sprint");
-
-		crouchAction.started += OnCrouchPress;
-		crouchAction.canceled += OnCrouchRelease;
 	}
 
 	void Update() {
@@ -171,8 +140,6 @@ public class PlayerController : MonoBehaviour {
 			Vector3 forward = cameraController.TransformMovement(Vector3.forward);
 			transform.forward = Vector3.Slerp(transform.forward, forward, Time.deltaTime * 10f);
 		}
-
-		Animator.SetBool("IsCrouching", isCrouching);
 	}
 
 	void FixedUpdate() {
@@ -190,8 +157,8 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		/* --------------------------- Sprinting + Stamina -------------------------- */
-		float accel = isCrouching ? crouchAccel : walkAccel;
-		float maxSpeed = isCrouching ? maxCrouchSpeed : maxWalkSpeed;
+		float accel = walkAccel;
+		float maxSpeed = maxWalkSpeed;
 		if (sprintAction.IsPressed() && CanSprint && mv != Vector3.zero) {
 			accel = sprintAccel;
 			maxSpeed = maxSprintSpeed;

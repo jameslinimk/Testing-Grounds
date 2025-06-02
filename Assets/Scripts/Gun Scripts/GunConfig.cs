@@ -31,6 +31,7 @@ public class GunConfig : ScriptableObject {
 	public string description;
 	public Rarity rarity;
 	public float castingMaxMoveSpeed;
+	public float reloadingMaxMoveSpeed;
 
 	[Header("Visuals")]
 	public Sprite icon;

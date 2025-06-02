@@ -18,8 +18,9 @@ MonoBehaviour:
   castingMaxMoveSpeed: 2.5
   icon: {fileID: 0}
   projectilePrefab: {fileID: 1990380580032880, guid: 46b312e00ed9c1f459ea9f0e55bfac77, type: 3}
+  projectilePrefabScale: 1.6
   droppedPrefab: {fileID: 0}
-  speed: 15
+  speed: 50
   lifetime: 10
   animationAttackVariant: 1
   animationAttackType: 0

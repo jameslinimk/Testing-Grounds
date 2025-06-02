@@ -7,12 +7,14 @@ using UnityEngine.AI;
 public class EnemyController : MonoBehaviour, IKnockbackable {
 	public Func<Vector3> GetTarget;
 
-	[DefaultValue(1.2f)] public float knockbackForceMultiplier;
-	[DefaultValue(2.6f)] public float deathKnockbackForceMultiplier;
-	[DefaultValue(5f)] public float deathKnockbackDelay;
+	public AnimationCurve knockbackCurve;
+	[DefaultValue(25f)] public float maxKnockbackDamage;
 
 	private NavMeshAgent agent;
 	private Rigidbody rb;
+	public Animator Animator { get; private set; }
+
+	private bool paused = true;
 
 	private bool dead = false;
 	private float knockbackStart = 0f;
@@ -28,8 +30,30 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		agent = GetComponent<NavMeshAgent>();
 		rb = GetComponent<Rigidbody>();
 
-		ToggleAgent(true);
+		GameObject model = transform.GetChild(1).gameObject;
+
+		Animator = model.GetComponent<Animator>();
+		Animator.SetFloat("RandomWalk", UnityEngine.Random.Range(1, 4));
+		Animator.SetFloat("RandomAttack", UnityEngine.Random.Range(1, 6));
+		Animator.SetFloat("RandomStand", UnityEngine.Random.Range(1, 4));
+
+		// Randomly activate one of the child objects (zombie models)
+		int randomIndex = UnityEngine.Random.Range(1, transform.childCount);
+		for (int i = 1; i < transform.childCount; i++) {
+			Transform child = transform.GetChild(i);
+			child.gameObject.SetActive(i == randomIndex);
+		}
+
+		rb.isKinematic = true;
+		agent.enabled = false;
 		GameManager.OnPauseChange += OnPauseChange;
+	}
+
+	// Real start
+	public void StandFinish() {
+		Debug.Log("Stand finish called");
+		ToggleAgent(true);
+		paused = false;
 	}
 
 	private void ToggleAgent(bool on) {
@@ -38,7 +62,7 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 	}
 
 	void FixedUpdate() {
-		if (GameManager.Instance.IsPaused) return;
+		if (GameManager.Instance.IsPaused || paused) return;
 
 		if (agent.enabled) return;
 		if (rb.linearVelocity.magnitude < 0.05f && !GracePeriodActive) {
@@ -67,20 +91,34 @@ public class EnemyController : MonoBehaviour, IKnockbackable {
 		ToggleAgent(false);
 
 		knockbackStart = Time.time;
-		Vector3 force = (transform.position - hitOrigin).normalized;
+		Vector3 force = transform.position - hitOrigin;
 		force.y = 0;
-		rb.AddForce(damage * knockbackForceMultiplier * force, ForceMode.Impulse);
+		force.Normalize();
+
+		force *= knockbackCurve.Evaluate(damage / maxKnockbackDamage);
+		rb.AddForce(force, ForceMode.Impulse);
 	}
 
 	public void OnDie(Vector3 hitOrigin, float damage) {
-		rb.constraints = RigidbodyConstraints.None;
 		dead = true;
 		ToggleAgent(false);
+		rb.isKinematic = true;
+		paused = true;
 
-		knockbackStart = Time.time;
-		Vector3 force = (transform.position - hitOrigin).normalized;
-		rb.AddForce(damage * deathKnockbackForceMultiplier * force, ForceMode.Impulse);
+		// Rotate away from hit origin
+		Vector3 direction = hitOrigin - transform.position;
+		direction.y = 0f;
 
-		Destroy(gameObject, deathKnockbackDelay);
+		// Only rotate if direction has magnitude
+		if (direction != Vector3.zero) {
+			Quaternion lookRotation = Quaternion.LookRotation(direction);
+			transform.rotation = lookRotation;
+		}
+
+		Animator.SetTrigger("Die");
+	}
+
+	public void ZombieDeath() {
+		Destroy(gameObject);
 	}
 }
